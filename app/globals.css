@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --baby-blue: #89CFF0;
+}
+
+body {
+  background-color: var(--baby-blue);
+  color: #1e3a8a;
+}
+
+@layer utilities {
+  .bg-baby-blue {
+    background-color: var(--baby-blue);
+  }
+}
+

@@ -1,0 +1,118 @@
+Process and Plant Safety Management
+1.0 Title
+
+Process and Plant Safety Management
+
+HRDCorp Claimable Program Approval No: 10001364477
+
+
+2.0 Synopsis
+
+Process and Plant Safety Management is a systematic approach to managing the risks associated with processes that involve hazardous processes in plants involving chemicals. This three-day course is designed to provide participants with a comprehensive understanding of PSM principles and practices, as well as the regulatory requirements for implementing and maintaining an effective PSM program.
+
+3.0 Course Objective and Outcomes
+
+1. Understand the principles of process safety management and its application in industries.
+
+2. Learn how to identify, evaluate, and mitigate process hazards using PSM tools and techniques.
+
+3. Develop an action plan for implementing PSM practices in your organization.
+
+4. Gain knowledge on how to conduct process hazard analysis (PHA) and develop emergency response plans.
+
+5. Understand the role of management in PSM and how to ensure compliance with regulatory requirements.
+
+6. Learn how to develop and implement a process safety information (PSI) program.
+
+7. Gain an understanding of the importance of training, competence, and communication in process safety management.
+
+8. Understand the role of contractors, suppliers, and vendors in process safety management.
+
+9. Learn how to manage changes to processes and equipment safely using PSM principles.
+
+10. Understand the importance of incident investigation and learning from incidents in process safety management.
+
+4.0 Course Contents
+
+1. Introduction to PSM:
+
+– Overview of PSM and its importance
+
+– Regulatory requirements for PSM
+
+– Common causes of process safety incidents
+
+2. Process Hazard Analysis (PHA):
+
+– PHA process and techniques
+
+– PHA team composition and roles – PHA report format and content
+
+3. Process Safety Information (PSI):
+
+– Definition and importance of PSI
+
+– Types of PSI and their sources
+
+– PSI management and maintenance
+
+4. Process Safety Audits (PSA):
+
+– Purpose and benefits of PSA
+
+– PSA process and techniques
+
+– PSA report format and content
+
+5. Process Safety Management of Contractors:
+
+– Importance of managing contractors in PSM
+
+– Contractor selection and qualification process
+
+– Contractor safety orientation and training
+
+6. Management of Change (MOC):
+
+– MOC process and techniques
+
+– MOC documentation and review
+
+– MOC implementation and verification
+
+7. Incident Investigation:
+
+– Purpose and benefits of incident investigation
+
+– Incident investigation process and techniques
+
+– Incident investigation report format and content
+
+8. Emergency Planning and Response:
+
+– Importance of emergency planning and response
+
+– Emergency response planning process
+
+– Emergency response drills and exercises
+
+9. Special Topics in PSM
+
+– Pre-commissioning, commissioning, and start-up
+
+– Employee Training and It’s Importance
+
+– Human Issues & Cultural strata in PSM
+
+5.0 Target Audience
+
+Plant Managers, Plant Engineers, Plant Operation Executives, Safety Engineers, Supervisors
+
+6.0 Training Methodology & Certification
+
+The course will include interactive sessions, group discussions, case studies, and practical exercises to reinforce learning and develop practical skills for implementing and maintaining an effective PSM program. Participants will receive a certificate of completion at the end of the course.
+
+7.0 Training Methodology & Certification
+
+The course will include interactive sessions, group discussions, case studies, and practical exercises to reinforce learning and develop practical skills for implementing and maintaining an effective PSM program. Participants will receive a certificate of completion at the end of the course.
+

@@ -1,0 +1,115 @@
+Root Cause Analysis (RCA) Upskilling
+1.0: Title
+
+Root Cause Analysis (RCA) Upskilling
+
+HRDCorp Claimable Training Program Approval No: 10001360237
+
+
+2.0: Introduction
+
+Root Cause Analysis (RCA) is a critical process for identifying the underlying causes of problems or failures in various industries. This two-day upskilling course is designed to provide participants with a comprehensive understanding of RCA techniques and methodologies, as well as the skills and knowledge required to effectively implement RCA in their organizations.
+
+3.0: Learning Outcome
+
+Upon completion of the program, participants should be able to:
+
+Understanding the concept of Root Cause Analysis (RCA) and its importance in improving safety, quality, and reliability.
+Learning the steps involved in conducting an effective RCA investigation, including identifying symptoms, collecting evidence, analyzing causes, and developing corrective actions.
+Understanding the difference between symptoms, causes, and root causes, and how to distinguish between them.
+Learning how to use various RCA tools and techniques, such as Fishbone Diagrams, 5 Whys, and Failure Mode and Effects Analysis (FMEA).
+Understanding how to involve stakeholders in the RCA process and communicate findings effectively.
+Learning how to develop and implement corrective actions that address the root causes of problems, and how to monitor and measure the effectiveness of these actions.
+Understanding how to integrate RCA into an organization’s overall safety, quality, and reliability management system.
+Learning how to continuously improve the RCA process through feedback and learning from previous investigations.
+Developing a practical understanding of RCA through case studies and interactive exercises.
+Gaining confidence in conducting RCA investigations and contributing to a culture of continuous improvement.
+4.0 Course Contents
+
+Day 1 :
+
+INTRODUCTION AND OBJECTIVES
+
+Pretest
+What is a “Problem?” Making Mistakes are natural phenomena?
+Why Problems Persist
+Understand your current organization context
+Internal & External Issues
+Risk & Opportunities
+What is A Root Cause?
+Why Root Causes are important
+PDCA process
+HOW TO ORGANIZE FOR A SYSTEMETC PROBLEM SOLVING
+
+RCA Roles and Responsibilities
+Assemble your RCA Team
+Modes of Communication
+Conflict and Teamwork
+Class discussion
+SELECT THE PROBLEM TO ANALYZE
+
+Define the selection criteria
+Plan and estimate tasks for the team
+Finalize the plan and gain agreement among your stakeholders
+DEFINE THE PROBLEM
+
+What to look for – Problem-as-Given (PAG) vs. Problem-as-Understood (PAU)
+Developing your problem statement
+Refining the problem specification
+IS AND IS NOT ANALYSIS
+
+Discuss when to use the appropriate analysis technique to determine the problem source
+Understanding Is and Is not application
+When to use & apply
+Purpose and method of doing IS and IS NOT analysis
+Having clear understanding about the Problem
+DATA COLLECTION
+
+Gather Information & Data
+Process Mapping to get clarity of the problem
+Use Data Collection Plan to gather data to support decision-making
+Day 2 :
+
+ROOT CAUSE ANALYSIS
+
+Prioritize the problems, how to do it
+Analyse potential causes using Cause and Effect Diagram
+Use Multi-voting technique to shortlist potential causes
+Finding Root Causes – Why-Why Analysis – Verify and Validate for Root Cause
+Relationship diagram to zoom at potential causes
+Case study
+EFFECTIVE CORRECTIVE ACTIONS
+
+SCAMPER and WHAT IF -for IDEA generation
+Effectiveness of Actions
+Correction, Corrective Action, Preventive Actions
+Systematic Corrective Action
+Prevent Recurrence
+PUTTING RCA & SYSTEMETIC PROBLEM SOLVING INTO PRACTICE
+
+Root Cause Analysis& Systematic Problem-Solving program within your organization
+How to develop appropriate recommendations to address root causes at various levels to avoid future incidents-discussion
+SHARING SUCCESS AND FAN OUT METHODOLOGY
+
+Effectiveness of RCA
+Lesson Learned and Shared
+Sustainability & Governance
+Celebration
+Post test
+5.0 Who should attend
+
+Front line leaders, Section Managers, Section Head, Supervisors, Executives, Team leaders, Leaders, Engineers and facilitators responsible for overall organizational performance and customer satisfaction.
+
+7.0 Training Methodology & Certification
+
+This is a highly interactive training program, whereby participants are to gain learning points through classroom lecture, group activity and presentation. Require notebook or computer excel function for data analysis. Certificates of completion will be provided to all attendees.
+
+7.0 Contact Us for Details
+
+KM Training & Consulting Services
+
+MyCo ID: 202103259999
+
+Tel/WhatsApp: +6010-2175360
+
+info@kmtcs.com.my | www.kmtcs.com.my

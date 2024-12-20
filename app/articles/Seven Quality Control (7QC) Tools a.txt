@@ -1,0 +1,80 @@
+Seven Quality Control (7QC) Tools and 5S 
+1.0 Title
+
+Seven Quality Control (7QC) Tools and 5S
+
+2.0 Synopsis
+
+The 7 QC Tools and 5S course is a two-day training program designed to teach participants the principles and practices of quality control and workplace organization. The course covers both the 7 QC Tools, which are statistical and graphical techniques used to analyze data and identify problems, and the 5S methodology, which is a system for organizing and maintaining a clean and efficient work environment.
+
+3.0 Course Objective and Outcomes
+
+To understand the principles of quality control and how they can be applied in the workplace.
+To learn how to use the seven quality control tools effectively to improve quality, efficiency, and productivity.
+To understand the 5S methodology and how it can be implemented in the workplace to improve organization, cleanliness, and efficiency.
+To develop skills in analyzing processes using flowcharting, Pareto charts, check sheets, control charts, histograms, scatter diagrams, and stratification tools.
+To learn how to apply these tools and techniques in real-world situations to improve quality, efficiency, and productivity in the workplace.
+4.0 Course Contents
+
+Day 1:
+
+1. Introduction to Lean Manufacturing and Six Sigma: This session will provide an overview of Lean Manufacturing and Six Sigma methodologies, their benefits, and how they are related to 7 QC tools and 5S.
+
+2. The Seven Quality Control Tools: Participants will learn about the following tools and how to use them to improve quality:
+
+a) Cause and Effect Diagram (Fishbone Diagram): This tool helps identify the root causes of a problem by breaking it down into categories.
+
+b) Pareto Chart: This tool helps prioritize problems based on their frequency or impact using the Pareto principle (80/20 rule).
+
+c) Control Chart: This tool helps monitor a process over time to identify trends, patterns, and special causes of variation.
+
+d) Check Sheet: This tool helps collect data systematically and identify patterns or trends.
+
+e) Scatter Diagram: This tool helps identify the relationship between two variables to determine if they are related or not.
+
+f) Stratification: This tool helps group data based on certain criteria to identify patterns or trends.
+
+g) Histogram: This tool helps visualize data distribution to identify areas of high or low variability.
+
+3. Case Studies: Participants will work in groups to apply the Seven Quality Control Tools to real-world scenarios. They will also discuss how these tools can be used in their own organizations.
+
+Day 2:
+
+1. Introduction to 5S: Participants will learn about the following principles of 5S and how they can be applied in their organization:
+
+a) Sort (Seiri): Remove unnecessary items from the workspace.
+
+b) Set in Order (Seiton): Arrange items in a logical order for easy access and use.
+
+c) Shine (Seiso): Clean the workspace regularly to prevent dirt and dust accumulation.
+
+d) Standardize (Seiketsu): Establish standard procedures for all tasks to ensure consistency and efficiency.
+
+e) Sustain (Shitsuke): Maintain the 5S principles through continuous improvement efforts.
+
+2. Case Studies: Participants will work in groups to apply the 5S principles to their own organization’s workspace or process. They will also discuss how these principles can be integrated into their overall quality management system.
+
+3. Conclusion: Participants will summarize what they have learned during the course, discuss any challenges they may face in implementing these tools and principles in their organization, and develop an action plan for applying them in their workplace.
+
+5.0 Target Audience
+
+Supervisors, Executives, Engineers, Technicians, Lead Operators
+
+6.0 Training Methodology & Certification
+
+The course will include interactive sessions, group discussions, case studies, and practical exercises to reinforce learning and develop practical skills for implementing and maintaining an effective 7QC and 5S program. Participants will receive a certificate of completion at the end of the course.
+
+7.0 Contact Us for Details
+
+KM Training & Consulting Services
+
+MYCO ID: 202103259999
+
+Level 20, Menara 1 Sentrum, 201, Jalan Tun Sambanthan, Brickfields, 50470 Kuala Lumpur.
+
+Tel: +603 -2935 0134 (O)
+
+       +6010 -217 5360 (M)
+
+info@kmtcs.com.my | www.kmtcs.com.my
+

@@ -1,0 +1,72 @@
+Effective ISO 9001:2015 Internal Audit
+1.0: Title
+
+Effective ISO 9001:2015 Internal Audit
+
+
+2.0 Introduction
+
+​Internal audit is fundamental to all management system standards as it is a means to establish status of conformity. However, with the latest update on the management system standards based on Annex SL, the emphasis has shifted to risk and performance. With this shift, an auditor must change its perception of an audit – understand not only how to audit a system based on the requirements of the standard but also at the same time understand how an organization addresses its risks and opportunities to achieve its expected performance.
+
+Results of internal audits provide particularly useful information to management to continually improve its management system. The quality of the results depends mainly on the competency of the auditors. This course provides delegates with an understanding of how to conduct an audit on management system based on ISO 9001:2015 focusing on the organization’s processes, risk approach and its customer satisfaction performance.
+
+3.0 Course Objectives
+
+Understand the requirements of ISO 9001:2015
+Understanding of auditing protocols and the audit process based on the ISO 19011 guidelines for auditing management systems
+Learn how to plan, conduct, report, and follow-up internal audits
+Develop skills in identifying nonconformities, opportunities for improvement, and providing effective corrective actions
+Understand the role of the internal auditor in the ISO 9001:2015 quality management system in accordance with ISO 19011.
+Learn how to conduct audits in a systematic and efficient manner
+4.0 Course Contents
+
+Day 1
+
+An overview of internal auditing
+IS09001:2015 fundamentals for auditors and standard requirements
+Key changes in ISO9001:2015
+Audit as a Value Added Process
+Understanding the audit purpose –ACE-
+Definition of Process and its interaction of QMS
+Process Approach Audit
+Type of Audit and Audit Basis
+Audit Criteria and Audit Evidence
+Current IA Issues and Possible Solutions Discussion
+Phases of Audit
+Audit Preparation Flow
+Documenting the Audit -Auditor Tool Kit
+5 main attending behaviors of Auditors
+Video Clips and Class Discussion 
+Day 2
+
+Selecting a Process for Audit
+Defining the Input and Output of the Process
+What’s critical to audit in a process
+Turtle Diagram
+Pre-audit preparation & Conducting the audit
+Reporting the audit and Follow-up
+Mock Audit – auditing selected process
+Presentation of findings and debrief
+Analysis or disposition of findings
+Observation, Minor, Major Classification
+Corrective Actions on Non Conformities
+System Management for Audit Findings
+Do and Don’t in Audit/Tips for external auditing
+Post-test/Summary
+5.0 Target Audience
+
+This course is suitable for auditors, supervisors, QA Engineers, QA Executives and ISO 9001 committee member and management.
+
+6.0 Training Methodology & Certification
+
+This is a highly interactive training program, whereby participants are to gain the learning points through classroom lecture, group activity, role play, mock audit and presentation. Participants will receive a certificate of completion at the end of the course.
+
+7.0 Contact Us for Details
+
+KM Training & Consulting Services
+
+MyCo ID: 202103259999
+
+Tel/WhatsApp: +6010-2175360
+
+info@kmtcs.com.my | www.kmtcs.com.my

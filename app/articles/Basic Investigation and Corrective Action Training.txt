@@ -1,0 +1,134 @@
+1.0: Title
+
+Basic Investigation and Corrective Action Training
+
+HRDCorp Claimable Training Program Approval No: 10001360704
+
+
+2.0 Introduction
+
+Basic Investigation and Corrective Action Training is a two-day course designed to provide participants with the knowledge and skills required to conduct effective investigations and implement corrective actions in a process plant. 
+
+3.0 Objectives and Outcomes
+
+Upon completion of this training program, participants will be able to:
+
+Understanding the importance of incident investigation and corrective action in a plant setting
+Learning the steps involved in incident investigation, including gathering evidence, interviewing witnesses, and analyzing data
+Developing a root cause analysis methodology and using it to identify the underlying causes of incidents
+Understanding the principles of corrective action, including developing action plans, implementing changes, and verifying effectiveness
+Learning how to effectively communicate investigation findings and corrective actions to stakeholders
+Developing a plan for continuous improvement based on incident investigation and corrective action data
+Understanding the role of incident investigation and corrective action in meeting regulatory requirements and improving plant safety and performance.
+4.0 Course Contents
+
+Day 1:
+
+1. Introduction to Basic Investigation and Corrective Action (BI/CA)
+
+– Overview of BI/CA process
+
+– Importance of BI/CA in improving plant safety and reliability
+
+– Understanding the role of BI/CA in incident investigation
+
+2. Understanding Root Causes
+
+– Defining root causes
+
+– Identifying root causes using the 5 Whys technique
+
+– Understanding the difference between symptoms and root causes
+
+3. Developing Effective Corrective Actions
+
+– Defining corrective actions
+
+– Developing effective corrective actions using the SMART criteria
+
+– Understanding the importance of prioritizing corrective actions
+
+4. Implementing Corrective Actions and Closing the loop
+
+– Developing a plan for implementing corrective actions
+
+– Understanding the importance of communication during implementation
+
+– Monitoring the effectiveness of corrective actions
+
+– Understanding the importance of closing the loop in BI/CA
+
+– Developing a plan for closing the loop
+
+– Understanding the importance of continuous improvement in BI/CA
+
+Day 2:
+
+1. BI/CA Tools and Techniques
+
+– Understanding the importance of using tools and techniques in BI/CA
+
+– Introduction to common BI/CA tools and techniques, such as:
+
+– Failure Mode and Effects Analysis (FMEA)
+
+– Fault Tree Analysis (FTA)
+
+– Root Cause Analysis (RCA)
+
+– Corrective Action Verification (CAV)
+
+2. BI/CA Best Practices
+
+– Understanding the importance of following best practices in BI/CA
+
+– Introduction to common BI/CA best practices, such as:
+
+– Involving stakeholders in the BI/CA process
+
+– Ensuring the confidentiality of BI/CA findings
+
+– Documenting BI/CA findings and actions
+
+3. BI/CA Communication and Reporting
+
+– Understanding the importance of communicating and reporting PBI/CA findings
+
+– Introduction to common BI/CA communication and reporting practices, such as:
+
+– Regular BI/CA status reports
+
+– Communication of BI/CA findings to stakeholders
+
+– Use of BI/CA dashboards and scorecards
+
+4. BI/CA Continuous Improvement
+
+– Understanding the importance of continuous improvement in BI/CA
+
+– Introduction to common BI/CA continuous improvement practices, such as:
+
+– Regular BI/CA process reviews
+
+– Use of BI/CA lessons learned
+
+– Incorporation of BI/CA into plant management systems
+
+5.0 Who should attend
+
+ Field Operators, Supervisors and Operations Executives
+
+6.0 Training Methodology & Certification
+
+Throughout the course, participants will have the opportunity to ask questions, participate in group discussions, and share their own experiences and insights. The practical exercises and case studies will provide hands-on experience in applying the concepts learned in the lectures. By the end of the course, participants will have a solid understanding of the incident investigation and corrective action processes, as well as the skills and knowledge to effectively implement corrective actions in their plant operations. Participants will receive a certificate of completion at the end of the course.
+
+7.0 Contact Us for Details
+
+KM Training & Consulting Services
+
+MyCo ID: 202103259999
+
+Tel/WhatsApp: +6010-2175360
+
+info@kmtcs.com.my | www.kmtcs.com.my
+
