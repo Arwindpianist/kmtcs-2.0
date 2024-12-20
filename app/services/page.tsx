@@ -3,10 +3,10 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useState } from 'react'
-import { trainings, nonTechnicalTrainings } from '../data/trainings'
-import type { Training } from '../data/trainings'
-import { consultingServices } from '../data/consulting'
-import type { ConsultingService } from '../data/consulting'
+import type { Training } from '@/app/data/trainings'
+import type { ConsultingService } from '@/app/data/consulting'
+import { consultingServices } from '@/app/data/consulting'
+import { trainings, nonTechnicalTrainings } from '@/app/data/trainings'
 
 type ServiceCategory = 'all' | 'technical' | 'non-technical' | 'consulting';
 

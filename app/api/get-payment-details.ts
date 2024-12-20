@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Extracting data from the session object
     const productName = session.metadata?.productName || 'Consultation'
     const amount = session.amount_total! / 100 // Convert cents to MYR
-    const currency = session.currency?.toUpperCase() || 'MYR'
+    const currency = session.currency.toUpperCase()
 
     res.status(200).json({ productName, amount, currency })
   } catch (error: any) {

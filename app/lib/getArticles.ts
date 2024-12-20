@@ -43,7 +43,7 @@ export function parseArticleContent(content: string): Article {
         .map(line => line.replace(/^[•-]\s*/, '').trim())
     : [];
 
-  const courseContents: Article['content']['courseContents'] = {
+  const courseContents = {
     day1: [],
     day2: []
   };

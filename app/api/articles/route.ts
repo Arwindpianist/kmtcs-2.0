@@ -1,9 +1,9 @@
-import fs from 'fs';
-import path from 'path';
-import { NextResponse } from 'next/server';
-import type { Article } from '../../types/article';
+import { NextResponse } from 'next/server'
+import fs from 'fs'
+import path from 'path'
+import type { Article } from '../../types/article'
 
-const articlesDirectory = path.join(process.cwd(), 'app/articles');
+const articlesDirectory = path.join(process.cwd(), 'app/articles')
 
 function parseArticleContent(content: string, fileName: string): Article {
   const sections = content.split(/\d\.\d:?\s+/);
@@ -16,9 +16,7 @@ function parseArticleContent(content: string, fileName: string): Article {
   const priceMatch = content.match(/Price:\s*RM\s*(\d+)/i);
 
   return {
-    id: fileName
-      .replace(/\.txt$/, '')
-      .toLowerCase()
+    id: fileName.replace(/\.txt$/, '').toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9-]/g, ''),
     title: titleMatch?.[1]?.trim() || '',
@@ -26,55 +24,39 @@ function parseArticleContent(content: string, fileName: string): Article {
     content: {
       introduction: introMatch?.[1]?.trim() || '',
       hrdCorpNo: hrdCorpMatch?.[1]?.trim() || '',
-      objectives:
-        objectivesMatch?.[0]
-          ?.split('\n')
-          ?.filter((line) => line.trim().startsWith('-') || line.trim().startsWith('•'))
-          ?.map((line) => line.replace(/^[•-]\s*/, '').trim()) || [],
+      objectives: objectivesMatch?.[0]?.split('\n')
+        .filter(line => line.trim().startsWith('-') || line.trim().startsWith('•'))
+        .map(line => line.replace(/^[•-]\s*/, '').trim()) || [],
       courseContents: {
-        day1:
-          contentsMatch?.[0]
-            ?.match(/Day 1[^]*?(?=Day 2|\d\.\d|$)/)?.[0]
-            ?.split('\n')
-            ?.filter((line) => line.trim().startsWith('-') || line.trim().startsWith('•'))
-            ?.map((line) => line.replace(/^[•-]\s*/, '').trim()) || [],
-        day2:
-          contentsMatch?.[0]
-            ?.match(/Day 2[^]*?(?=Day 3|\d\.\d|$)/)?.[0]
-            ?.split('\n')
-            ?.filter((line) => line.trim().startsWith('-') || line.trim().startsWith('•'))
-            ?.map((line) => line.replace(/^[•-]\s*/, '').trim()) || [],
-      },
-      targetAudience:
-        audienceMatch?.[0]
+        day1: contentsMatch?.[0]?.match(/Day 1[^]*?(?=Day 2|\d\.\d|$)/)?.[0]
           ?.split('\n')
-          ?.filter((line) => line.trim().startsWith('-') || line.trim().startsWith('•'))
-          ?.map((line) => line.replace(/^[•-]\s*/, '').trim()) || [],
-      duration: content.toLowerCase().includes('two-day')
-        ? '2 days'
-        : content.toLowerCase().includes('three-day')
-        ? '3 days'
-        : undefined,
+          ?.filter(line => line.trim().startsWith('-') || line.trim().startsWith('•'))
+          ?.map(line => line.replace(/^[•-]\s*/, '').trim()) || [],
+        day2: contentsMatch?.[0]?.match(/Day 2[^]*?(?=Day 3|\d\.\d|$)/)?.[0]
+          ?.split('\n')
+          ?.filter(line => line.trim().startsWith('-') || line.trim().startsWith('•'))
+          ?.map(line => line.replace(/^[•-]\s*/, '').trim()) || []
+      },
+      targetAudience: audienceMatch?.[0]?.split('\n')
+        ?.filter(line => line.trim().startsWith('-') || line.trim().startsWith('•'))
+        ?.map(line => line.replace(/^[•-]\s*/, '').trim()) || [],
+      duration: content.toLowerCase().includes('two-day') ? '2 days' : 
+                content.toLowerCase().includes('three-day') ? '3 days' : undefined,
       price: priceMatch ? parseInt(priceMatch[1]) : 1500,
-      priceId: `price_${fileName.replace(/\.txt$/, '').toLowerCase()}`,
-    },
+      priceId: `price_${fileName.replace(/\.txt$/, '').toLowerCase()}`
+    }
   };
 }
 
 export async function GET() {
-  try {
-    const fileNames = fs.readdirSync(articlesDirectory);
-    const articles = fileNames
-      .filter((fileName) => fileName.endsWith('.txt'))
-      .map((fileName) => {
-        const filePath = path.join(articlesDirectory, fileName);
-        const fileContent = fs.readFileSync(filePath, 'utf8');
-        return parseArticleContent(fileContent, fileName);
-      });
+  const fileNames = fs.readdirSync(articlesDirectory)
+  const articles = fileNames
+    .filter(fileName => fileName.endsWith('.txt'))
+    .map(fileName => {
+      const filePath = path.join(articlesDirectory, fileName)
+      const fileContent = fs.readFileSync(filePath, 'utf8')
+      return parseArticleContent(fileContent, fileName)
+    })
 
-    return NextResponse.json(articles); // Corrected to use NextResponse.json
-  } catch (error) {
-    console.error('Error reading articles:', error);
-    return NextResponse.json({ error: 'Failed to fetch articles' }, { status: 500 });
-  }
-}
+  return NextResponse.json(articles)
+} 
