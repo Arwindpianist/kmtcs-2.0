@@ -115,7 +115,7 @@ export default function Services() {
               {service.type === 'training' && (
                 <div className="flex justify-between items-center text-blue-800 mb-4">
                   <span>Duration: {service.content.duration}</span>
-                  <span>RM {service.content.price}</span>
+                  {/* <span>RM {service.content.price}</span> */}
                 </div>
               )}
               

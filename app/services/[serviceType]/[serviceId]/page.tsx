@@ -108,7 +108,7 @@ export default function ServiceDetailPage() {
               <div className="space-y-4">
                 <p className="text-blue-800"><span className="font-semibold">Introduction:</span> {service.content.introduction}</p>
                 <p className="text-blue-800"><span className="font-semibold">Duration:</span> {service.content.duration}</p>
-                <p className="text-blue-800"><span className="font-semibold">Price:</span> RM {service.content.price}</p>
+                {/* <p className="text-blue-800"><span className="font-semibold">Price:</span> RM {service.content.price}</p> */}
                 {service.content.objectives && (
                   <div>
                     <h3 className="text-xl font-semibold text-blue-900 mb-2">Objectives</h3>
@@ -131,7 +131,7 @@ export default function ServiceDetailPage() {
                   <li key={index} className="text-blue-800">{detail}</li>
                 ))}
               </ul>
-              <p className="text-blue-800 mt-4"><span className="font-semibold">Price:</span> RM {service.price}</p>
+              {/* <p className="text-blue-800 mt-4"><span className="font-semibold">Price:</span> RM {service.price}</p> */}
             </div>
           )}
 
@@ -145,8 +145,9 @@ export default function ServiceDetailPage() {
               className={`px-6 py-3 bg-blue-900 text-white rounded-full hover:bg-blue-800 transition-colors
                 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {loading ? 'Processing...' : `Enroll Now - RM ${isTraining(service) ? 
-                service.content.price : service.price}`}
+              {loading ? 'Processing...' : `Enroll Now`}
+               {/* - RM ${isTraining(service) ? 
+                service.content.price : service.price} */}
             </button>
           </div>
         </div>

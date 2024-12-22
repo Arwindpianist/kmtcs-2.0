@@ -91,11 +91,10 @@ export default function Contact() {
           <h2 className="text-2xl font-semibold text-blue-900 mb-4">Get in Touch</h2>
           <p className="text-lg text-blue-800 mb-6">
             Email: info@kmtcs.com<br />
-            +603-2935 0134 (O)<br />
             +6010-217 5360 (Mobile/WhatsApp)<br />
-            Address: Level 20, Menara 1 Sentrum,< br/>
-            201 Jalan Tun Sambanthan, Brickfields,< br/>
-            50470 Kuala Lumpur. Malaysia.
+            Address: D5­-10-­3A EVERGREEN PARK SCOT PINE,< br/>
+            PERSIARAN SL 1, BANDAR SUNGAI LONG,< br/>
+            43000 KAJANG, SELANGOR MALAYSIA.
           </p>
         </div>
       </div>

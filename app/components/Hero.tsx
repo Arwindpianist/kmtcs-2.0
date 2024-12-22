@@ -12,8 +12,8 @@ export default function Hero() {
         transition={{ duration: 0.8 }}
         className="text-center max-w-4xl px-4"
       >
-        <h1 className="text-5xl md:text-6xl font-bold text-blue-900 mb-4">
-          Welcome to KMTCS
+        <h1 className="text-3xl md:text-6xl font-bold text-blue-900 mb-4">
+          Welcome to KM Training & Consulting Services (KMTCS)
         </h1>
         <p className="text-xl md:text-2xl text-blue-800 mb-8">
           Engineering, Management, and IT Consulting & Training for Private and Public Enterprises
