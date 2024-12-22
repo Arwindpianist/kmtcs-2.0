@@ -2,7 +2,6 @@
   "name": "kmtcs-frontend",
   "version": "0.1.0",
   "private": true,
-
   "engines": {
     "node": "22.x",
     "npm": "10.x"
@@ -16,9 +15,11 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.14.0",
     "@stripe/stripe-js": "^1.54.1",
     "@tailwindcss/forms": "^0.5.3",
     "framer-motion": "^10.12.18",
+    "googleapis": "^144.0.0",
     "next": "^15.0.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

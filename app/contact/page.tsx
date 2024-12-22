@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -9,20 +9,41 @@ export default function Contact() {
     email: '',
     company: '',
     message: '',
-  })
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [responseMessage, setResponseMessage] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prevState => ({ ...prevState, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prevState) => ({ ...prevState, [name]: value }));
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would typically send the form data to your backend
-    console.log('Form submitted:', formData)
-    // Reset form after submission
-    setFormData({ name: '', email: '', company: '', message: '' })
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setResponseMessage('');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setResponseMessage('Your message has been sent successfully!');
+        setFormData({ name: '', email: '', company: '', message: '' });
+      } else {
+        const { message } = await response.json();
+        setResponseMessage(`Failed to send message: ${message}`);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setResponseMessage('An error occurred while sending your message. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-baby-blue py-20">
@@ -82,23 +103,28 @@ export default function Contact() {
               whileTap={{ scale: 0.95 }}
               type="submit"
               className="w-full bg-blue-900 text-white px-4 py-2 rounded-md hover:bg-blue-800 transition duration-300"
+              disabled={isLoading}
             >
-              Send Message
+              {isLoading ? 'Sending...' : 'Send Message'}
             </motion.button>
           </form>
+          {responseMessage && (
+            <div className="mt-4 text-center text-blue-900">
+              {responseMessage}
+            </div>
+          )}
         </div>
         <div className="mt-12 text-center">
           <h2 className="text-2xl font-semibold text-blue-900 mb-4">Get in Touch</h2>
           <p className="text-lg text-blue-800 mb-6">
-            Email: info@kmtcs.com<br />
+            Email: info@kmtcs.com.my<br />
             +6010-217 5360 (Mobile/WhatsApp)<br />
-            Address: D5­-10-­3A EVERGREEN PARK SCOT PINE,< br/>
-            PERSIARAN SL 1, BANDAR SUNGAI LONG,< br/>
+            Address: D5­-10-­3A EVERGREEN PARK SCOT PINE,<br />
+            PERSIARAN SL 1, BANDAR SUNGAI LONG,<br />
             43000 KAJANG, SELANGOR MALAYSIA.
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
-
