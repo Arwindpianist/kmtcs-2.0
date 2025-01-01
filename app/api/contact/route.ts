@@ -6,10 +6,20 @@ type Data = {
     message: string;
 };
 
+export const config = {
+    api: {
+        bodyParser: true, // Ensure body parsing is enabled
+    },
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+    console.log('Request method:', req.method);
+    
     if (req.method === 'POST') {
         const { name, email, company, message } = req.body;
 
+        console.log('Request body:', req.body);
+        
         if (!name || !email || !message) {
             return res.status(400).json({ message: 'Name, email, and message are required.' });
         }
@@ -26,6 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             const bucket = storage.bucket(bucketName);
             const file = bucket.file(fileName);
             await file.save(fileContent, { contentType: 'application/json' });
+            console.log(`Saved contact form submission to bucket: ${fileName}`);
 
             // Gmail API Configuration
             const oAuth2Client = new google.auth.OAuth2(
@@ -58,8 +69,8 @@ ${message}
                 userId: 'me',
                 requestBody: { raw: base64EncodedEmail },
             });
+            console.log(`Email sent successfully for ${email}`);
 
-            console.log(`Contact form submission saved and email sent for ${email}`);
             res.status(200).json({ message: 'Form submitted successfully!' });
         } catch (error) {
             console.error('Error processing request:', error.message);
@@ -67,6 +78,6 @@ ${message}
         }
     } else {
         res.setHeader('Allow', ['POST']);
-        res.status(405).end(`Method ${req.method} Not Allowed`);
+        res.status(405).json({ message: `Method ${req.method} Not Allowed` });
     }
 }
