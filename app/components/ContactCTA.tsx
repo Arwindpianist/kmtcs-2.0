@@ -8,7 +8,7 @@ export default function ContactCTA() {
         <p className="text-xl text-blue-800 mb-8">
           Contact us today to learn how KMTCS can help you achieve significant and lasting improvements in your operations performance.
         </p>
-        <Link href="/contact" className="bg-blue-900 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-800 transition duration-300">
+        <Link href="/contact" className="bg-blue-800/30 backdrop-filter backdrop-blur-lg border border-baby-blue/20 text-blue-800 px-6 py-2 sm:px-8 sm:py-3 rounded-full text-base sm:text-lg font-semibold hover:bg-blue-800 hover:text-white hover:border-blue/40 transition-all duration-300 inline-block relative z-50 shadow-md hover:shadow-lg">
           Get in Touch
         </Link>
       </div>

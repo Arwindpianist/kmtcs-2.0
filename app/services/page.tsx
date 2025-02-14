@@ -1,141 +1,68 @@
-'use client'
+// app/services/page.tsx
+import { fetchServices } from '@/app/services/googleSheetService';
+import ServiceCard from '@/app/components/ServiceCard';
+import FilterButtons from '@/app/components/FilterButtons';
+import BackgroundLines from '../components/BackgroundLines';
 
-import { motion } from 'framer-motion'
-import Link from 'next/link'
-import { useState } from 'react'
-import type { Training } from '@/app/data/trainings'
-import type { ConsultingService } from '@/app/data/consulting'
-import { consultingServices } from '@/app/data/consulting'
-import { trainings, nonTechnicalTrainings } from '@/app/data/trainings'
+export default async function ServicesPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | undefined };
+}) {
+  const services = await fetchServices();
+  const selectedType = searchParams?.type || 'All';
+  const searchTerm = searchParams?.search || '';
 
-type ServiceCategory = 'all' | 'technical' | 'non-technical' | 'consulting';
-
-interface ServiceWithType extends ConsultingService {
-  type: 'consulting';
-}
-
-interface TrainingWithType extends Training {
-  type: 'training';
-}
-
-type ServiceItem = ServiceWithType | TrainingWithType;
-
-export default function Services() {
-  const [activeTab, setActiveTab] = useState<ServiceCategory>('all')
-  const [searchQuery, setSearchQuery] = useState('')
-
-  const filteredServices = (): ServiceItem[] => {
-    let filtered = [
-      ...trainings.map(t => ({ ...t, type: 'training' as const })),
-      ...nonTechnicalTrainings.map(t => ({ ...t, type: 'training' as const })),
-      ...consultingServices.map(c => ({ ...c, type: 'consulting' as const }))
-    ]
-    
-    if (activeTab === 'technical') {
-      filtered = trainings.map(t => ({ ...t, type: 'training' as const }))
-    } else if (activeTab === 'non-technical') {
-      filtered = nonTechnicalTrainings.map(t => ({ ...t, type: 'training' as const }))
-    } else if (activeTab === 'consulting') {
-      filtered = consultingServices.map(c => ({ ...c, type: 'consulting' as const }))
-    }
-
-    if (searchQuery) {
-      filtered = filtered.filter(service => 
-        service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        service.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-
-    return filtered
-  }
+  const filteredServices = services.filter(service => {
+    const matchesType = selectedType === 'All' || service.type === selectedType;
+    const matchesSearch = service.title.toLowerCase().includes(searchTerm.toLowerCase()) || service.shortDescription.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesType && matchesSearch;
+  });
 
   return (
-    <div className="min-h-screen bg-baby-blue py-20">
-      <div className="container mx-auto px-6">
-        <h1 className="text-4xl font-bold text-center text-blue-900 mb-8">Our Services</h1>
-        
-        {/* Search and Filter Controls */}
-        <div className="mb-8">
-          <input
-            type="text"
-            placeholder="Search services..."
-            className="w-full p-2 rounded-lg border border-blue-300 mb-4"
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <div className="flex justify-center space-x-4">
+    <div className="container mx-auto px-4 py-8 ">
+      <h1 className="text-3xl font-bold mb-8 text-center">Our Services</h1>
+      
+      {/* Combined Search and Filters Container */}
+      <div className="flex flex-col md:flex-row gap-4 md:items-center justify-between mb-6 relative z-50">
+        <FilterButtons 
+          types={['All', 'Technical', 'Non-Technical', 'Consulting']}
+          selectedType={selectedType}
+        />
+        {/* Search Bar */}
+        <div className="flex-1 max-w-xl">
+          <form className="flex gap-2">
+            <input
+              type="text"
+              name="search"
+              placeholder="Search services..."
+              className="w-full bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              defaultValue={searchTerm}
+            />
             <button
-              onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-full ${
-                activeTab === 'all' ? 'bg-blue-900 text-white' : 'bg-white text-blue-900'
-              }`}
+              type="submit"
+              className="px-4 py-2 bg-blue-800/20 backdrop-filter backdrop-blur-lg text-blue-700 rounded-lg hover:bg-blue-600 hover:text-white transition-colors whitespace-nowrap"
             >
-              All Services
+              Search
             </button>
-            <button
-              onClick={() => setActiveTab('consulting')}
-              className={`px-4 py-2 rounded-full ${
-                activeTab === 'consulting' ? 'bg-blue-900 text-white' : 'bg-white text-blue-900'
-              }`}
-            >
-              Consulting
-            </button>
-            <button
-              onClick={() => setActiveTab('technical')}
-              className={`px-4 py-2 rounded-full ${
-                activeTab === 'technical' ? 'bg-blue-900 text-white' : 'bg-white text-blue-900'
-              }`}
-            >
-              Technical Training
-            </button>
-            <button
-              onClick={() => setActiveTab('non-technical')}
-              className={`px-4 py-2 rounded-full ${
-                activeTab === 'non-technical' ? 'bg-blue-900 text-white' : 'bg-white text-blue-900'
-              }`}
-            >
-              Non-Technical Training
-            </button>
-          </div>
+          </form>
         </div>
 
-        {/* Service Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredServices().map((service) => (
-            <motion.div
-              key={service.id}
-              whileHover={{ scale: 1.05 }}
-              className="bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-lg p-6 shadow-lg"
-            >
-              <div className="bg-blue-900 text-white text-sm rounded-full px-3 py-1 inline-block mb-4">
-                {service.category}
-              </div>
-              <h3 className="text-xl font-semibold text-blue-900 mb-4">{service.title}</h3>
-              <p className="text-blue-800 mb-4">{service.description}</p>
-              
-              {service.type === 'training' && (
-                <div className="flex justify-between items-center text-blue-800 mb-4">
-                  <span>Duration: {service.content.duration}</span>
-                  {/* <span>RM {service.content.price}</span> */}
-                </div>
-              )}
-              
-              <Link 
-                href={`/services/${service.type}/${service.id}`}
-                className="block text-center bg-blue-900 text-white px-4 py-2 rounded-full hover:bg-blue-800 transition duration-300"
-              >
-                Learn More
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-
-        {filteredServices().length === 0 && (
-          <p className="text-center text-blue-800 mt-8">
-            No services found matching your search criteria.
-          </p>
-        )}
       </div>
-    </div>
-  )
-}
 
+      <BackgroundLines />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-50">
+        {filteredServices.map(service => (
+          <ServiceCard key={service.id} service={service} />
+        ))}
+      </div>
+
+      {filteredServices.length === 0 && (
+        <div className="text-center py-12 text-gray-500">
+          No services found matching your criteria
+        </div>
+      )}
+    </div>
+  );
+}

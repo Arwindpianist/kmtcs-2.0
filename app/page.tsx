@@ -7,6 +7,11 @@ import ServicesOverview from './components/ServicesOverview'
 import AboutPreview from './components/AboutPreview'
 import ContactCTA from './components/ContactCTA'
 import TrainingCalendar from './components/TrainingCalendar'
+import Client from './components/Client'
+import ClientCarousel from './components/ClientCarousel'
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import BackgroundLines from './components/BackgroundLines';
 
 export default function Home() {
   const [servicesRef, servicesInView] = useInView({
@@ -25,8 +30,12 @@ export default function Home() {
   })
 
   return (
-    <div className="min-h-screen">
-      <Hero />
+    <main>
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background animation */}
+        <BackgroundLines />
+        <Hero />
+      </section>
       <motion.div
         ref={servicesRef}
         initial={{ opacity: 0, y: 50 }}
@@ -51,6 +60,13 @@ export default function Home() {
         <TrainingCalendar />
       </motion.div>
       <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Client />
+      </motion.div>
+      <motion.div
         ref={contactRef}
         initial={{ opacity: 0, y: 50 }}
         animate={contactInView ? { opacity: 1, y: 0 } : {}}
@@ -58,7 +74,7 @@ export default function Home() {
       >
         <ContactCTA />
       </motion.div>
-    </div>
+    </main>
   )
 }
 

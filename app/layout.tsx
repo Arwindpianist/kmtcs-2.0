@@ -7,8 +7,22 @@ import ClientLayout from './components/ClientLayout'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'KMTCS - Training and Consulting',
-  description: 'KMTCS is a leading training and consulting firm.',
+  title: 'KM Training & Consulting Services (KMTCS)',
+  description: 'Innovate - Grow - Transform',
+	icons: {
+		icon: [
+			{
+				type: 'image/svg+xml',
+				media: '(prefers-color-scheme: light)',
+				url: '/favicon.svg'
+			},
+			{
+				type: 'image/svg+xml',
+				media: '(prefers-color-scheme: dark)',
+				url: '/favicon.svg'
+			}
+		]
+	}
 }
 
 export default function RootLayout({

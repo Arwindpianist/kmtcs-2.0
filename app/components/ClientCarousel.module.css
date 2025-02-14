@@ -1,0 +1,91 @@
+.carouselWrapper {
+  position: relative;
+  width: 100%;
+  height: 420px; /* Height to fit both rows comfortably */
+  overflow: hidden;
+}
+
+.carouselTrack {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  width: max-content;
+  animation: scroll 120s linear infinite; /* Slower linear scroll for smoothness */
+}
+
+/* Add margin between the top and bottom carousels */
+.carouselTrack:not(:last-child) {
+  margin-bottom: 40px; /* Ensure there's enough space between the rows */
+}
+
+.reverse {
+  animation-direction: reverse;
+}
+
+.carouselItem {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 2/1; /* Ensure the logo aspect ratio is maintained */
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Responsive adjustments for large screens */
+@media (max-width: 1024px) {
+  .carouselWrapper {
+    height: 350px; /* Slightly smaller height for medium screens */
+  }
+  .carouselTrack {
+    gap: 30px;
+  }
+  .carouselItem {
+    height: auto; /* Let height scale with aspect ratio */
+    max-height: 80px; /* Ensure logos don't get too tall */
+  }
+  .carouselTrack:not(:last-child) {
+    margin-bottom: 60px; /* Slightly reduced space between rows on medium screens */
+  }
+}
+
+/* Responsive adjustments for tablet screens */
+@media (max-width: 768px) {
+  .carouselWrapper {
+    height: 250px; /* Further reduce height on tablets */
+  }
+  .carouselTrack {
+    gap: 20px;
+  }
+  .carouselItem {
+    height: auto; /* Keep aspect ratio */
+    max-height: 70px; /* Scale logos down for smaller screens */
+  }
+  .carouselTrack:not(:last-child) {
+    margin-bottom: 30px; /* Add enough space between rows */
+  }
+}
+
+/* Responsive adjustments for mobile screens */
+@media (max-width: 480px) {
+  .carouselWrapper {
+    height: 200px; /* Further reduce height on mobile */
+  }
+  .carouselTrack {
+    gap: 15px;
+  }
+  .carouselItem {
+    height: auto; /* Maintain aspect ratio scaling */
+    max-height: 50px; /* Further reduce logo height */
+  }
+  .carouselTrack:not(:last-child) {
+    margin-bottom: 60px; /* Slightly reduce space between rows */
+  }
+}

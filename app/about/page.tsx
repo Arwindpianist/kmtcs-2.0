@@ -1,9 +1,12 @@
+import BackgroundLines from "../components/BackgroundLines";
+
 export default function About() {
   return (
     <div className="min-h-screen bg-baby-blue py-20">
+      <BackgroundLines />
       <div className="container mx-auto px-6">
         <h1 className="text-4xl font-bold text-center text-blue-900 mb-12">About KMTCS</h1>
-        <div className="bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-lg p-8 shadow-lg">
+        <div className="bg-gradient-to-br from-teal-100 via-neutral-50 to-sky-100 relative z-50 rounded-lg p-8 shadow-lg">
           <p className="text-lg text-blue-800 mb-6">
             KM Training and Consulting Services (KMTCS) is a leading provider of engineering, management, and IT consulting and training services. We serve a diverse range of private and public enterprises, helping them achieve significant and lasting improvements in their operations performance.
           </p>
@@ -26,9 +29,55 @@ export default function About() {
           <p className="text-lg text-blue-800 mb-6">
             KMTCS is composed of experienced professionals with diverse backgrounds in engineering, management, and information technology. Our team of experts is dedicated to delivering tailored solutions that address the unique challenges of each client.
           </p>
+          <h2 className="text-2xl font-semibold text-blue-900 mb-4">Why Choose Us?</h2>
+          <p className="text-lg text-blue-800 mb-6">
+            With over 30 years of experience, we've formed a firm distinctively equipped to support our training and consulting projects. This holistic focus of the KMTCS produces excellent services for our customers and clients. Our associates and consultants have assisted various companies and enterprises to complete their projects and achieve/exceed targeted improvements.
+          </p>
+          <div className="flex flex-col gap-6">
+            <div className="group transform transition-all duration-300 p-6 rounded-lg hover:bg-blue-50">
+              <h3 className="text-xl font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                <span className="animate-wiggle inline-block">
+                  🚀
+                </span>
+                <span className="animate-wiggle inline-block group-hover:text-blue-700 transition-colors">
+                  Innovate
+                </span>
+              </h3>
+              <p className="text-lg text-blue-800 group-hover:text-blue-600 transition-colors animate-fadeIn">
+                INNOVATE the training programs to suit your needs considering the latest knowledge in the respective field.
+              </p>
+            </div>
+
+            <div className="group transform transition-all duration-300 p-6 rounded-lg hover:bg-blue-50">
+              <h3 className="text-xl font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                <span className="animate-wiggle inline-block">
+                  🌱
+                </span>
+                <span className="animate-wiggle inline-block group-hover:text-blue-700 transition-colors">
+                  Grow
+                </span>
+              </h3>
+              <p className="text-lg text-blue-800 group-hover:text-blue-600 transition-colors animate-fadeIn [animation-delay:200ms]">
+                Develop a passion for learning. If you do, you will never cease to GROW. As you use those skills and knowledge received from our INNOVATIVE training, advance your career, your sense of purpose will only GROW.
+              </p>
+            </div>
+
+            <div className="group transform transition-all duration-300 p-6 rounded-lg hover:bg-blue-50">
+              <h3 className="text-xl font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                <span className="animate-wiggle inline-block">
+                  ✨
+                </span>
+                <span className="animate-wiggle inline-block group-hover:text-blue-700 transition-colors">
+                  Transform
+                </span>
+              </h3>
+              <p className="text-lg text-blue-800 group-hover:text-blue-600 transition-colors animate-fadeIn [animation-delay:400ms]">
+                TRANSFORM your people to GROW with the organization through well-crafted INNOVATIVE training programs.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
-

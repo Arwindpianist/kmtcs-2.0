@@ -1,10 +1,11 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import BackgroundLines from '../components/BackgroundLines'
 
-// Import consultant images
+// Consultant images
 import BimalRaj from './bimal-raj.jpg'
 import Gopala from './gopala-krishnan.jpg'
 import Shuras from './shuras-vasu.jpg'
@@ -12,407 +13,233 @@ import Muralitharan from './muralitharan.jpg'
 import Latha from './latha.jpg'
 import Joseph from './joseph.jpg'
 import LokeMunKit from './loke.jpg'
-import Venkat from './venkat.jpg';
-import Rathinam from './rathinam.jpg';
-import Prabagaran from './praba.jpg';
+import Venkat from './venkat.jpg'
+import Rathinam from './rathinam.jpg'
+import Prabagaran from './praba.jpg'
 
 interface Consultant {
-  id: number;
-  name: string;
-  role: string;
-  image: any;
-  shortBio: string;
-  fullBio: {
-    expertise: string[];
-    experience: string[];
-    education?: string[];
-    certifications?: string[];
-    achievements?: string[];
-  };
+  id: number
+  name: string
+  role: string
+  image: any
+  shortBio: string
+  bioSlug: string
+}
+
+interface BioContent {
+  content: string
+  isLoading: boolean
+  error?: string
 }
 
 const consultants: Consultant[] = [
   { 
     id: 1, 
     name: 'IR BIMAL RAJ', 
-    role: 'Principal Consultant',
+    role: 'Six Sigma Consultant',
     image: BimalRaj,
     shortBio: 'Expert in process optimization and industrial engineering with over 25 years of experience.',
-    fullBio: {
-      expertise: [
-        'Manufacturing Excellence',
-        'Process Optimization',
-        'Industrial Engineering',
-        'Quality Management Systems',
-        'Lean Six Sigma Implementation'
-      ],
-      experience: [
-        'Led over 200 improvement projects across various industries',
-        'Certified Six Sigma Black Belt',
-        'Professional Engineer registered with Board of Engineers Malaysia',
-        'Over 25 years of experience in manufacturing and process industries'
-      ],
-      certifications: [
-        'Six Sigma Black Belt',
-        'Professional Engineer (PE)',
-        'Project Management Professional (PMP)'
-      ]
-    }
+    bioSlug: 'ir-bimal-raj'
   },
   {
     id: 2,
     name: 'GOPALA KRISHNAN V PONNUSAMY',
-    role: 'Senior Consultant',
+    role: 'OSH and Operations Excellence Consultant',
     image: Gopala,
     shortBio: 'Quality management and operational excellence expert with extensive industry experience.',
-    fullBio: {
-      expertise: [
-        'Quality Management Systems',
-        'Operational Excellence',
-        'Business Process Improvement',
-        'Strategic Planning',
-        'Change Management'
-      ],
-      experience: [
-        'Over 20 years in quality management and process improvement',
-        'Successfully implemented QMS in multiple organizations',
-        'Led numerous operational excellence initiatives'
-      ],
-      certifications: [
-        'ISO 9001 Lead Auditor',
-        'Certified Quality Manager',
-        'Lean Six Sigma Green Belt'
-      ]
-    }
+    bioSlug: 'gopala-krishnan'
   },
   {
     id: 3,
     name: 'SHURAS VASU',
-    role: 'Lead Consultant',
+    role: 'Lean & Six Sigma Consultant',
     image: Shuras,
     shortBio: 'Lean manufacturing and continuous improvement specialist with proven track record.',
-    fullBio: {
-      expertise: [
-        'Lean Manufacturing',
-        'Continuous Improvement',
-        'Production Management',
-        'Supply Chain Optimization',
-        'Team Development'
-      ],
-      experience: [
-        'Implemented lean manufacturing systems across multiple facilities',
-        'Reduced operational costs by 30% through process improvements',
-        'Trained over 1000 professionals in lean methodologies'
-      ],
-      achievements: [
-        'Successfully led plant-wide transformation projects',
-        'Developed innovative training programs for lean implementation'
-      ]
-    }
+    bioSlug: 'shuras-vasu'
   },
   {
     id: 4,
     name: 'R. MURALITHARAN R. RAJAMANICKAM',
-    role: 'Senior Consultant',
+    role: 'Quality and OSH Consultant',
     image: Muralitharan,
     shortBio: 'Project management and process optimization expert with diverse industry experience.',
-    fullBio: {
-      expertise: [
-        'Project Management',
-        'Process Optimization',
-        'Risk Management',
-        'Quality Control',
-        'Team Leadership'
-      ],
-      experience: [
-        'Managed large-scale improvement projects across multiple industries',
-        'Developed and implemented risk management frameworks',
-        'Led cross-functional teams in process improvement initiatives'
-      ],
-      certifications: [
-        'Project Management Professional (PMP)',
-        'Risk Management Professional (RMP)',
-        'Six Sigma Green Belt'
-      ]
-    }
+    bioSlug: 'muralitharan'
   },
   {
     id: 5,
     name: 'LATHA MUTHUSAMY',
-    role: 'Senior Consultant',
+    role: 'Quality & Security Consultant',
     image: Latha,
     shortBio: 'Organizational development and change management specialist.',
-    fullBio: {
-      expertise: [
-        'Change Management',
-        'Organizational Development',
-        'Leadership Development',
-        'Training & Development',
-        'Performance Management'
-      ],
-      experience: [
-        'Designed and implemented organizational change programs',
-        'Developed leadership training curricula',
-        'Led major organizational transformation initiatives'
-      ],
-      achievements: [
-        'Successfully transformed organizational cultures',
-        'Developed innovative training methodologies'
-      ]
-    }
+    bioSlug: 'latha-muthusamy'
   },
   {
     id: 6,
     name: 'DR. JOSEPH CLARENCE EMMANUEL MICHAEL',
-    role: 'Technical Consultant',
+    role: 'Mechanical Consultant',
     image: Joseph,
     shortBio: 'Expert in technical training and engineering solutions with academic background.',
-    fullBio: {
-      expertise: [
-        'Technical Training',
-        'Engineering Solutions',
-        'Research & Development',
-        'Technology Integration',
-        'Educational Program Development'
-      ],
-      experience: [
-        'Developed comprehensive technical training programs',
-        'Led research projects in engineering solutions',
-        'Designed innovative educational methodologies'
-      ],
-      education: [
-        'Ph.D. in Engineering',
-        'Masters in Technical Education'
-      ]
-    }
+    bioSlug: 'joseph-michael'
   },
   {
     id: 7,
     name: 'Ts LOKE MUN KIT',
-    role: 'Technology Consultant',
+    role: 'Construction & ADR Consultant',
     image: LokeMunKit,
     shortBio: 'Digital transformation and technology integration specialist.',
-    fullBio: {
-      expertise: [
-        'Digital Transformation',
-        'Technology Integration',
-        'IT Strategy',
-        'Systems Architecture',
-        'Innovation Management'
-      ],
-      experience: [
-        'Led digital transformation initiatives for multiple organizations',
-        'Developed and implemented IT strategies',
-        'Managed large-scale technology integration projects'
-      ],
-      certifications: [
-        'Professional Technologist (Ts)',
-        'Certified IT Professional',
-        'Digital Transformation Specialist'
-      ]
-    }
+    bioSlug: 'loke-mun-kit'
   },
   {
     id: 8,
     name: 'DR. N. VENKATARAMAN',
-    role: 'Principal Consultant',
+    role: 'Environmental & Sustainability Consultant',
     image: Venkat,
     shortBio: 'Specialist in integrated management systems and process safety with over 30 years of experience.',
-    fullBio: {
-      expertise: [
-        'QEHS Management Systems',
-        'Process Safety Management',
-        'Carbon Inventory and Reduction',
-        'Risk Management',
-        'Workplace Safety and Health'
-      ],
-      experience: [
-        'Conducted over 500 trainings and assessments on process safety and QEHS topics',
-        'Advised on carbon inventory and ESG integration for ST Engineering',
-        '20+ years of chemical and manufacturing industry experience'
-      ],
-      certifications: [
-        'Certified Associate in Project Management (CAPM)',
-        'ISO Lead Auditor (9001/14001/45001/50001)',
-        'Singapore Certified Energy Manager (SCEM)'
-      ],
-      education: [
-        'Ph.D. in Engineering, OUM Malaysia',
-        'M.Sc. in Environmental Management, NUS Singapore'
-      ]
-    }
+    bioSlug: 'venkataraman'
   },
   {
     id: 9,
     name: 'RATHINAM RENGASAMY',
-    role: 'Renewable Energy Consultant',
+    role: 'Rotating Equipment’s, HX and Boilers Consultant',
     image: Rathinam,
     shortBio: 'Pioneer in renewable energy power plant operations with over 30 years of experience.',
-    fullBio: {
-      expertise: [
-        'Renewable Energy Power Plants',
-        'Steam and Gas Turbine Operations',
-        'Boiler and Plant Maintenance',
-        'Training and Competency Development'
-      ],
-      experience: [
-        'Managed 28.4MW biomass power plants in Malaysia',
-        'Directed EPCC and O&M for renewable energy projects',
-        'Over 13 years at Kuala Langat Power Plant as Shift Charge Engineer'
-      ],
-      certifications: [
-        '1st Grade Steam Engineer (DOSH)',
-        '1st Grade Internal Combustion Engineer (DOSH)',
-        'Train the Trainer (HRDC-TTT)'
-      ],
-      education: [
-        'Postgraduate in Engineering Management, UTM-Warwick',
-        'Degree in Electrical Engineering, Southern Pacific University'
-      ]
-    }
+    bioSlug: 'rathinam-rengasamy'
   },
   {
     id: 10,
     name: 'PRABAGARAN MUNIANDY',
-    role: 'Safety and Risk Consultant',
+    role: 'OSH Consultant',
     image: Prabagaran,
     shortBio: 'Expert in occupational safety, risk management, and railway operations with over 30 years of experience.',
-    fullBio: {
-      expertise: [
-        'Occupational Safety and Health',
-        'Risk Management',
-        'Railway Safety Operations',
-        'Emergency Response Planning',
-        'Behavior-Based Safety'
-      ],
-      experience: [
-        'Developed OSH training programs for railways and industries',
-        'Investigated over 400 incidents and implemented preventive measures',
-        'Led safety management for large-scale railway projects'
-      ],
-      certifications: [
-        'Registered Safety and Health Officer (DOSH)',
-        'ISO 45001 Lead Auditor',
-        'NEBOSH International General Certificate'
-      ],
-      education: [
-        'Master’s Degree in OSH and Risk Management, OUM',
-        'Bachelor’s Degree in OSH Management, OUM'
-      ]
-    }
+    bioSlug: 'prabagaran-muniandy'
   }
 ]
 
 export default function Consultants() {
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null)
+  const [bioContent, setBioContent] = useState<BioContent>({ 
+    content: '', 
+    isLoading: false 
+  })
+
+  const loadBio = async (slug: string) => {
+    setBioContent(prev => ({ ...prev, isLoading: true, error: undefined }))
+    try {
+      const response = await fetch(`/const-bio/${slug}.txt`)
+      if (!response.ok) throw new Error('Biography not found')
+      const content = await response.text()
+      setBioContent({ content, isLoading: false })
+    } catch (error) {
+      console.error('Error loading bio:', error)
+      setBioContent({ 
+        content: 'Biography currently unavailable', 
+        isLoading: false, 
+        error: error instanceof Error ? error.message : 'Failed to load biography' 
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (selectedConsultant) {
+      loadBio(selectedConsultant.bioSlug)
+    }
+  }, [selectedConsultant])
 
   return (
     <div className="min-h-screen bg-baby-blue py-20">
-      <div className="container mx-auto px-6">
-        <h1 className="text-4xl font-bold text-center text-blue-900 mb-12">Our Consultants</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <BackgroundLines />
+      <div className="container mx-auto px-4 sm:px-6">
+        <h1 className="text-3xl md:text-4xl font-bold text-center text-blue-900 mb-8 md:mb-12">
+          Our Consultants
+        </h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {consultants.map((consultant) => (
             <motion.div 
               key={consultant.id} 
-              className="bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+              className="bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-lg p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer"
               onClick={() => setSelectedConsultant(consultant)}
               whileHover={{ scale: 1.02 }}
             >
-              <div className="relative w-48 h-48 mx-auto mb-4">
+              <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-4">
                 <Image
                   src={consultant.image}
                   alt={consultant.name}
                   fill
-                  className="rounded-full object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="rounded-full object-cover border-4 border-white shadow-md"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   priority={consultant.id <= 3}
                 />
               </div>
-              <h2 className="text-xl font-semibold text-blue-900 text-center mb-2">
+              <h2 className="text-lg md:text-xl font-semibold text-blue-900 text-center mb-2">
                 {consultant.name}
               </h2>
-              <p className="text-blue-800 text-center mb-4 font-medium">
+              <p className="text-blue-800 text-center mb-3 md:mb-4 font-medium text-sm md:text-base">
                 {consultant.role}
               </p>
-              <p className="text-blue-800 text-center text-sm">
+              <p className="text-blue-800 text-center text-xs md:text-sm">
                 {consultant.shortBio}
               </p>
-              <p className="text-blue-600 text-center text-sm mt-4 hover:underline">
+              <p className="block mt-4 bg-white/30 text-blue-800 bg-opacity-50 backdrop-filter backdrop-blur-lg border border-baby-blue/20 px-4 py-2 rounded-md hover:bg-blue-700 hover:text-white transition-colors text-center">
                 Click to view full profile
               </p>
             </motion.div>
           ))}
         </div>
 
-        {/* Modal for detailed consultant information */}
         <AnimatePresence>
           {selectedConsultant && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4"
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 px-4 pt-20 md:pt-24"
               onClick={() => setSelectedConsultant(null)}
             >
               <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                className="bg-white rounded-lg p-6 md:p-8 w-full max-w-4xl lg:w-11/12 mx-auto max-h-[80vh] overflow-y-auto"
                 onClick={e => e.stopPropagation()}
               >
-                <div className="flex items-center mb-6">
-                  <div className="relative w-24 h-24 mr-6">
+                <div className="flex flex-col md:flex-row items-center mb-6">
+                  <div className="relative w-40 h-40 md:w-48 md:h-48 mb-4 md:mb-0 md:mr-8">
                     <Image
                       src={selectedConsultant.image}
                       alt={selectedConsultant.name}
                       fill
-                      className="rounded-full object-cover"
+                      className="rounded-full object-cover border-4 border-blue-300 shadow-lg"
                     />
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-blue-900">{selectedConsultant.name}</h2>
-                    <p className="text-blue-800 font-medium">{selectedConsultant.role}</p>
+                  <div className="text-center md:text-left">
+                    <h2 className="text-xl md:text-2xl font-bold text-blue-900">
+                      {selectedConsultant.name}
+                    </h2>
+                    <p className="text-blue-800 font-medium text-base md:text-lg">
+                      {selectedConsultant.role}
+                    </p>
                   </div>
                 </div>
 
-                <div className="space-y-6">
-                  {selectedConsultant.fullBio.expertise && (
-                    <div>
-                      <h3 className="text-lg font-semibold text-blue-900 mb-2">Areas of Expertise</h3>
-                      <ul className="list-disc list-inside text-blue-800">
-                        {selectedConsultant.fullBio.expertise.map((item, index) => (
-                          <li key={index}>{item}</li>
-                        ))}
-                      </ul>
+                <div className="prose max-w-none text-blue-800 text-sm md:text-base">
+                  {bioContent.isLoading ? (
+                    <div className="animate-pulse space-y-4">
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-full"></div>
+                      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
                     </div>
+                  ) : (
+                    <div dangerouslySetInnerHTML={{ 
+                      __html: bioContent.content.replace(/\n/g, '<br />') 
+                    }} />
                   )}
-
-                  {selectedConsultant.fullBio.experience && (
-                    <div>
-                      <h3 className="text-lg font-semibold text-blue-900 mb-2">Experience</h3>
-                      <ul className="list-disc list-inside text-blue-800">
-                        {selectedConsultant.fullBio.experience.map((item, index) => (
-                          <li key={index}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {selectedConsultant.fullBio.certifications && (
-                    <div>
-                      <h3 className="text-lg font-semibold text-blue-900 mb-2">Certifications</h3>
-                      <ul className="list-disc list-inside text-blue-800">
-                        {selectedConsultant.fullBio.certifications.map((item, index) => (
-                          <li key={index}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
+                  {bioContent.error && (
+                    <p className="text-red-500 mt-4">{bioContent.error}</p>
                   )}
                 </div>
 
                 <button
-                  className="mt-8 bg-blue-900 text-white px-6 py-2 rounded-full hover:bg-blue-800 transition-colors"
+                  className="mt-6 md:mt-8 bg-blue-900 text-white px-5 py-2 md:px-6 md:py-2 rounded-full hover:bg-blue-800 transition-colors text-sm md:text-base"
                   onClick={() => setSelectedConsultant(null)}
                 >
                   Close
@@ -425,4 +252,3 @@ export default function Consultants() {
     </div>
   )
 }
-
