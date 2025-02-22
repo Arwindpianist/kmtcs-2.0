@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://www.kmtcs.com.my
+
+# Sitemaps
+Sitemap: https://www.kmtcs.com.my/sitemap.xml
