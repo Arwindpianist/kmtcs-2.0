@@ -10,7 +10,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   return (
     <SessionProvider>
       <Header />
-      <main className="pt-24">
+      <main className="pt-12">
         {children}
       </main>
     </SessionProvider>

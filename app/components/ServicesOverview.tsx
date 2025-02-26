@@ -28,7 +28,7 @@ export default function ServicesOverview() {
   }, [])
 
   return (
-    <section id="services" className="py-20 bg-white">
+    <section id="services" className="py-40 w-full bg-white">
       <div className="container mx-auto px-6">
         <h2 className="text-4xl font-bold text-center text-blue-900 mb-12">Our Services</h2>
         

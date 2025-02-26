@@ -13,11 +13,6 @@
   animation: scroll 120s linear infinite; /* Slower linear scroll for smoothness */
 }
 
-/* Add margin between the top and bottom carousels */
-.carouselTrack:not(:last-child) {
-  margin-bottom: 40px; /* Ensure there's enough space between the rows */
-}
-
 .reverse {
   animation-direction: reverse;
 }

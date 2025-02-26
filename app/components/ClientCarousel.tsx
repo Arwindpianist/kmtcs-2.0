@@ -34,7 +34,7 @@ const ClientCarousel: React.FC = () => {
               alt={`Client logo ${index + 1}`}
               width={200}
               height={100}
-              style={{ objectFit: 'contain' }}
+              style={{ objectFit: 'scale-down' }}
             />
           </div>
         ))}
@@ -49,7 +49,7 @@ const ClientCarousel: React.FC = () => {
               alt={`Client logo ${index + 1}`}
               width={200}
               height={100}
-              style={{ objectFit: 'contain' }}
+              style={{ objectFit: 'scale-down' }}
             />
           </div>
         ))}

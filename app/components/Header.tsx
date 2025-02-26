@@ -48,7 +48,10 @@ export default function Header() {
               max-w-[300px] md:max-w-[400px] lg:max-w-[500px]
               lg:-translate-x-[60%] xl:-translate-x-[55%]"
             >
-              <span className="hidden lg:inline">KM Training & Consulting Services (KMTCS)</span>
+              <span className="hidden lg:inline">KM Training & Consulting Services (KMTCS)
+                <br />
+                <p className="text-sm text-blue-800/80">202103259999 (SA0571127-K)</p>
+              </span>
               <span className="lg:hidden">KMTCS</span>
             </h1>
 

@@ -7,10 +7,10 @@ export default function AboutPreview() {
         <div className="bg-gradient-to-br from-teal-200 via-blue-200/30 to-blue-400/30 border-r-2 border-b-2 border-teal-200 relative z-50 rounded-lg p-8 shadow-lg">
           <h2 className="text-4xl font-bold text-blue-900 mb-6 text-center">About KMTCS</h2>
           <p className="text-lg text-justify text-blue-800 mb-4">
-            KMTCS is a leading engineering, management, and IT consulting and training provider. We serve a broad mix of private and public enterprises, guiding them to make significant and lasting improvements in their operations performance.
+          KM Training and Consulting Services (KMTCS) is a leading provider of engineering, management, and IT consulting and training services. We serve a diverse range of private and public enterprises, helping them achieve significant and lasting improvements in their operations performance.
           </p>
           <p className="text-lg text-justify text-blue-800 mb-6">
-            Our approach incorporates scientific thinking based on data-driven facts and figures, along with the use of modern tools and application software.
+          Our approach is rooted in scientific thinking and data-driven decision-making. We guide, coach, and train our clients to leverage modern tools and application software to optimize their processes and drive sustainable growth.
           </p>
           <div className="flex justify-center">
             <Link 

@@ -8,8 +8,8 @@ const TrainingCalendar = () => {
   const [showCalendar, setShowCalendar] = useState(false);
 
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-6">
+    <div className="w-full h-full bg-white flex flex-col justify-center items-center px-4">
+      <div className="max-w-4xl w-full text-center">
         <h2 className="text-4xl font-bold text-center text-blue-900 mb-12">Upcoming Trainings</h2>
         
         <div className="flex justify-center mb-8">
@@ -26,7 +26,7 @@ const TrainingCalendar = () => {
 
         {showCalendar && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-8 max-w-4xl w-full relative">
+            <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] relative">
               <button
                 onClick={() => setShowCalendar(false)}
                 className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
@@ -45,7 +45,7 @@ const TrainingCalendar = () => {
           </div>
         )}
       </div>
-    </section>
+    </div>
   );
 };
 
