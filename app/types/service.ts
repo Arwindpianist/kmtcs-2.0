@@ -1,4 +1,4 @@
-export type ServiceType = 'consulting' | 'training' | 'certification' | 'assessment';
+export type ServiceType = 'consulting' | 'technical' | 'non-technical';
 
 export interface Service {
     id: string;
