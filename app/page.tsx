@@ -46,8 +46,8 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="snap-y snap-mandatory h-screen overflow-y-auto">
-      <section className="relative h-screen w-full flex items-center justify-center overflow-hidden snap-start">
+    <main className="no-scrollbar">
+      <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
         <BackgroundLines />
         <Hero />
       </section>
@@ -57,7 +57,7 @@ export default function Home() {
         initial={{ opacity: 0, y: 50 }}
         animate={servicesInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.5 }}
-        className="h-screen w-full flex items-center justify-center snap-start"
+        className="min-h-screen w-full flex items-center justify-center"
       >
         <ServicesOverview />
       </motion.section>
@@ -67,7 +67,7 @@ export default function Home() {
         initial={{ opacity: 0, y: 50 }}
         animate={aboutInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.5 }}
-        className="h-screen w-full flex items-center justify-center snap-start"
+        className="min-h-screen w-full flex items-center justify-center"
       >
         <AboutPreview />
       </motion.section>
@@ -76,7 +76,7 @@ export default function Home() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="h-screen w-full flex items-center justify-center snap-start"
+        className="min-h-screen w-full flex items-center justify-center"
       >
         <TrainingCalendar />
       </motion.section>
@@ -85,7 +85,7 @@ export default function Home() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="h-screen w-full flex items-center justify-center snap-start"
+        className="min-h-screen w-full flex items-center justify-center"
       >
         <Client />
       </motion.section>
@@ -95,7 +95,7 @@ export default function Home() {
         initial={{ opacity: 0, y: 50 }}
         animate={testimonialsInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.5 }}
-        className="h-screen w-full flex items-center justify-center snap-start"
+        className="min-h-screen w-full flex items-center justify-center"
       >
         <Testimonials />
       </motion.section>
@@ -105,7 +105,7 @@ export default function Home() {
         initial={{ opacity: 0, y: 50 }}
         animate={contactInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.5 }}
-        className="h-screen w-full flex items-center justify-center snap-start"
+        className="min-h-screen w-full flex items-center justify-center"
       >
         <ContactCTA />
       </motion.section>
