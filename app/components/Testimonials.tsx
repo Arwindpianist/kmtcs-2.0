@@ -92,7 +92,7 @@ const Testimonials = () => {
       <div className="text-center mb-12">
         <h2 className="text-4xl font-bold text-blue-900 mb-4">What Our Clients Say</h2>
         <p className="text-blue-800 max-w-2xl mx-auto px-4">
-          Hear from organizations we've helped strengthen their cybersecurity posture and enhance their team's capabilities.
+          Hear from organizations we've helped strengthen their skills and enhance their capabilities.
         </p>
       </div>
       <div className="w-full max-w-6xl mx-auto">

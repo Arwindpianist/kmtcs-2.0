@@ -1,24 +1,23 @@
 {
-  "name": "kmtcs-frontend",
-  "version": "0.1.0",
+  "name": "kmtcs-web-app",
+  "version": "2.0.0",
   "private": true,
   "engines": {
-    "node": "22.x",
-    "npm": "10.x"
+    "node": ">=18.x"
   },
   "scripts": {
     "dev": "next dev",
-    "dev-https": "next dev --experimental-https",
     "build": "next build",
     "postbuild": "next-sitemap",
-    "start": "next start -p 8080",
+    "start": "next start",
     "lint": "next lint",
     "clean": "rm -rf .next"
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.14.0",
     "@heroicons/react": "^2.2.0",
     "@stripe/stripe-js": "^1.54.1",
+    "@supabase/auth-helpers-nextjs": "^0.9.0",
+    "@supabase/supabase-js": "^2.39.0",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.16",
     "@types/dompurify": "^3.0.5",
@@ -26,7 +25,6 @@
     "cheerio": "^1.0.0",
     "dompurify": "^3.2.3",
     "framer-motion": "^10.12.18",
-    "googleapis": "^144.0.0",
     "isomorphic-dompurify": "^2.20.0",
     "next": "^15.0.4",
     "next-auth": "^4.24.11",

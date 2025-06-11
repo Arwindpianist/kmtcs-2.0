@@ -27,30 +27,30 @@ export default function Header() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-[100] bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg shadow-md">
-        <nav className="container mx-auto px-4 sm:px-6 py-2 sm:py-4">
+        <nav className="container mx-auto px-4 sm:px-6 py-1 sm:py-2">
           <div className="flex justify-between items-center relative">
-            {/* Logo - responsive sizes */}
+            {/* Logo - more compact sizes */}
             <Link href="/" className="relative">
               <Image
                 src={Logo}
                 alt="KMTCS Logo"
                 width={85}
                 height={85}
-                className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-[85px] lg:h-[85px] object-contain"
+                className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-[85px] lg:h-[85px] object-contain"
                 priority
               />
             </Link>
 
-            {/* Company Name with responsive visibility and sizing */}
+            {/* Company Name - adjusted text sizes */}
             <h1 className="hidden md:block absolute left-1/2 transform -translate-x-1/2 
-              md:text-lg lg:text-l xl:text-xl font-bold text-blue-900 text-center
+              md:text-base lg:text-lg xl:text-xl font-bold text-blue-900 text-center
               whitespace-nowrap overflow-hidden text-ellipsis
               max-w-[300px] md:max-w-[400px] lg:max-w-[500px]
               lg:-translate-x-[60%] xl:-translate-x-[55%]"
             >
               <span className="hidden lg:inline">KM Training & Consulting Services (KMTCS)
                 <br />
-                <p className="text-sm text-blue-800/80">202103259999 (SA0571127-K)</p>
+                <p className="text-xs md:text-sm text-blue-800/80">202103259999 (SA0571127-K)</p>
               </span>
               <span className="lg:hidden">KMTCS</span>
             </h1>
@@ -77,7 +77,7 @@ export default function Header() {
               </svg>
             </button>
 
-            {/* Navigation menu for large screens */}
+            {/* Navigation menu for large screens - adjusted text sizes */}
             <div className="hidden lg:flex space-x-4 xl:space-x-6 items-center">
               <Link
                 href="/services"
@@ -87,7 +87,7 @@ export default function Header() {
               </Link>
               <div className="relative group">
                 <button
-                  className="text-blue-900 hover:text-blue-700 font-medium py-2 text-sm xl:text-base"
+                  className="text-blue-900 hover:text-blue-700 font-medium py-1 text-sm xl:text-base"
                 >
                   About Us
                 </button>
@@ -123,17 +123,17 @@ export default function Header() {
         </nav>
       </header>
 
-      {/* Mobile menu overlay */}
+      {/* Mobile menu overlay - adjusted padding */}
       {isMenuOpen && (
         <div className="fixed inset-0 bg-white bg-opacity-95 backdrop-blur-lg z-[99] lg:hidden">
-          <div className="fixed top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center bg-transparent">
+          <div className="fixed top-0 left-0 right-0 p-3 sm:p-4 flex justify-between items-center bg-transparent">
             <Link href="/" onClick={toggleMenu}>
               <Image
                 src={Logo}
                 alt="KMTCS Logo"
                 width={50}
                 height={50}
-                className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
                 priority
               />
             </Link>
@@ -146,10 +146,10 @@ export default function Header() {
             </button>
           </div>
           
-          <div className="h-full flex flex-col items-center justify-center space-y-6 sm:space-y-8 pt-20">
+          <div className="h-full flex flex-col items-center justify-center space-y-4 sm:space-y-6 pt-16">
             <Link
               href="/services"
-              className="text-blue-900 hover:text-blue-700 font-medium text-xl sm:text-2xl transition-all duration-300"
+              className="text-blue-900 hover:text-blue-700 font-medium text-lg sm:text-xl transition-all duration-300"
               onClick={toggleMenu}
             >
               Services
@@ -157,7 +157,7 @@ export default function Header() {
 
             <Link
               href="/about"
-              className="text-blue-900 hover:text-blue-700 font-medium text-xl sm:text-2xl transition-all duration-300"
+              className="text-blue-900 hover:text-blue-700 font-medium text-lg sm:text-xl transition-all duration-300"
               onClick={toggleMenu}
             >
               About KMTCS
@@ -165,7 +165,7 @@ export default function Header() {
 
             <Link
               href="/consultants"
-              className="text-blue-900 hover:text-blue-700 font-medium text-xl sm:text-2xl transition-all duration-300"
+              className="text-blue-900 hover:text-blue-700 font-medium text-lg sm:text-xl transition-all duration-300"
               onClick={toggleMenu}
             >
               Our Consultants
@@ -173,7 +173,7 @@ export default function Header() {
 
             <Link
               href="/news"
-              className="text-blue-900 hover:text-blue-700 font-medium text-xl sm:text-2xl transition-all duration-300"
+              className="text-blue-900 hover:text-blue-700 font-medium text-lg sm:text-xl transition-all duration-300"
               onClick={toggleMenu}
             >
               Latest News
@@ -181,7 +181,7 @@ export default function Header() {
             
             <Link
               href="/contact"
-              className="text-blue-900 hover:text-blue-700 font-medium text-xl sm:text-2xl transition-all duration-300"
+              className="text-blue-900 hover:text-blue-700 font-medium text-lg sm:text-xl transition-all duration-300"
               onClick={toggleMenu}
             >
               Contact

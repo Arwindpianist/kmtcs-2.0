@@ -4,146 +4,66 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import BackgroundLines from '../components/BackgroundLines'
-
-// Consultant images
-import BimalRaj from './bimal-raj.jpg'
-import Gopala from './gopala-krishnan.jpg'
-import Shuras from './shuras-vasu.jpg'
-import Muralitharan from './muralitharan.jpg'
-import Latha from './latha.jpg'
-import Joseph from './joseph.jpg'
-import LokeMunKit from './loke.jpg'
-import Venkat from './venkat.jpg'
-import Rathinam from './rathinam.jpg'
-import Prabagaran from './praba.jpg'
-
-interface Consultant {
-  id: number
-  name: string
-  role: string
-  image: any
-  shortBio: string
-  bioSlug: string
-}
-
-interface BioContent {
-  content: string
-  isLoading: boolean
-  error?: string
-}
-
-const consultants: Consultant[] = [
-  { 
-    id: 1, 
-    name: 'IR BIMAL RAJ', 
-    role: 'Six Sigma Consultant',
-    image: BimalRaj,
-    shortBio: 'Expert in process optimization and industrial engineering with over 25 years of experience.',
-    bioSlug: 'ir-bimal-raj'
-  },
-  {
-    id: 2,
-    name: 'GOPALA KRISHNAN V PONNUSAMY',
-    role: 'OSH and Operations Excellence Consultant',
-    image: Gopala,
-    shortBio: 'Quality management and operational excellence expert with extensive industry experience.',
-    bioSlug: 'gopala-krishnan'
-  },
-  {
-    id: 3,
-    name: 'SHURAS VASU',
-    role: 'Lean & Six Sigma Consultant',
-    image: Shuras,
-    shortBio: 'Lean manufacturing and continuous improvement specialist with proven track record.',
-    bioSlug: 'shuras-vasu'
-  },
-  {
-    id: 4,
-    name: 'R. MURALITHARAN R. RAJAMANICKAM',
-    role: 'Quality and OSH Consultant',
-    image: Muralitharan,
-    shortBio: 'Project management and process optimization expert with diverse industry experience.',
-    bioSlug: 'muralitharan'
-  },
-  {
-    id: 5,
-    name: 'LATHA MUTHUSAMY',
-    role: 'Quality & Security Consultant',
-    image: Latha,
-    shortBio: 'Organizational development and change management specialist.',
-    bioSlug: 'latha-muthusamy'
-  },
-  {
-    id: 6,
-    name: 'DR. JOSEPH CLARENCE EMMANUEL MICHAEL',
-    role: 'Mechanical Consultant',
-    image: Joseph,
-    shortBio: 'Expert in technical training and engineering solutions with academic background.',
-    bioSlug: 'joseph-michael'
-  },
-  {
-    id: 7,
-    name: 'Ts LOKE MUN KIT',
-    role: 'Construction & ADR Consultant',
-    image: LokeMunKit,
-    shortBio: 'Digital transformation and technology integration specialist.',
-    bioSlug: 'loke-mun-kit'
-  },
-  {
-    id: 8,
-    name: 'DR. N. VENKATARAMAN',
-    role: 'Environmental & Sustainability Consultant',
-    image: Venkat,
-    shortBio: 'Specialist in integrated management systems and process safety with over 30 years of experience.',
-    bioSlug: 'venkataraman'
-  },
-  {
-    id: 9,
-    name: 'RATHINAM RENGASAMY',
-    role: 'Rotating Equipment’s, HX and Boilers Consultant',
-    image: Rathinam,
-    shortBio: 'Pioneer in renewable energy power plant operations with over 30 years of experience.',
-    bioSlug: 'rathinam-rengasamy'
-  },
-  {
-    id: 10,
-    name: 'PRABAGARAN MUNIANDY',
-    role: 'OSH Consultant',
-    image: Prabagaran,
-    shortBio: 'Expert in occupational safety, risk management, and railway operations with over 30 years of experience.',
-    bioSlug: 'prabagaran-muniandy'
-  }
-]
+import { fetchConsultants, type Consultant } from '@/app/services/supabaseService'
 
 export default function Consultants() {
+  const [consultants, setConsultants] = useState<Consultant[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null)
-  const [bioContent, setBioContent] = useState<BioContent>({ 
-    content: '', 
-    isLoading: false 
-  })
-
-  const loadBio = async (slug: string) => {
-    setBioContent(prev => ({ ...prev, isLoading: true, error: undefined }))
-    try {
-      const response = await fetch(`/const-bio/${slug}.txt`)
-      if (!response.ok) throw new Error('Biography not found')
-      const content = await response.text()
-      setBioContent({ content, isLoading: false })
-    } catch (error) {
-      console.error('Error loading bio:', error)
-      setBioContent({ 
-        content: 'Biography currently unavailable', 
-        isLoading: false, 
-        error: error instanceof Error ? error.message : 'Failed to load biography' 
-      })
-    }
-  }
 
   useEffect(() => {
-    if (selectedConsultant) {
-      loadBio(selectedConsultant.bioSlug)
+    const loadConsultants = async () => {
+      try {
+        const data = await fetchConsultants()
+        // Only show active consultants
+        setConsultants(data.filter(c => c.status))
+      } catch (err) {
+        console.error('Error loading consultants:', err)
+        setError('Failed to load consultants. Please try again later.')
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [selectedConsultant])
+
+    loadConsultants()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-baby-blue py-20">
+        <BackgroundLines />
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="animate-pulse space-y-8">
+            <div className="h-12 bg-blue-200 rounded w-1/3 mx-auto"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-white/30 rounded-lg p-6">
+                  <div className="w-32 h-32 bg-blue-200 rounded-full mx-auto mb-4"></div>
+                  <div className="h-6 bg-blue-200 rounded w-3/4 mx-auto mb-2"></div>
+                  <div className="h-4 bg-blue-200 rounded w-1/2 mx-auto mb-3"></div>
+                  <div className="h-4 bg-blue-200 rounded w-full mx-auto"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-baby-blue py-20">
+        <BackgroundLines />
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center text-red-600 py-4">
+            {error}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-baby-blue py-20">
@@ -156,19 +76,27 @@ export default function Consultants() {
           {consultants.map((consultant) => (
             <motion.div 
               key={consultant.id} 
-              className="bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-lg p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+              className="bg-white/30 backdrop-blur-sm rounded-lg p-6 hover:bg-white/40 transition-colors cursor-pointer"
               onClick={() => setSelectedConsultant(consultant)}
               whileHover={{ scale: 1.02 }}
             >
               <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-4">
-                <Image
-                  src={consultant.image}
-                  alt={consultant.name}
-                  fill
-                  className="rounded-full object-cover border-4 border-white shadow-md"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  priority={consultant.id <= 3}
-                />
+                {consultant.image_url ? (
+                  <Image
+                    src={consultant.image_url}
+                    alt={consultant.name}
+                    fill
+                    className="rounded-full object-cover border-4 border-white shadow-md"
+                    sizes="(max-width: 640px) 128px, (max-width: 1024px) 160px, 160px"
+                    priority={consultant.id === consultants[0]?.id}
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-blue-200 flex items-center justify-center">
+                    <span className="text-4xl text-blue-600">
+                      {consultant.name.charAt(0)}
+                    </span>
+                  </div>
+                )}
               </div>
               <h2 className="text-lg md:text-xl font-semibold text-blue-900 text-center mb-2">
                 {consultant.name}
@@ -177,7 +105,7 @@ export default function Consultants() {
                 {consultant.role}
               </p>
               <p className="text-blue-800 text-center text-xs md:text-sm">
-                {consultant.shortBio}
+                {consultant.short_bio}
               </p>
               <p className="block mt-4 bg-white/30 text-blue-800 bg-opacity-50 backdrop-filter backdrop-blur-lg border border-baby-blue/20 px-4 py-2 rounded-md hover:bg-blue-700 hover:text-white transition-colors text-center">
                 Click to view full profile
@@ -204,12 +132,21 @@ export default function Consultants() {
               >
                 <div className="flex flex-col md:flex-row items-center mb-6">
                   <div className="relative w-40 h-40 md:w-48 md:h-48 mb-4 md:mb-0 md:mr-8">
-                    <Image
-                      src={selectedConsultant.image}
-                      alt={selectedConsultant.name}
-                      fill
-                      className="rounded-full object-cover border-4 border-blue-300 shadow-lg"
-                    />
+                    {selectedConsultant.image_url ? (
+                      <Image
+                        src={selectedConsultant.image_url}
+                        alt={selectedConsultant.name}
+                        fill
+                        className="rounded-full object-cover border-4 border-blue-300 shadow-lg"
+                        sizes="(max-width: 768px) 160px, 192px"
+                      />
+                    ) : (
+                      <div className="w-full h-full rounded-full bg-blue-200 flex items-center justify-center">
+                        <span className="text-6xl text-blue-600">
+                          {selectedConsultant.name.charAt(0)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="text-center md:text-left">
                     <h2 className="text-xl md:text-2xl font-bold text-blue-900">
@@ -218,24 +155,27 @@ export default function Consultants() {
                     <p className="text-blue-800 font-medium text-base md:text-lg">
                       {selectedConsultant.role}
                     </p>
+                    {selectedConsultant.email && (
+                      <p className="text-blue-600 text-sm mt-2">
+                        <a href={`mailto:${selectedConsultant.email}`} className="hover:underline">
+                          {selectedConsultant.email}
+                        </a>
+                      </p>
+                    )}
+                    {selectedConsultant.phone && (
+                      <p className="text-blue-600 text-sm">
+                        <a href={`tel:${selectedConsultant.phone}`} className="hover:underline">
+                          {selectedConsultant.phone}
+                        </a>
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div className="prose max-w-none text-blue-800 text-sm md:text-base">
-                  {bioContent.isLoading ? (
-                    <div className="animate-pulse space-y-4">
-                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                      <div className="h-4 bg-gray-200 rounded w-full"></div>
-                      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                    </div>
-                  ) : (
-                    <div dangerouslySetInnerHTML={{ 
-                      __html: bioContent.content.replace(/\n/g, '<br />') 
-                    }} />
-                  )}
-                  {bioContent.error && (
-                    <p className="text-red-500 mt-4">{bioContent.error}</p>
-                  )}
+                  <div dangerouslySetInnerHTML={{ 
+                    __html: selectedConsultant.full_bio.replace(/\n/g, '<br />') 
+                  }} />
                 </div>
 
                 <button

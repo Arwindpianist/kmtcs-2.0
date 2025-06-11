@@ -1,7 +1,14 @@
+export type ServiceType = 'consulting' | 'training' | 'certification' | 'assessment';
+
 export interface Service {
     id: string;
     title: string;
-    shortDescription: string;
+    short_description: string;
+    full_description: string;
     duration: string;
-    type: 'Technical' | 'Non-Technical' | 'Consulting';
-  }
+    service_type: ServiceType;
+    price: number;
+    status: boolean;
+    created_at: string;
+    updated_at: string;
+}

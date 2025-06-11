@@ -12,15 +12,16 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'hrdcorp.gov.my',
         port: '',
-        pathname: '/uc/**',}
+        pathname: '/uc/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lfgcrrxytpadcvrvtjfm.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      }
     ],
   },
 }
 
 module.exports = nextConfig
-
-module.exports = {
-  images: {
-    domains: ['drive.google.com', 'hrdcorp.gov.my'],
-  },
-};

@@ -1,38 +1,53 @@
 // components/FilterButtons.tsx
 'use client';
 
-import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 
-export default function FilterButtons({ 
-  types,
-  selectedType 
-}: { 
-  types: string[];
-  selectedType: string;
-}) {
+const SERVICE_TYPES = ['Technical', 'Non-Technical', 'Consulting'] as const;
+
+interface FilterButtonsProps {
+  selectedType: string | null;
+}
+
+export default function FilterButtons({ selectedType }: FilterButtonsProps) {
   const pathname = usePathname();
-  const { replace } = useRouter();
+  const searchParams = useSearchParams();
 
-  const handleFilter = (type: string) => {
-    const params = new URLSearchParams();
-    if (type !== 'All') params.set('type', type);
-    replace(`${pathname}?${params.toString()}`);
+  const createQueryString = (type: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (type) {
+      params.set('type', type);
+    } else {
+      params.delete('type');
+    }
+    return params.toString();
   };
 
   return (
-    <div className="flex flex-wrap gap-3">
-      {types.map(type => (
-        <button
+    <div className="flex flex-wrap gap-4">
+      <Link
+        href={`${pathname}?${createQueryString(null)}`}
+        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          !selectedType
+            ? 'bg-blue-600 text-white'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+        }`}
+      >
+        All
+      </Link>
+      {SERVICE_TYPES.map((type) => (
+        <Link
           key={type}
-          onClick={() => handleFilter(type)}
-          className={`px-4 py-2 rounded-full transition-colors ${
+          href={`${pathname}?${createQueryString(type)}`}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             selectedType === type
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           {type}
-        </button>
+        </Link>
       ))}
     </div>
   );

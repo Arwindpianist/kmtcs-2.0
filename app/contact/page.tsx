@@ -1,120 +1,165 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import BackgroundLines from '../components/BackgroundLines';
+import { createEnquiry } from '@/app/services/supabaseService';
 
-export default function Contact() {
+export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     company: '',
     message: '',
+    status: 'new' as const
   });
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Get Google Form URL from environment variables
-    const googleFormUrl = process.env.NEXT_PUBLIC_CONTACT_FORM_URL!;
-    
-    // Map form data to Google Form entry IDs
-    const urlParams = new URLSearchParams({
-      'entry.2092238618': formData.name,       // Replace with actual entry ID for name
-      'entry.1556369182': formData.email,      // Replace with email entry ID
-      'entry.479301265': formData.company,    // Replace with company entry ID
-      'entry.602836413': formData.message     // Replace with message entry ID
-    });
+    setStatus('submitting');
+    setErrorMessage('');
 
-    // Open pre-filled form in new tab
-    window.open(`${googleFormUrl}?usp=pp_url&${urlParams.toString()}`, '_blank');
-    
-    // Optional: Clear form after submission
-    setFormData({ name: '', email: '', company: '', message: '' });
+    try {
+      await createEnquiry({
+        ...formData,
+        status: 'new'
+      });
+      setStatus('success');
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        message: '',
+        status: 'new'
+      });
+    } catch (error) {
+      console.error('Error submitting enquiry:', error);
+      setStatus('error');
+      setErrorMessage('Failed to send message. Please try again later.');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  return (
-    <div className="min-h-screen bg-baby-blue py-20">
-      <BackgroundLines />
-      <div className="container mx-auto px-6">
-        <h1 className="text-4xl font-bold text-center text-blue-900 mb-12">Contact Us</h1>
-        
-        <div className="max-w-2xl mx-auto bg-white bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-lg p-8 shadow-lg">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-blue-900 mb-2">Name *</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="email" className="block text-blue-900 mb-2">Email *</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="company" className="block text-blue-900 mb-2">Company</label>
-              <input
-                type="text"
-                name="company"
-                value={formData.company}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="mb-6">
-              <label htmlFor="message" className="block text-blue-900 mb-2">Message *</label>
-              <textarea
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                rows={4}
-                className="w-full px-3 py-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="submit"
-              className="w-full bg-baby-blue/30 backdrop-filter backdrop-blur-lg border border-baby-blue/20 text-blue-800 px-6 py-2 sm:px-8 sm:py-3 rounded-full text-base sm:text-lg font-semibold hover:bg-blue-800 hover:text-white hover:border-blue/40 transition-all duration-300 inline-block relative z-50 shadow-md hover:shadow-lg"
-            >
-              Send Message
-            </motion.button>
-          </form>
-        </div>
-
-        <div className="mt-12 text-center">
-          <h2 className="text-2xl font-semibold text-blue-900 mb-4">Get in Touch</h2>
-          <p className="text-lg text-blue-800 mb-6">
-            Email: info@kmtcs.com.my<br />
-            +6010-217 5360 (Mobile/WhatsApp)<br />
-            Address: D5­-10-­3A EVERGREEN PARK SCOT PINE,<br />
-            PERSIARAN SL 1, BANDAR SUNGAI LONG,<br />
-            43000 KAJANG, SELANGOR MALAYSIA.
-          </p>
+  if (status === 'success') {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+          <h2 className="text-2xl font-semibold text-green-800 mb-4">Message Sent Successfully!</h2>
+          <p className="text-green-700 mb-6">Thank you for contacting us. We will get back to you soon.</p>
+          <button
+            onClick={() => setStatus('idle')}
+            className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors"
+          >
+            Send Another Message
+          </button>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-16">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Contact Us</h1>
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            Name *
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            required
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            Email *
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
+            Company
+          </label>
+          <input
+            type="text"
+            id="company"
+            name="company"
+            value={formData.company}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+            Message *
+          </label>
+          <textarea
+            id="message"
+            name="message"
+            required
+            rows={6}
+            value={formData.message}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        {status === 'error' && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+            {errorMessage}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={status === 'submitting'}
+          className={`w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors ${
+            status === 'submitting' ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          {status === 'submitting' ? 'Sending...' : 'Send Message'}
+        </button>
+      </form>
     </div>
   );
 }
