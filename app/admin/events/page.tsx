@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/app/lib/supabase';
 
 interface TrainingEvent {
-  id: string;
+  id?: string;
   title: string;
   description: string;
   start_date: string;
@@ -94,7 +94,6 @@ export default function EventsManagement() {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     setEditingEvent({
-      id: '',
       title: '',
       description: '',
       start_date: tomorrow.toISOString().split('T')[0],
@@ -196,7 +195,7 @@ export default function EventsManagement() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(event.id)}
+                    onClick={() => handleDelete(event.id || '')}
                     className="text-red-600 hover:text-red-900"
                   >
                     Delete
