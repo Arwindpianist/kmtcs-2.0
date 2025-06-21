@@ -16,57 +16,11 @@ export default function AdminHeader() {
     <nav className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link href="/admin" className="flex items-center space-x-3">
-                <img src="/KMTCS-NEW-LOGO.svg" alt="KMTCS" className="h-10 w-auto" />
-                <span className="text-xl font-bold text-gray-900">Admin Panel</span>
-              </Link>
-            </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link
-                href="/admin"
-                className="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/admin/technical-trainings"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Technical Trainings
-              </Link>
-              <Link
-                href="/admin/non-technical-trainings"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Non-Technical Trainings
-              </Link>
-              <Link
-                href="/admin/services"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Consulting Services
-              </Link>
-              <Link
-                href="/admin/consultants"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Consultants
-              </Link>
-              <Link
-                href="/admin/contacts"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Contacts
-              </Link>
-              <Link
-                href="/admin/users"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Users
-              </Link>
-            </div>
+          <div className="flex items-center">
+            <Link href="/admin" className="flex items-center space-x-3">
+              <img src="/KMTCS-NEW-LOGO.svg" alt="KMTCS" className="h-10 w-auto" />
+              <span className="text-xl font-bold text-gray-900">Admin Panel</span>
+            </Link>
           </div>
           <div className="flex items-center">
             <button
