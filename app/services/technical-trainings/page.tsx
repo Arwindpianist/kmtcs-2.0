@@ -86,10 +86,9 @@ export default function TechnicalTrainingsPage() {
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {trainings.map((training) => (
               <div key={training.id} className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
-                <img src={training.image_url || '/placeholder.jpg'} alt={training.title} className="w-full h-48 object-cover" />
                 <div className="p-6 flex flex-col flex-grow">
                   <h2 className="text-xl font-bold mb-2">{training.title}</h2>
-                  <p className="text-gray-700 mb-4 flex-grow">{training.description}</p>
+                  <p className="text-gray-700 mb-4 flex-grow line-clamp-4">{training.description}</p>
                   <div className="mt-auto">
                     <Link href={`/services/technical-trainings/${training.id}`} className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
                       Learn More

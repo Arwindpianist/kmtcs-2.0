@@ -74,37 +74,23 @@ export default function ConsultingServicesPage() {
       </div>
 
       {/* Services Grid */}
-      <div className="container mx-auto px-4 py-16">
-        {services.length > 0 ? (
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {services.map((service) => (
-              <div key={service.id} className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
-                <img src={service.image_url || '/placeholder.jpg'} alt={service.title} className="w-full h-48 object-cover" />
-                <div className="p-6 flex flex-col flex-grow">
-                  <h2 className="text-xl font-bold mb-2">{service.title}</h2>
-                  <p className="text-gray-700 mb-4 flex-grow">{service.description}</p>
-                  <div className="mt-auto">
-                    <Link href={`/services/consulting/${service.id}`} className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
-                      Learn More
-                    </Link>
-                  </div>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold text-center mb-8">Consulting Services</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {services.map((service) => (
+            <div key={service.id} className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
+              <div className="p-6 flex flex-col flex-grow">
+                <h2 className="text-xl font-bold mb-2">{service.title}</h2>
+                <p className="text-gray-700 mb-4 flex-grow line-clamp-4">{service.description}</p>
+                <div className="mt-auto">
+                  <Link href={`/services/consulting/${service.id}`} className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                    Learn More
+                  </Link>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <div className="max-w-md mx-auto">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No consulting services available</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Check back later for new consulting services.
-              </p>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
 
       {/* Features Section */}
