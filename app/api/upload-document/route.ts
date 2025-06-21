@@ -1,64 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import mammoth from 'mammoth';
+// import mammoth from 'mammoth'; // Temporarily disabled
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('Missing Supabase environment variables');
+}
+
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Upload document API called');
+    
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
     if (!file) {
+      console.error('No file provided');
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Check file type
+    console.log('File received:', file.name, file.type, file.size);
+
+    // Check file type - temporarily only allow text files
     const allowedTypes = [
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-      'application/msword', // .doc
-      'text/plain' // .txt
+      'text/plain' // .txt only for now
     ];
 
     if (!allowedTypes.includes(file.type)) {
+      console.error('Invalid file type:', file.type);
       return NextResponse.json({ 
-        error: 'Invalid file type. Please upload .docx, .doc, or .txt files only.' 
+        error: 'Currently only .txt files are supported. Word document support will be added soon.' 
       }, { status: 400 });
     }
 
     // Check file size (10MB limit)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
+      console.error('File too large:', file.size);
       return NextResponse.json({ 
         error: 'File too large. Maximum size is 10MB.' 
       }, { status: 400 });
     }
 
-    // Upload file to Supabase Storage
-    const fileName = `${Date.now()}-${file.name}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('training-documents')
-      .upload(fileName, file);
-
-    if (uploadError) {
-      console.error('Upload error:', uploadError);
-      return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
-    }
-
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('training-documents')
-      .getPublicUrl(fileName);
-
-    // Create database record
+    // Create database record first
     const { data: dbRecord, error: dbError } = await supabase
       .from('document_uploads')
       .insert({
         file_name: file.name,
-        file_path: publicUrl,
+        file_path: 'temporary', // We'll skip storage for now
         file_size: file.size,
         file_type: file.type,
         upload_status: 'processing'
@@ -68,28 +62,29 @@ export async function POST(request: NextRequest) {
 
     if (dbError) {
       console.error('Database error:', dbError);
-      return NextResponse.json({ error: 'Failed to create database record' }, { status: 500 });
+      return NextResponse.json({ 
+        error: `Failed to create database record: ${dbError.message}` 
+      }, { status: 500 });
     }
+
+    console.log('Database record created:', dbRecord.id);
 
     // Parse document content
     let extractedData = null;
     let errorMessage = null;
 
     try {
+      console.log('Starting document parsing');
       const arrayBuffer = await file.arrayBuffer();
       let textContent = '';
 
-      if (file.type === 'text/plain') {
-        // Handle .txt files
-        textContent = new TextDecoder().decode(arrayBuffer);
-      } else {
-        // Handle .docx and .doc files
-        const result = await mammoth.extractRawText({ arrayBuffer });
-        textContent = result.value;
-      }
+      // Only handle text files for now
+      textContent = new TextDecoder().decode(arrayBuffer);
+      console.log('Text file content length:', textContent.length);
 
       // Parse the extracted text
       extractedData = parseTrainingDocument(textContent);
+      console.log('Document parsing completed:', extractedData);
 
       // Update database with extracted data
       await supabase
@@ -123,7 +118,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+    }, { status: 500 });
   }
 }
 
