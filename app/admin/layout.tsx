@@ -4,12 +4,13 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabase';
 import AdminHeader from '@/app/components/AdminHeader';
+import type { ReactNode } from 'react';
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+interface AdminLayoutProps {
+  children: ReactNode;
+}
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
 
   useEffect(() => {
@@ -48,13 +49,81 @@ export default function AdminLayout({
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <AdminHeader />
-      <main className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {children}
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar Navigation */}
+          <div className="lg:w-64 flex-shrink-0">
+            <nav className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Admin Panel</h2>
+              <ul className="space-y-2">
+                <li>
+                  <a
+                    href="/admin"
+                    className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors"
+                  >
+                    Dashboard
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/admin/technical-trainings"
+                    className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors"
+                  >
+                    Technical Trainings
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/admin/non-technical-trainings"
+                    className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors"
+                  >
+                    Non-Technical Trainings
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/admin/services"
+                    className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors"
+                  >
+                    Consulting Services
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/admin/consultants"
+                    className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors"
+                  >
+                    Consultants
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/admin/contacts"
+                    className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors"
+                  >
+                    Contact Messages
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/admin/users"
+                    className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors"
+                  >
+                    Users
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1">
+            {children}
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 } 

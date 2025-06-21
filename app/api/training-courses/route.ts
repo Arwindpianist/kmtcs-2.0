@@ -13,13 +13,34 @@ export async function GET(request: NextRequest) {
     const serviceType = searchParams.get('service_type');
     const status = searchParams.get('status');
 
-    let query = supabase
-      .from('training_courses')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (serviceType) {
-      query = query.eq('service_type', serviceType);
+    let query;
+    
+    if (serviceType === 'technical_training') {
+      query = supabase
+        .from('technical_trainings')
+        .select('*')
+        .order('created_at', { ascending: false });
+    } else if (serviceType === 'non_technical_training') {
+      query = supabase
+        .from('non_technical_trainings')
+        .select('*')
+        .order('created_at', { ascending: false });
+    } else {
+      // Return both types
+      const [technicalResult, nonTechnicalResult] = await Promise.all([
+        supabase.from('technical_trainings').select('*').order('created_at', { ascending: false }),
+        supabase.from('non_technical_trainings').select('*').order('created_at', { ascending: false })
+      ]);
+      
+      if (technicalResult.error) throw technicalResult.error;
+      if (nonTechnicalResult.error) throw nonTechnicalResult.error;
+      
+      const combinedData = [
+        ...(technicalResult.data || []).map(item => ({ ...item, service_type: 'technical_training' })),
+        ...(nonTechnicalResult.data || []).map(item => ({ ...item, service_type: 'non_technical_training' }))
+      ];
+      
+      return NextResponse.json({ data: combinedData });
     }
 
     if (status !== null) {
@@ -63,24 +84,37 @@ export async function POST(request: NextRequest) {
       methodology: body.methodology || '',
       certification: body.certification || '',
       hrdcorp_approval_no: body.hrdcorp_approval_no || '',
-      service_type: body.service_type,
       status: body.status !== undefined ? body.status : true
     };
 
-    const { data, error } = await supabase
-      .from('training_courses')
-      .insert(courseData)
-      .select()
-      .single();
+    let result;
+    
+    if (body.service_type === 'technical_training') {
+      result = await supabase
+        .from('technical_trainings')
+        .insert(courseData)
+        .select()
+        .single();
+    } else if (body.service_type === 'non_technical_training') {
+      result = await supabase
+        .from('non_technical_trainings')
+        .insert(courseData)
+        .select()
+        .single();
+    } else {
+      return NextResponse.json({ 
+        error: 'Invalid service_type. Must be technical_training or non_technical_training' 
+      }, { status: 400 });
+    }
 
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (result.error) {
+      console.error('Database error:', result.error);
+      return NextResponse.json({ error: result.error.message }, { status: 500 });
     }
 
     return NextResponse.json({ 
       success: true, 
-      data 
+      data: { ...result.data, service_type: body.service_type }
     });
 
   } catch (error) {
@@ -93,38 +127,54 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     
-    if (!body.id) {
-      return NextResponse.json({ error: 'Course ID is required' }, { status: 400 });
+    if (!body.id || !body.service_type) {
+      return NextResponse.json({ error: 'Course ID and service_type are required' }, { status: 400 });
     }
 
-    const { data, error } = await supabase
-      .from('training_courses')
-      .update({
-        title: body.title,
-        description: body.description,
-        duration: body.duration,
-        price: body.price,
-        objectives: body.objectives,
-        course_contents: body.course_contents,
-        target_audience: body.target_audience,
-        methodology: body.methodology,
-        certification: body.certification,
-        hrdcorp_approval_no: body.hrdcorp_approval_no,
-        service_type: body.service_type,
-        status: body.status
-      })
-      .eq('id', body.id)
-      .select()
-      .single();
+    const updateData = {
+      title: body.title,
+      description: body.description,
+      duration: body.duration,
+      price: body.price,
+      objectives: body.objectives,
+      course_contents: body.course_contents,
+      target_audience: body.target_audience,
+      methodology: body.methodology,
+      certification: body.certification,
+      hrdcorp_approval_no: body.hrdcorp_approval_no,
+      status: body.status
+    };
 
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    let result;
+    
+    if (body.service_type === 'technical_training') {
+      result = await supabase
+        .from('technical_trainings')
+        .update(updateData)
+        .eq('id', body.id)
+        .select()
+        .single();
+    } else if (body.service_type === 'non_technical_training') {
+      result = await supabase
+        .from('non_technical_trainings')
+        .update(updateData)
+        .eq('id', body.id)
+        .select()
+        .single();
+    } else {
+      return NextResponse.json({ 
+        error: 'Invalid service_type. Must be technical_training or non_technical_training' 
+      }, { status: 400 });
+    }
+
+    if (result.error) {
+      console.error('Database error:', result.error);
+      return NextResponse.json({ error: result.error.message }, { status: 500 });
     }
 
     return NextResponse.json({ 
       success: true, 
-      data 
+      data: { ...result.data, service_type: body.service_type }
     });
 
   } catch (error) {
@@ -137,19 +187,33 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const serviceType = searchParams.get('service_type');
 
-    if (!id) {
-      return NextResponse.json({ error: 'Course ID is required' }, { status: 400 });
+    if (!id || !serviceType) {
+      return NextResponse.json({ error: 'Course ID and service_type are required' }, { status: 400 });
     }
 
-    const { error } = await supabase
-      .from('training_courses')
-      .delete()
-      .eq('id', id);
+    let result;
+    
+    if (serviceType === 'technical_training') {
+      result = await supabase
+        .from('technical_trainings')
+        .delete()
+        .eq('id', id);
+    } else if (serviceType === 'non_technical_training') {
+      result = await supabase
+        .from('non_technical_trainings')
+        .delete()
+        .eq('id', id);
+    } else {
+      return NextResponse.json({ 
+        error: 'Invalid service_type. Must be technical_training or non_technical_training' 
+      }, { status: 400 });
+    }
 
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (result.error) {
+      console.error('Database error:', result.error);
+      return NextResponse.json({ error: result.error.message }, { status: 500 });
     }
 
     return NextResponse.json({ 
