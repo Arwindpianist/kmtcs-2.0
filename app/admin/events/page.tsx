@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/app/lib/supabase';
+import DocumentUpload from '@/app/components/DocumentUpload';
 
 interface TrainingEvent {
   id?: string;
@@ -17,12 +18,25 @@ interface TrainingEvent {
   updated_at: string;
 }
 
+interface ExtractedData {
+  title: string;
+  description: string;
+  duration: string;
+  objectives: string[];
+  course_contents: string;
+  target_audience: string;
+  methodology: string;
+  certification: string;
+  hrdcorp_approval_no: string;
+}
+
 export default function EventsManagement() {
   const [events, setEvents] = useState<TrainingEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<TrainingEvent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showDocumentUpload, setShowDocumentUpload] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -108,6 +122,22 @@ export default function EventsManagement() {
     setIsModalOpen(true);
   }
 
+  function handleDataExtracted(data: ExtractedData) {
+    if (editingEvent) {
+      // Auto-fill the form with extracted data
+      setEditingEvent({
+        ...editingEvent,
+        title: data.title || editingEvent.title,
+        description: data.description || editingEvent.description,
+        // You can add more fields as needed
+      });
+    }
+  }
+
+  function handleUploadError(error: string) {
+    setError(error);
+  }
+
   function getStatusColor(status: TrainingEvent['status']) {
     switch (status) {
       case 'upcoming':
@@ -135,13 +165,35 @@ export default function EventsManagement() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Training Events Management</h1>
-        <button
-          onClick={handleCreate}
-          className="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          Add New Event
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => setShowDocumentUpload(!showDocumentUpload)}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+          >
+            {showDocumentUpload ? 'Hide' : 'Show'} Document Upload
+          </button>
+          <button
+            onClick={handleCreate}
+            className="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Add New Event
+          </button>
+        </div>
       </div>
+
+      {/* Document Upload Section */}
+      {showDocumentUpload && (
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Upload Training Documents</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Upload Word documents (.docx, .doc) or text files (.txt) to automatically extract training information and fill the form below.
+          </p>
+          <DocumentUpload 
+            onDataExtracted={handleDataExtracted}
+            onError={handleUploadError}
+          />
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded">
@@ -209,8 +261,8 @@ export default function EventsManagement() {
 
       {/* Edit Modal */}
       {isModalOpen && editingEvent && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center overflow-y-auto">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full m-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-medium text-gray-900 mb-4">
               {editingEvent.id ? 'Edit Event' : 'Add New Event'}
             </h2>

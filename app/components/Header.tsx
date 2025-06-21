@@ -79,12 +79,39 @@ export default function Header() {
 
             {/* Navigation menu for large screens - adjusted text sizes */}
             <div className="hidden lg:flex space-x-4 xl:space-x-6 items-center">
-              <Link
-                href="/services"
-                className="text-blue-900 hover:text-blue-700 font-medium text-sm xl:text-base"
-              >
-                Services
-              </Link>
+              <div className="relative group">
+                <button
+                  className="text-blue-900 hover:text-blue-700 font-medium py-1 text-sm xl:text-base"
+                >
+                  Services
+                </button>
+                <div className="absolute right-0 mt-1 w-56 bg-[#a0d8f1] bg-opacity-50 backdrop-blur-md rounded-lg shadow-lg overflow-hidden transition-all duration-200 opacity-0 group-hover:opacity-100 invisible group-hover:visible z-50">
+                  <Link
+                    href="/services/technical"
+                    className="block px-4 py-2 text-blue-900 hover:bg-blue-50 transition-colors text-sm xl:text-base"
+                  >
+                    Technical Trainings
+                  </Link>
+                  <Link
+                    href="/services/non-technical"
+                    className="block px-4 py-2 text-blue-900 hover:bg-blue-50 transition-colors text-sm xl:text-base"
+                  >
+                    Non-Technical Trainings
+                  </Link>
+                  <Link
+                    href="/services/consulting"
+                    className="block px-4 py-2 text-blue-900 hover:bg-blue-50 transition-colors text-sm xl:text-base"
+                  >
+                    Consulting
+                  </Link>
+                  <Link
+                    href="/services/events"
+                    className="block px-4 py-2 text-blue-900 hover:bg-blue-50 transition-colors text-sm xl:text-base"
+                  >
+                    Events
+                  </Link>
+                </div>
+              </div>
               <div className="relative group">
                 <button
                   className="text-blue-900 hover:text-blue-700 font-medium py-1 text-sm xl:text-base"
@@ -154,6 +181,12 @@ export default function Header() {
             >
               Services
             </Link>
+            <div className="pl-6 flex flex-col space-y-1">
+              <Link href="/services/technical" className="text-blue-800 hover:text-blue-600 text-base sm:text-lg" onClick={toggleMenu}>Technical Trainings</Link>
+              <Link href="/services/non-technical" className="text-blue-800 hover:text-blue-600 text-base sm:text-lg" onClick={toggleMenu}>Non-Technical Trainings</Link>
+              <Link href="/services/consulting" className="text-blue-800 hover:text-blue-600 text-base sm:text-lg" onClick={toggleMenu}>Consulting</Link>
+              <Link href="/services/events" className="text-blue-800 hover:text-blue-600 text-base sm:text-lg" onClick={toggleMenu}>Events</Link>
+            </div>
 
             <Link
               href="/about"

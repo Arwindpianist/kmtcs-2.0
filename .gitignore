@@ -38,4 +38,7 @@ supabase/.branches/
 supabase/.temp/
 supabase/.branches/
 
+# Old site trainings
+public/old-site-trainings/
+
 # updated
