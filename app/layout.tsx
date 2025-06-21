@@ -1,14 +1,16 @@
 // app/layout.tsx (Server Component)
 import './globals.css'
 import { Inter } from 'next/font/google'
-import Footer from './components/Footer'
+import './globals.css'
 import ClientLayout from './components/ClientLayout'
+import type { Metadata } from 'next'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata = {
-  title: 'KM Training & Consulting Services (KMTCS)',
-  description: 'Innovate - Grow - Transform',
+export const metadata: Metadata = {
+  title: 'KMTCS - KM Training & Consulting Services',
+  description:
+    'KMTCS provides expert training and consulting services in engineering, management, and IT for both private and public sectors. We are an accredited Training Provider registered with SSM, HRDCorp, SMECorp, and the Ministry of Finance (MoF).',
 	icons: {
 		icon: [
 			{
@@ -27,16 +29,15 @@ export const metadata = {
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
       <body className={`${inter.className} bg-baby-blue min-h-screen`}>
         <ClientLayout>
-          {children}
+          <main>{children}</main>
         </ClientLayout>
-        <Footer />
       </body>
     </html>
   )
