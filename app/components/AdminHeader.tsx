@@ -18,8 +18,9 @@ export default function AdminHeader() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/admin" className="text-xl font-bold text-gray-900">
-                Admin Panel
+              <Link href="/admin" className="flex items-center space-x-3">
+                <img src="/KMTCS-NEW-LOGO.svg" alt="KMTCS" className="h-10 w-auto" />
+                <span className="text-xl font-bold text-gray-900">Admin Panel</span>
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -30,22 +31,28 @@ export default function AdminHeader() {
                 Dashboard
               </Link>
               <Link
+                href="/admin/technical-trainings"
+                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >
+                Technical Trainings
+              </Link>
+              <Link
+                href="/admin/non-technical-trainings"
+                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >
+                Non-Technical Trainings
+              </Link>
+              <Link
                 href="/admin/services"
                 className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
               >
-                Services
+                Consulting Services
               </Link>
               <Link
                 href="/admin/consultants"
                 className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
               >
                 Consultants
-              </Link>
-              <Link
-                href="/admin/events"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Events
               </Link>
               <Link
                 href="/admin/contacts"
