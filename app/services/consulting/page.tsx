@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabase';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
+import Link from 'next/link';
 
 interface ConsultingService {
   id: string;
@@ -11,6 +12,7 @@ interface ConsultingService {
   description: string;
   category: string;
   status: boolean;
+  image_url: string | null;
   created_at: string;
 }
 
@@ -76,26 +78,16 @@ export default function ConsultingServicesPage() {
         {services.length > 0 ? (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {services.map((service) => (
-              <div key={service.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    {service.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-3">
-                    {service.description}
-                  </p>
-                  
-                  {service.category && (
-                    <div className="mb-4">
-                      <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">
-                        {service.category}
-                      </span>
-                    </div>
-                  )}
-
-                  <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors">
-                    Learn More
-                  </button>
+              <div key={service.id} className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
+                <img src={service.image_url || '/placeholder.jpg'} alt={service.title} className="w-full h-48 object-cover" />
+                <div className="p-6 flex flex-col flex-grow">
+                  <h2 className="text-xl font-bold mb-2">{service.title}</h2>
+                  <p className="text-gray-700 mb-4 flex-grow">{service.description}</p>
+                  <div className="mt-auto">
+                    <Link href={`/services/consulting/${service.id}`} className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                      Learn More
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}

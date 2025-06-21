@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabase';
+import Link from 'next/link';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 
@@ -9,6 +10,7 @@ interface TechnicalTraining {
   id: string;
   title: string;
   description: string;
+  image_url: string | null;
   duration: string;
   price: number | null;
   objectives: string[];
@@ -83,76 +85,16 @@ export default function TechnicalTrainingsPage() {
         {trainings.length > 0 ? (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {trainings.map((training) => (
-              <div key={training.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    {training.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-3">
-                    {training.description}
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {training.duration && (
-                      <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                        {training.duration}
-                      </span>
-                    )}
-                    {training.price && (
-                      <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
-                        RM {training.price}
-                      </span>
-                    )}
-                    {training.hrdcorp_approval_no && (
-                      <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">
-                        HRDCorp Approved
-                      </span>
-                    )}
+              <div key={training.id} className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
+                <img src={training.image_url || '/placeholder.jpg'} alt={training.title} className="w-full h-48 object-cover" />
+                <div className="p-6 flex flex-col flex-grow">
+                  <h2 className="text-xl font-bold mb-2">{training.title}</h2>
+                  <p className="text-gray-700 mb-4 flex-grow">{training.description}</p>
+                  <div className="mt-auto">
+                    <Link href={`/services/technical-trainings/${training.id}`} className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                      Learn More
+                    </Link>
                   </div>
-
-                  {training.target_audience && (
-                    <div className="mb-4">
-                      <h4 className="font-semibold text-gray-900 mb-1">Target Audience:</h4>
-                      <p className="text-sm text-gray-600">{training.target_audience}</p>
-                    </div>
-                  )}
-
-                  {training.objectives && training.objectives.length > 0 && (
-                    <div className="mb-4">
-                      <h4 className="font-semibold text-gray-900 mb-2">Learning Objectives:</h4>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        {training.objectives.slice(0, 3).map((objective, index) => (
-                          <li key={index} className="flex items-start">
-                            <span className="text-blue-500 mr-2">•</span>
-                            {objective}
-                          </li>
-                        ))}
-                        {training.objectives.length > 3 && (
-                          <li className="text-blue-600 text-sm">
-                            +{training.objectives.length - 3} more objectives
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  )}
-
-                  {training.methodology && (
-                    <div className="mb-4">
-                      <h4 className="font-semibold text-gray-900 mb-1">Methodology:</h4>
-                      <p className="text-sm text-gray-600">{training.methodology}</p>
-                    </div>
-                  )}
-
-                  {training.certification && (
-                    <div className="mb-4">
-                      <h4 className="font-semibold text-gray-900 mb-1">Certification:</h4>
-                      <p className="text-sm text-gray-600">{training.certification}</p>
-                    </div>
-                  )}
-
-                  <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
-                    Learn More
-                  </button>
                 </div>
               </div>
             ))}
