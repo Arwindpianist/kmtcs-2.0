@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import TrainingCourseForm from './TrainingCourseForm';
 
 interface ExtractedData {
   title: string;
   description: string;
   duration: string;
+  price: number | null;
   objectives: string[];
   course_contents: string;
   target_audience: string;
@@ -29,6 +31,10 @@ export default function DocumentUpload({ onDataExtracted, onError }: DocumentUpl
     extractedData?: ExtractedData;
     errorMessage?: string;
   }>>([]);
+  
+  const [showForm, setShowForm] = useState(false);
+  const [currentExtractedData, setCurrentExtractedData] = useState<ExtractedData | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -65,6 +71,8 @@ export default function DocumentUpload({ onDataExtracted, onError }: DocumentUpl
           }]);
 
           if (result.extractedData) {
+            setCurrentExtractedData(result.extractedData);
+            setShowForm(true);
             onDataExtracted(result.extractedData);
           }
         } else {
@@ -115,7 +123,83 @@ export default function DocumentUpload({ onDataExtracted, onError }: DocumentUpl
 
   const clearUploads = () => {
     setUploadedFiles([]);
+    setShowForm(false);
+    setCurrentExtractedData(null);
   };
+
+  const handleFormSubmit = async (formData: any) => {
+    setIsSaving(true);
+    try {
+      // Save to training_courses table
+      const { data, error } = await fetch('/api/training-courses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      }).then(res => res.json());
+
+      if (error) {
+        throw new Error(error);
+      }
+
+      // Update the uploaded file status
+      setUploadedFiles(prev => prev.map(file => 
+        file.extractedData?.title === formData.title 
+          ? { ...file, status: 'saved' }
+          : file
+      ));
+
+      setShowForm(false);
+      setCurrentExtractedData(null);
+      
+    } catch (error) {
+      console.error('Save error:', error);
+      onError('Failed to save course');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleFormCancel = () => {
+    setShowForm(false);
+    setCurrentExtractedData(null);
+  };
+
+  if (showForm && currentExtractedData) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-blue-900 mb-2">
+            Review and Edit Extracted Data
+          </h3>
+          <p className="text-blue-700">
+            Please review and edit the extracted information from "{currentExtractedData.title}" before saving.
+          </p>
+        </div>
+        
+        <TrainingCourseForm
+          initialData={{
+            title: currentExtractedData.title,
+            description: currentExtractedData.description,
+            duration: currentExtractedData.duration,
+            price: currentExtractedData.price,
+            objectives: currentExtractedData.objectives,
+            course_contents: currentExtractedData.course_contents,
+            target_audience: currentExtractedData.target_audience,
+            methodology: currentExtractedData.methodology,
+            certification: currentExtractedData.certification,
+            hrdcorp_approval_no: currentExtractedData.hrdcorp_approval_no,
+            service_type: 'technical_training', // Default, can be changed
+            status: true
+          }}
+          onSubmit={handleFormSubmit}
+          onCancel={handleFormCancel}
+          loading={isSaving}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -201,7 +285,7 @@ export default function DocumentUpload({ onDataExtracted, onError }: DocumentUpl
               <div
                 key={file.id}
                 className={`p-3 rounded-lg border ${
-                  file.status === 'completed'
+                  file.status === 'completed' || file.status === 'saved'
                     ? 'border-green-200 bg-green-50'
                     : 'border-red-200 bg-red-50'
                 }`}
@@ -213,12 +297,12 @@ export default function DocumentUpload({ onDataExtracted, onError }: DocumentUpl
                     </span>
                     <span
                       className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        file.status === 'completed'
+                        file.status === 'completed' || file.status === 'saved'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
                       }`}
                     >
-                      {file.status}
+                      {file.status === 'saved' ? 'saved' : file.status}
                     </span>
                   </div>
                 </div>
@@ -227,6 +311,7 @@ export default function DocumentUpload({ onDataExtracted, onError }: DocumentUpl
                   <div className="mt-2 text-sm text-gray-600">
                     <p><strong>Title:</strong> {file.extractedData.title || 'Not found'}</p>
                     <p><strong>Duration:</strong> {file.extractedData.duration || 'Not found'}</p>
+                    <p><strong>Price:</strong> {file.extractedData.price ? `RM ${file.extractedData.price}` : 'Not found'}</p>
                     <p><strong>HRDCorp:</strong> {file.extractedData.hrdcorp_approval_no || 'Not found'}</p>
                   </div>
                 )}
