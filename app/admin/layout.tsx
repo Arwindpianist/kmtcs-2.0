@@ -55,10 +55,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Sidebar Navigation */}
         <div className="w-64 bg-white shadow-lg min-h-screen">
           <nav className="p-6">
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Navigation</h2>
-              <div className="w-12 h-1 bg-blue-600 rounded"></div>
-            </div>
             <ul className="space-y-1">
               <li>
                 <a
