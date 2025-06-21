@@ -41,7 +41,7 @@ export default function AdminDashboard() {
         supabase.from('non_technical_trainings').select('*', { count: 'exact', head: true }),
         supabase.from('consulting_services').select('*', { count: 'exact', head: true }),
         supabase.from('consultants').select('*', { count: 'exact', head: true }),
-        supabase.from('contacts').select('*', { count: 'exact', head: true }),
+        supabase.from('contact_submissions').select('*', { count: 'exact', head: true }),
         supabase.from('users').select('*', { count: 'exact', head: true })
       ]);
 
