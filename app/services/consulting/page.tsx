@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabase';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
-import type { Metadata } from 'next';
 
 interface ConsultingService {
   id: string;
@@ -14,11 +13,6 @@ interface ConsultingService {
   status: boolean;
   created_at: string;
 }
-
-export const metadata: Metadata = {
-  title: 'Consulting Services - KMTCS',
-  description: 'Expert consulting services for industrial operations, process optimization, and business transformation.',
-};
 
 export default function ConsultingServicesPage() {
   const [services, setServices] = useState<ConsultingService[]>([]);

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabase';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
-import type { Metadata } from 'next';
 
 interface NonTechnicalTraining {
   id: string;
@@ -21,11 +20,6 @@ interface NonTechnicalTraining {
   status: boolean;
   created_at: string;
 }
-
-export const metadata: Metadata = {
-  title: 'Non-Technical Trainings - KMTCS',
-  description: 'Professional development and soft skills training programs for organizational excellence.',
-};
 
 export default function NonTechnicalTrainingsPage() {
   const [trainings, setTrainings] = useState<NonTechnicalTraining[]>([]);
