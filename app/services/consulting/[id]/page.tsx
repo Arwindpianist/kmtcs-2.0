@@ -82,9 +82,13 @@ export default async function ConsultingServicePage({ params }: { params: { id: 
     `;
     
     const supabase = createSupabaseServerClient();
-    await supabase.from('contact_submissions').insert([
+    const { error } = await supabase.from('contact_submissions').insert([
       { name, email, phone, message: inquiryMessage, status: 'new' },
     ]);
+
+    if (!error) {
+      redirect('/thank-you');
+    }
   };
 
   return (

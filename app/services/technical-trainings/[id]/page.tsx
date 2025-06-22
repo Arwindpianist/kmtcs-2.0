@@ -86,11 +86,13 @@ export default async function TechnicalTrainingPage({ params }: { params: { id: 
     `;
     
     const supabase = createSupabaseServerClient();
-    await supabase.from('contact_submissions').insert([
+    const { error } = await supabase.from('contact_submissions').insert([
       { name, email, phone, message: inquiryMessage, status: 'new' },
     ]);
-    
-    // Potentially redirect to a thank you page or show a success message
+
+    if (!error) {
+      redirect('/thank-you');
+    }
   };
 
   return (
