@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from '@/app/lib/supabase-server';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -57,11 +57,13 @@ export default async function ConsultingServicePage({ params }: { params: { id: 
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/services/consulting/${service.id}`,
+      success_url: `${process.env.NEXT_PUBLIC_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_URL}/services/consulting/${service.id}`,
     });
 
-    return session.url;
+    if (session.url) {
+      redirect(session.url);
+    }
   };
 
   const handleInquiry = async (formData: FormData) => {
@@ -94,6 +96,14 @@ export default async function ConsultingServicePage({ params }: { params: { id: 
           <h1 className="text-4xl font-bold text-gray-900 mb-4">{service.title}</h1>
           <p className="text-gray-600 text-lg mb-6">{service.description}</p>
           
+          <div className="flex flex-wrap gap-4 mb-8">
+            {service.price && (
+              <div className="bg-green-100 text-green-800 text-sm font-semibold mr-2 px-4 py-2 rounded-full">
+                Price: RM {service.price.toFixed(2)}
+              </div>
+            )}
+          </div>
+
           <div className="bg-gray-50 p-6 rounded-lg">
             {service.price ? (
               <form action={handlePayment}>

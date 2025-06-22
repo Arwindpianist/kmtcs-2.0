@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from '@/app/lib/supabase-server';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -61,11 +61,13 @@ export default async function NonTechnicalTrainingPage({ params }: { params: { i
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/services/non-technical-trainings/${course.id}`,
+      success_url: `${process.env.NEXT_PUBLIC_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_URL}/services/non-technical-trainings/${course.id}`,
     });
 
-    return session.url;
+    if (session.url) {
+      redirect(session.url);
+    }
   };
 
   const handleInquiry = async (formData: FormData) => {
@@ -98,15 +100,20 @@ export default async function NonTechnicalTrainingPage({ params }: { params: { i
           <h1 className="text-4xl font-bold text-gray-900 mb-4">{course.title}</h1>
           <p className="text-gray-600 text-lg mb-6">{course.description}</p>
           
+          <div className="flex flex-wrap gap-4 mb-8">
+            {course.duration && (
+              <div className="bg-blue-100 text-blue-800 text-sm font-semibold mr-2 px-4 py-2 rounded-full">
+                Duration: {course.duration}
+              </div>
+            )}
+            {course.price && (
+              <div className="bg-green-100 text-green-800 text-sm font-semibold mr-2 px-4 py-2 rounded-full">
+                Price: RM {course.price.toFixed(2)}
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            <div>
-              <h3 className="font-semibold text-gray-800">Duration:</h3>
-              <p>{course.duration}</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-800">Category:</h3>
-              <p>{course.category}</p>
-            </div>
             <div>
               <h3 className="font-semibold text-gray-800">Target Audience:</h3>
               <p>{course.target_audience}</p>
