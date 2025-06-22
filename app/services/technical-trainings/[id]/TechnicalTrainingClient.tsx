@@ -3,11 +3,6 @@
 import { useState } from 'react';
 import { createEnquiry } from '@/app/services/supabaseService';
 import { redirect } from 'next/navigation';
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2022-11-15',
-});
 
 interface TrainingCourse {
   id: string;
@@ -94,12 +89,21 @@ export default function TechnicalTrainingClient({ course }: { course: TrainingCo
         }),
       });
 
-      const { url } = await response.json();
-      if (url) {
-        window.location.href = url;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create checkout session');
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL received');
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
+      setStatus('error');
+      setErrorMessage('Payment system is currently unavailable. Please contact us directly.');
     }
   };
 

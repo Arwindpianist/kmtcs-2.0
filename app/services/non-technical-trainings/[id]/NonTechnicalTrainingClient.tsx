@@ -88,12 +88,21 @@ export default function NonTechnicalTrainingClient({ course }: { course: Trainin
         }),
       });
 
-      const { url } = await response.json();
-      if (url) {
-        window.location.href = url;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create checkout session');
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL received');
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
+      setStatus('error');
+      setErrorMessage('Payment system is currently unavailable. Please contact us directly.');
     }
   };
 
