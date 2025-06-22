@@ -3,6 +3,7 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import ClientLayout from './components/ClientLayout'
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import type { Metadata } from 'next'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -38,6 +39,7 @@ export default function RootLayout({
         <ClientLayout>
           <main>{children}</main>
         </ClientLayout>
+        <SpeedInsights />
       </body>
     </html>
   )
