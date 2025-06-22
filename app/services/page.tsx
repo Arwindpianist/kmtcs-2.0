@@ -85,9 +85,25 @@ export default function ServicesPage() {
         
         if (consultingError) throw consultingError;
 
-        setTechnicalTrainings(technicalData || []);
-        setNonTechnicalTrainings(nonTechnicalData || []);
-        setConsultingServices(consultingData || []);
+        // Add category field to each service type
+        const technicalWithCategory = (technicalData || []).map(item => ({
+          ...item,
+          category: 'Technical Training'
+        }));
+        
+        const nonTechnicalWithCategory = (nonTechnicalData || []).map(item => ({
+          ...item,
+          category: 'Non-Technical Training'
+        }));
+        
+        const consultingWithCategory = (consultingData || []).map(item => ({
+          ...item,
+          category: 'Consulting'
+        }));
+
+        setTechnicalTrainings(technicalWithCategory);
+        setNonTechnicalTrainings(nonTechnicalWithCategory);
+        setConsultingServices(consultingWithCategory);
 
       } catch (err: any) {
         setError(err.message);
@@ -116,6 +132,10 @@ export default function ServicesPage() {
         return 'bg-purple-100 text-purple-800';
       case 'consulting':
         return 'bg-orange-100 text-orange-800';
+      case 'technical training':
+        return 'bg-blue-100 text-blue-800';
+      case 'non-technical training':
+        return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }

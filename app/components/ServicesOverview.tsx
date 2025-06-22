@@ -27,7 +27,7 @@ export default function ServicesOverview() {
         // Fetch technical trainings
         const { data: technicalTrainings, error: techError } = await supabase
           .from('technical_trainings')
-          .select('id, title, description, price, duration, category, image_url')
+          .select('id, title, description, price, duration, image_url')
           .eq('status', true)
           .limit(3)
 
@@ -36,7 +36,7 @@ export default function ServicesOverview() {
         // Fetch non-technical trainings
         const { data: nonTechnicalTrainings, error: nonTechError } = await supabase
           .from('non_technical_trainings')
-          .select('id, title, description, price, duration, category, image_url')
+          .select('id, title, description, price, duration, image_url')
           .eq('status', true)
           .limit(3)
 
@@ -45,7 +45,7 @@ export default function ServicesOverview() {
         // Fetch consulting services
         const { data: consultingServices, error: consultingError } = await supabase
           .from('consulting_services')
-          .select('id, title, description, price, category, image_url')
+          .select('id, title, description, price, image_url')
           .eq('status', true)
           .limit(3)
 
@@ -55,14 +55,17 @@ export default function ServicesOverview() {
         const allServices: ServiceItem[] = [
           ...(technicalTrainings || []).map(item => ({
             ...item,
+            category: 'Technical Training',
             serviceType: 'technical-training' as const
           })),
           ...(nonTechnicalTrainings || []).map(item => ({
             ...item,
+            category: 'Non-Technical Training',
             serviceType: 'non-technical-training' as const
           })),
           ...(consultingServices || []).map(item => ({
             ...item,
+            category: 'Consulting',
             serviceType: 'consulting' as const
           }))
         ]
@@ -104,6 +107,10 @@ export default function ServicesOverview() {
         return 'bg-purple-100 text-purple-800'
       case 'consulting':
         return 'bg-orange-100 text-orange-800'
+      case 'technical training':
+        return 'bg-blue-100 text-blue-800'
+      case 'non-technical training':
+        return 'bg-green-100 text-green-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
