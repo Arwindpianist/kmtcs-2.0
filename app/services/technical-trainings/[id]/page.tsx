@@ -137,37 +137,39 @@ export default async function TechnicalTrainingPage({ params }: { params: { id: 
           )}
 
           <div className="bg-gray-50 p-6 rounded-lg">
-            {course.price ? (
-              <form action={handlePayment}>
+            {course.price && (
+              <form action={handlePayment} className="mb-8">
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">RM {course.price.toFixed(2)}</h3>
                 <button type="submit" className="w-full bg-blue-600 text-white px-8 py-3 rounded-md font-semibold hover:bg-blue-700 transition-colors">
                   Enroll Now
                 </button>
               </form>
-            ) : (
-              <form action={handleInquiry} className="space-y-4">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Request a Quote</h3>
-                <div>
-                  <label htmlFor="name" className="sr-only">Name</label>
-                  <input type="text" name="name" id="name" required className="w-full p-3 border border-gray-300 rounded-md" placeholder="Your Name" />
-                </div>
-                <div>
-                  <label htmlFor="email" className="sr-only">Email</label>
-                  <input type="email" name="email" id="email" required className="w-full p-3 border border-gray-300 rounded-md" placeholder="Your Email" />
-                </div>
-                <div>
-                  <label htmlFor="phone" className="sr-only">Phone</label>
-                  <input type="tel" name="phone" id="phone" className="w-full p-3 border border-gray-300 rounded-md" placeholder="Your Phone (Optional)" />
-                </div>
-                <div>
-                  <label htmlFor="message" className="sr-only">Message</label>
-                  <textarea name="message" id="message" rows={4} required className="w-full p-3 border border-gray-300 rounded-md" placeholder="Your Message"></textarea>
-                </div>
-                <button type="submit" className="w-full bg-green-600 text-white px-8 py-3 rounded-md font-semibold hover:bg-green-700 transition-colors">
-                  Send Inquiry
-                </button>
-              </form>
             )}
+
+            <form action={handleInquiry} className="space-y-4">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                {course.price ? 'Have a Question?' : 'Request a Quote'}
+              </h3>
+              <div>
+                <label htmlFor="name" className="sr-only">Name</label>
+                <input type="text" name="name" id="name" required className="w-full p-3 border border-gray-300 rounded-md" placeholder="Your Name" />
+              </div>
+              <div>
+                <label htmlFor="email" className="sr-only">Email</label>
+                <input type="email" name="email" id="email" required className="w-full p-3 border border-gray-300 rounded-md" placeholder="Your Email" />
+              </div>
+              <div>
+                <label htmlFor="phone" className="sr-only">Phone</label>
+                <input type="tel" name="phone" id="phone" className="w-full p-3 border border-gray-300 rounded-md" placeholder="Your Phone (Optional)" />
+              </div>
+              <div>
+                <label htmlFor="message" className="sr-only">Message</label>
+                <textarea name="message" id="message" rows={4} required className="w-full p-3 border border-gray-300 rounded-md" placeholder="Your Message"></textarea>
+              </div>
+              <button type="submit" className="w-full bg-green-600 text-white px-8 py-3 rounded-md font-semibold hover:bg-green-700 transition-colors">
+                Send Inquiry
+              </button>
+            </form>
           </div>
         </div>
       </div>
