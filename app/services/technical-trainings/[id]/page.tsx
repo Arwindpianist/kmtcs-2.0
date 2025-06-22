@@ -13,7 +13,7 @@ interface TrainingCourse {
   prerequisites: string;
   course_outline: string;
   status: boolean;
-  image_url: string;
+  image_url?: string;
 }
 
 async function getCourse(id: string): Promise<TrainingCourse | null> {

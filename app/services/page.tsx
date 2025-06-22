@@ -88,17 +88,20 @@ export default function ServicesPage() {
         // Add category field to each service type
         const technicalWithCategory = (technicalData || []).map(item => ({
           ...item,
-          category: 'Technical Training'
+          category: 'Technical Training',
+          image_url: item.image_url || null
         }));
         
         const nonTechnicalWithCategory = (nonTechnicalData || []).map(item => ({
           ...item,
-          category: 'Non-Technical Training'
+          category: 'Non-Technical Training',
+          image_url: item.image_url || null
         }));
         
         const consultingWithCategory = (consultingData || []).map(item => ({
           ...item,
-          category: 'Consulting'
+          category: 'Consulting',
+          image_url: item.image_url || null
         }));
 
         setTechnicalTrainings(technicalWithCategory);
@@ -228,54 +231,33 @@ export default function ServicesPage() {
                 whileHover={{ y: -5 }}
               >
                 <Link href={`/services/technical-trainings/${course.id}`}>
-                  <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group h-full">
-                    {course.image_url && (
-                      <div className="h-48 overflow-hidden">
-                        <img
-                          src={course.image_url}
-                          alt={course.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    )}
+                  <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
                     <div className="p-6">
                       <div className="flex items-center justify-between mb-3">
-                        {course.category && (
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(course.category)}`}>
-                            {course.category}
-                          </span>
-                        )}
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                          Technical Training
+                        </span>
                         {course.price && (
                           <span className="text-lg font-bold text-blue-600">
                             RM {course.price.toFixed(2)}
                           </span>
                         )}
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
                         {course.title}
                       </h3>
                       <p className="text-gray-600 mb-4 line-clamp-3">
                         {course.description}
                       </p>
-                      <div className="space-y-2 mb-4">
+                      <div className="flex items-center justify-between">
                         {course.duration && (
-                          <div className="flex items-center text-sm text-gray-500">
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <span className="text-sm text-gray-500 flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             {course.duration}
-                          </div>
+                          </span>
                         )}
-                        {course.hrdcorp_approval_no && (
-                          <div className="flex items-center text-sm text-green-600">
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            HRDCorp Approved
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
                         <span className="text-blue-600 font-semibold group-hover:text-blue-700 transition-colors">
                           Learn More →
                         </span>
@@ -322,54 +304,33 @@ export default function ServicesPage() {
                 whileHover={{ y: -5 }}
               >
                 <Link href={`/services/non-technical-trainings/${course.id}`}>
-                  <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group h-full">
-                    {course.image_url && (
-                      <div className="h-48 overflow-hidden">
-                        <img
-                          src={course.image_url}
-                          alt={course.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    )}
+                  <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
                     <div className="p-6">
                       <div className="flex items-center justify-between mb-3">
-                        {course.category && (
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(course.category)}`}>
-                            {course.category}
-                          </span>
-                        )}
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                          Non-Technical Training
+                        </span>
                         {course.price && (
                           <span className="text-lg font-bold text-blue-600">
                             RM {course.price.toFixed(2)}
                           </span>
                         )}
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
                         {course.title}
                       </h3>
                       <p className="text-gray-600 mb-4 line-clamp-3">
                         {course.description}
                       </p>
-                      <div className="space-y-2 mb-4">
+                      <div className="flex items-center justify-between">
                         {course.duration && (
-                          <div className="flex items-center text-sm text-gray-500">
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <span className="text-sm text-gray-500 flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             {course.duration}
-                          </div>
+                          </span>
                         )}
-                        {course.hrdcorp_approval_no && (
-                          <div className="flex items-center text-sm text-green-600">
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            HRDCorp Approved
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
                         <span className="text-blue-600 font-semibold group-hover:text-blue-700 transition-colors">
                           Learn More →
                         </span>
@@ -416,46 +377,33 @@ export default function ServicesPage() {
                 whileHover={{ y: -5 }}
               >
                 <Link href={`/services/consulting/${service.id}`}>
-                  <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group h-full">
-                    {service.image_url && (
-                      <div className="h-48 overflow-hidden">
-                        <img
-                          src={service.image_url}
-                          alt={service.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    )}
+                  <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
                     <div className="p-6">
                       <div className="flex items-center justify-between mb-3">
-                        {service.category && (
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(service.category)}`}>
-                            {service.category}
-                          </span>
-                        )}
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                          Consulting
+                        </span>
                         {service.price && (
                           <span className="text-lg font-bold text-blue-600">
                             RM {service.price.toFixed(2)}
                           </span>
                         )}
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
                         {service.title}
                       </h3>
                       <p className="text-gray-600 mb-4 line-clamp-3">
                         {service.description}
                       </p>
-                      <div className="space-y-2 mb-4">
+                      <div className="flex items-center justify-between">
                         {service.duration && (
-                          <div className="flex items-center text-sm text-gray-500">
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <span className="text-sm text-gray-500 flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             {service.duration}
-                          </div>
+                          </span>
                         )}
-                      </div>
-                      <div className="flex items-center justify-between">
                         <span className="text-blue-600 font-semibold group-hover:text-blue-700 transition-colors">
                           Learn More →
                         </span>

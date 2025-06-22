@@ -9,7 +9,7 @@ interface ConsultingService {
   price: number | null;
   category: string;
   status: boolean;
-  image_url: string;
+  image_url?: string;
 }
 
 async function getService(id: string): Promise<ConsultingService | null> {

@@ -12,7 +12,6 @@ interface ServiceItem {
   price: number | null
   duration?: string
   category: string
-  image_url?: string
   serviceType: 'technical-training' | 'non-technical-training' | 'consulting'
 }
 
@@ -27,7 +26,7 @@ export default function ServicesOverview() {
         // Fetch technical trainings
         const { data: technicalTrainings, error: techError } = await supabase
           .from('technical_trainings')
-          .select('id, title, description, price, duration, image_url')
+          .select('id, title, description, price, duration')
           .eq('status', true)
           .limit(3)
 
@@ -36,7 +35,7 @@ export default function ServicesOverview() {
         // Fetch non-technical trainings
         const { data: nonTechnicalTrainings, error: nonTechError } = await supabase
           .from('non_technical_trainings')
-          .select('id, title, description, price, duration, image_url')
+          .select('id, title, description, price, duration')
           .eq('status', true)
           .limit(3)
 
@@ -45,7 +44,7 @@ export default function ServicesOverview() {
         // Fetch consulting services
         const { data: consultingServices, error: consultingError } = await supabase
           .from('consulting_services')
-          .select('id, title, description, price, image_url')
+          .select('id, title, description, price')
           .eq('status', true)
           .limit(3)
 
@@ -170,15 +169,6 @@ export default function ServicesOverview() {
             >
               <Link href={getServiceUrl(service)}>
                 <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
-                  {service.image_url && (
-                    <div className="h-48 overflow-hidden">
-                      <img
-                        src={service.image_url}
-                        alt={service.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  )}
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(service.category)}`}>
