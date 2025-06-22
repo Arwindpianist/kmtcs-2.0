@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { createSupabaseServerClient } from '@/app/lib/supabase-server'
+import { supabase } from '@/app/lib/supabase'
 
 interface ServiceItem {
   id: string
@@ -24,8 +24,6 @@ export default function ServicesOverview() {
   useEffect(() => {
     async function loadServices() {
       try {
-        const supabase = createSupabaseServerClient()
-        
         // Fetch technical trainings
         const { data: technicalTrainings, error: techError } = await supabase
           .from('technical_trainings')
