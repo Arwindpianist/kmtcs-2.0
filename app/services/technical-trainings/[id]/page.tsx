@@ -1,4 +1,4 @@
-import { supabase } from '@/app/lib/supabase';
+import { createSupabaseServerClient } from '@/app/lib/supabase-server';
 import { notFound } from 'next/navigation';
 import Stripe from 'stripe';
 
@@ -21,6 +21,7 @@ interface TrainingCourse {
 }
 
 async function getCourse(id: string): Promise<TrainingCourse | null> {
+  const supabase = createSupabaseServerClient();
   const { data, error } = await supabase
     .from('technical_trainings')
     .select('*')
@@ -81,6 +82,7 @@ export default async function TechnicalTrainingPage({ params }: { params: { id: 
       ${message}
     `;
     
+    const supabase = createSupabaseServerClient();
     await supabase.from('contact_submissions').insert([
       { name, email, phone, message: inquiryMessage, status: 'new' },
     ]);

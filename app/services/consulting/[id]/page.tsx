@@ -1,4 +1,4 @@
-import { supabase } from '@/app/lib/supabase';
+import { createSupabaseServerClient } from '@/app/lib/supabase-server';
 import { notFound } from 'next/navigation';
 import Stripe from 'stripe';
 
@@ -17,6 +17,7 @@ interface ConsultingService {
 }
 
 async function getService(id: string): Promise<ConsultingService | null> {
+  const supabase = createSupabaseServerClient();
   const { data, error } = await supabase
     .from('consulting_services')
     .select('*')
@@ -77,6 +78,7 @@ export default async function ConsultingServicePage({ params }: { params: { id: 
       ${message}
     `;
     
+    const supabase = createSupabaseServerClient();
     await supabase.from('contact_submissions').insert([
       { name, email, phone, message: inquiryMessage, status: 'new' },
     ]);
