@@ -1,83 +1,111 @@
-import BackgroundLines from "../components/BackgroundLines";
+import { FiTarget, FiZap, FiHeart, FiUsers, FiAward } from 'react-icons/fi';
+import ContactCTA from '../components/ContactCTA';
 
-export default function About() {
+// Section for the main "About Us" content
+function AboutSection() {
   return (
-    <div className="min-h-screen bg-baby-blue py-20">
-      <BackgroundLines />
-      <div className="container mx-auto px-6">
-        <h1 className="text-4xl font-bold text-center text-blue-900 mb-12">About KMTCS</h1>
-        <div className="bg-gradient-to-br from-teal-100 via-neutral-50 to-sky-100 relative z-50 rounded-lg p-8 shadow-lg">
-          <p className="text-lg text-blue-800 mb-6">
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+            Pioneering Growth Through Knowledge and Innovation
+          </h2>
+          <p className="text-lg text-gray-600 mb-6">
             KM Training and Consulting Services (KMTCS) is a leading provider of engineering, management, and IT consulting and training services. We serve a diverse range of private and public enterprises, helping them achieve significant and lasting improvements in their operations performance.
           </p>
-          <p className="text-lg text-blue-800 mb-6">
+          <p className="text-lg text-gray-600">
             Our approach is rooted in scientific thinking and data-driven decision-making. We guide, coach, and train our clients to leverage modern tools and application software to optimize their processes and drive sustainable growth.
           </p>
-          <h2 className="text-2xl font-semibold text-blue-900 mb-4">Our Mission</h2>
-          <p className="text-lg text-blue-800 mb-6">
-            To empower organizations with the knowledge, skills, and tools they need to excel in today's competitive business environment. We are committed to delivering high-quality consulting and training services that drive measurable results and long-term success for our clients.
-          </p>
-          <h2 className="text-2xl font-semibold text-blue-900 mb-4">Our Values</h2>
-          <ul className="list-disc list-inside text-blue-800 mb-6">
-            <li>Excellence: We strive for the highest standards in all our services.</li>
-            <li>Innovation: We embrace new ideas and technologies to stay ahead of the curve.</li>
-            <li>Integrity: We conduct our business with honesty and transparency.</li>
-            <li>Collaboration: We work closely with our clients to achieve their goals.</li>
-            <li>Continuous Learning: We are committed to ongoing professional development.</li>
-          </ul>
-          <h2 className="text-2xl font-semibold text-blue-900 mb-4">Our Team</h2>
-          <p className="text-lg text-blue-800 mb-6">
-            KMTCS is composed of experienced professionals with diverse backgrounds in engineering, management, and information technology. Our team of experts is dedicated to delivering tailored solutions that address the unique challenges of each client.
-          </p>
-          <h2 className="text-2xl font-semibold text-blue-900 mb-4">Why Choose Us?</h2>
-          <p className="text-lg text-blue-800 mb-6">
-            With over 30 years of experience, we've formed a firm distinctively equipped to support our training and consulting projects. This holistic focus of the KMTCS produces excellent services for our customers and clients. Our associates and consultants have assisted various companies and enterprises to complete their projects and achieve/exceed targeted improvements.
-          </p>
-          <div className="flex flex-col gap-6">
-            <div className="group transform transition-all duration-300 p-6 rounded-lg hover:bg-blue-50">
-              <h3 className="text-xl font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                <span className="animate-wiggle inline-block">
-                  🚀
-                </span>
-                <span className="animate-wiggle inline-block group-hover:text-blue-700 transition-colors">
-                  Innovate
-                </span>
-              </h3>
-              <p className="text-lg text-blue-800 group-hover:text-blue-600 transition-colors animate-fadeIn">
-                INNOVATE the training programs to suit your needs considering the latest knowledge in the respective field.
-              </p>
-            </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
-            <div className="group transform transition-all duration-300 p-6 rounded-lg hover:bg-blue-50">
-              <h3 className="text-xl font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                <span className="animate-wiggle inline-block">
-                  🌱
-                </span>
-                <span className="animate-wiggle inline-block group-hover:text-blue-700 transition-colors">
-                  Grow
-                </span>
-              </h3>
-              <p className="text-lg text-blue-800 group-hover:text-blue-600 transition-colors animate-fadeIn [animation-delay:200ms]">
-                Develop a passion for learning. If you do, you will never cease to GROW. As you use those skills and knowledge received from our INNOVATIVE training, advance your career, your sense of purpose will only GROW.
-              </p>
-            </div>
+// Section for Mission and Values
+function MissionAndValues() {
+  const values = [
+    { icon: <FiAward />, title: 'Excellence', description: 'We strive for the highest standards in all our services.' },
+    { icon: <FiZap />, title: 'Innovation', description: 'We embrace new ideas and technologies to stay ahead of the curve.' },
+    { icon: <FiHeart />, title: 'Integrity', description: 'We conduct our business with honesty and transparency.' },
+    { icon: <FiUsers />, title: 'Collaboration', description: 'We work closely with our clients to achieve their goals.' },
+  ];
 
-            <div className="group transform transition-all duration-300 p-6 rounded-lg hover:bg-blue-50">
-              <h3 className="text-xl font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                <span className="animate-wiggle inline-block">
-                  ✨
-                </span>
-                <span className="animate-wiggle inline-block group-hover:text-blue-700 transition-colors">
-                  Transform
-                </span>
-              </h3>
-              <p className="text-lg text-blue-800 group-hover:text-blue-600 transition-colors animate-fadeIn [animation-delay:400ms]">
-                TRANSFORM your people to GROW with the organization through well-crafted INNOVATIVE training programs.
-              </p>
+  return (
+    <section className="py-20 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="prose lg:prose-lg">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+              <FiTarget className="mr-3 text-blue-600" /> Our Mission
+            </h3>
+            <p>
+              To empower organizations with the knowledge, skills, and tools they need to excel in today's competitive business environment. We are committed to delivering high-quality consulting and training services that drive measurable results and long-term success for our clients.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-8">Our Core Values</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {values.map(value => (
+                <div key={value.title} className="flex items-start space-x-4">
+                  <div className="text-blue-600 text-3xl mt-1">{value.icon}</div>
+                  <div>
+                    <h4 className="font-semibold text-lg text-gray-800">{value.title}</h4>
+                    <p className="text-gray-600">{value.description}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
+    </section>
+  );
+}
+
+// Section for "Why Choose Us"
+function WhyChooseUs() {
+  return (
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Choose KMTCS?</h2>
+          <p className="text-lg text-gray-600">
+            With over 30 years of experience, we've formed a firm distinctively equipped to support our training and consulting projects. This holistic focus of the KMTCS produces excellent services for our customers and clients. Our associates and consultants have assisted various companies and enterprises to complete their projects and achieve/exceed targeted improvements.
+          </p>
+        </div>
+        <div className="mt-16 grid md:grid-cols-3 gap-8 text-center">
+          <div className="p-8 bg-gray-50 rounded-lg">
+            <h3 className="text-2xl font-semibold text-blue-600 mb-3">Innovate</h3>
+            <p>We innovate our training programs to suit your needs, incorporating the latest knowledge in the respective field.</p>
+          </div>
+          <div className="p-8 bg-gray-50 rounded-lg">
+            <h3 className="text-2xl font-semibold text-blue-600 mb-3">Grow</h3>
+            <p>We help you develop a passion for learning. As you use new skills and knowledge, your purpose and career will grow.</p>
+          </div>
+          <div className="p-8 bg-gray-50 rounded-lg">
+            <h3 className="text-2xl font-semibold text-blue-600 mb-3">Transform</h3>
+            <p>We transform your people to grow with the organization through well-crafted, innovative training programs.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function AboutPage() {
+  return (
+    <div>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-b from-blue-50 to-blue-100 py-24 text-center">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900">About KMTCS</h1>
+        <p className="mt-4 text-lg text-gray-600">Your Trusted Partner in Professional Growth</p>
+      </section>
+
+      <AboutSection />
+      <MissionAndValues />
+      <WhyChooseUs />
+      <ContactCTA />
     </div>
   );
 }

@@ -1,21 +1,32 @@
-import Link from 'next/link'
+'use client';
 
-export default function ContactCTA() {
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { FiArrowRight } from 'react-icons/fi'
+
+const ContactCTA = () => {
   return (
-    <div className="w-full h-full bg-white flex flex-col justify-center items-center px-4">
-      <div className="max-w-4xl w-full text-center">
-        <h2 className="text-4xl font-bold text-blue-900 mb-6">Ready to Transform Your Business?</h2>
-        <p className="text-xl text-blue-800 mb-8">
-          Contact us today to learn how KMTCS can help you achieve significant and lasting improvements in your operations performance.
+    <motion.section 
+      className="py-20 bg-gradient-to-r from-blue-600 to-indigo-600"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.5 }}
+      transition={{ duration: 0.7 }}
+    >
+      <div className="container mx-auto px-4 text-center">
+        <h2 className="text-3xl font-bold text-white mb-4">
+          Ready to Transform Your Business?
+        </h2>
+        <p className="text-blue-100 max-w-2xl mx-auto mb-8">
+          Contact us today to learn how KMTCS can help you achieve significant and lasting improvements in your organization's operational performance.
         </p>
-        <Link 
-          href="/contact" 
-          className="bg-blue-800/30 backdrop-filter backdrop-blur-lg border border-baby-blue/20 text-blue-800 px-6 py-2 sm:px-8 sm:py-3 rounded-full text-base sm:text-lg font-semibold hover:bg-blue-800 hover:text-white hover:border-blue/40 transition-all duration-300 inline-block relative z-50 shadow-md hover:shadow-lg"
-        >
-          Get in Touch
+        <Link href="/contact" className="inline-flex items-center bg-white text-blue-600 font-semibold px-8 py-3 rounded-lg shadow-lg hover:bg-gray-100 transition-colors">
+          Get in Touch <FiArrowRight className="ml-2" />
         </Link>
       </div>
-    </div>
+    </motion.section>
   )
 }
+
+export default ContactCTA
 

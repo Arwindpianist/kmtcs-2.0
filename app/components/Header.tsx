@@ -1,148 +1,173 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { SessionProvider, useSession } from 'next-auth/react'
+import { Fragment } from 'react'
+import { Popover, Transition } from '@headlessui/react'
+import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import {
+  BriefcaseIcon,
+  ChartPieIcon,
+  CursorArrowRaysIcon,
+  QuestionMarkCircleIcon,
+  ShieldCheckIcon,
+  ViewColumnsIcon,
+} from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import Image from 'next/image'
+import { signOut } from 'next-auth/react'
 
-export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const pathname = usePathname();
+const solutions = [
+  { name: 'About Us', description: 'Learn more about our company', href: '/about', icon: ChartPieIcon },
+  { name: 'Our Services', description: 'View our wide range of services', href: '/services', icon: CursorArrowRaysIcon },
+  { name: 'Our Consultants', description: 'Meet our team of experts', href: '/consultants', icon: BriefcaseIcon },
+]
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
+const callsToAction = [
+  { name: 'Contact Us', href: '/contact', icon: QuestionMarkCircleIcon },
+  { name: 'View News', href: '/news', icon: ViewColumnsIcon },
+]
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+const services = [
+  { name: 'Technical Trainings', href: '/services/technical-trainings' },
+  { name: 'Non-Technical Trainings', href: '/services/non-technical-trainings' },
+  { name: 'Consulting', href: '/services/consulting' },
+]
 
-  const isActive = (path: string) => pathname === path;
-
-  const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'About Us', href: '/about' },
-    {
-      name: 'Services',
-      href: '/services',
-      dropdown: [
-        { name: 'Technical Trainings', href: '/services/technical-trainings' },
-        { name: 'Non-Technical Trainings', href: '/services/non-technical-trainings' },
-        { name: 'Consulting Services', href: '/services/consulting' },
-      ]
-    },
-    { name: 'Consultants', href: '/consultants' },
-    { name: 'News', href: '/news' },
-    { name: 'Contact', href: '/contact' },
-  ];
+function HeaderContent() {
+  const { data: session } = useSession()
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
-    }`}>
-      <nav className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <img src="/KMTCS-NEW-LOGO.svg" alt="KMTCS" className="h-12 w-auto" />
+    <header className="bg-white/30 bg-opacity-50 backdrop-filter backdrop-blur-lg border-b border-baby-blue/20 fixed top-0 w-full z-50">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
+        <div className="flex lg:flex-1">
+          <Link href="/" className="-m-1.5 p-1.5">
+            <span className="sr-only">KMTCS</span>
+            <Image
+              className="h-16 w-auto"
+              src="/KMTCS-NEW-LOGO.svg"
+              alt="KMTCS Logo"
+              width={64}
+              height={64}
+            />
           </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
-            {navigation.map((item) => (
-              <div key={item.name} className="relative group">
-                {item.dropdown ? (
-                  <div className="relative">
-                    <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors py-2">
-                      <span>{item.name}</span>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top">
-                      <div className="py-2">
-                        {item.dropdown.map((dropdownItem) => (
-                          <Link
-                            key={dropdownItem.name}
-                            href={dropdownItem.href}
-                            className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                          >
-                            {dropdownItem.name}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className={`text-gray-700 hover:text-blue-600 transition-colors ${
-                      isActive(item.href) ? 'text-blue-600 font-semibold' : ''
-                    }`}
-                  >
-                    {item.name}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors"
-          >
-            {isMenuOpen ? (
-              <XMarkIcon className="h-6 w-6" />
-            ) : (
-              <Bars3Icon className="h-6 w-6" />
-            )}
-          </button>
         </div>
+        <Popover.Group className="hidden lg:flex lg:gap-x-12">
+          <Link href="/" className="text-md font-semibold leading-6 text-blue-900 hover:text-blue-700">
+            Home
+          </Link>
+          <Popover className="relative">
+            <Popover.Button className="flex items-center gap-x-1 text-md font-semibold leading-6 text-blue-900 hover:text-blue-700">
+              About
+              <ChevronDownIcon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
+            </Popover.Button>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="lg:hidden mt-4 bg-white rounded-lg shadow-lg">
-            <div className="py-2">
-              {navigation.map((item) => (
-                <div key={item.name}>
-                  {item.dropdown ? (
-                    <div className="border-b border-gray-100">
-                      <div className="px-4 py-3 text-gray-700 font-medium">
-                        {item.name}
+            <Transition
+              as={Fragment}
+              enter="transition ease-out duration-200"
+              enterFrom="opacity-0 translate-y-1"
+              enterTo="opacity-100 translate-y-0"
+              leave="transition ease-in duration-150"
+              leaveFrom="opacity-100 translate-y-0"
+              leaveTo="opacity-0 translate-y-1"
+            >
+              <Popover.Panel className="absolute -left-8 top-full z-10 mt-3 w-screen max-w-md overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5">
+                <div className="p-4">
+                  {solutions.map((item) => (
+                    <div
+                      key={item.name}
+                      className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm leading-6 hover:bg-gray-50"
+                    >
+                      <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white">
+                        <item.icon className="h-6 w-6 text-gray-600 group-hover:text-blue-600" aria-hidden="true" />
                       </div>
-                      <div className="bg-gray-50">
-                        {item.dropdown.map((dropdownItem) => (
-                          <Link
-                            key={dropdownItem.name}
-                            href={dropdownItem.href}
-                            className="block px-8 py-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
-                          >
-                            {dropdownItem.name}
-                          </Link>
-                        ))}
+                      <div className="flex-auto">
+                        <a href={item.href} className="block font-semibold text-gray-900">
+                          {item.name}
+                          <span className="absolute inset-0" />
+                        </a>
+                        <p className="mt-1 text-gray-600">{item.description}</p>
                       </div>
                     </div>
-                  ) : (
-                    <Link
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 divide-x divide-gray-900/5 bg-gray-50">
+                  {callsToAction.map((item) => (
+                    <a
+                      key={item.name}
                       href={item.href}
-                      className={`block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                        isActive(item.href) ? 'bg-blue-50 text-blue-600 font-semibold' : ''
-                      }`}
-                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center justify-center gap-x-2.5 p-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
+                    >
+                      <item.icon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
+                      {item.name}
+                    </a>
+                  ))}
+                </div>
+              </Popover.Panel>
+            </Transition>
+          </Popover>
+
+          <Popover className="relative">
+            <Popover.Button className="flex items-center gap-x-1 text-md font-semibold leading-6 text-blue-900 hover:text-blue-700">
+              Services
+              <ChevronDownIcon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
+            </Popover.Button>
+
+            <Transition
+              as={Fragment}
+              enter="transition ease-out duration-200"
+              enterFrom="opacity-0 translate-y-1"
+              enterTo="opacity-100 translate-y-0"
+              leave="transition ease-in duration-150"
+              leaveFrom="opacity-100 translate-y-0"
+              leaveTo="opacity-0 translate-y-1"
+            >
+              <Popover.Panel className="absolute -left-8 top-full z-10 mt-3 w-64 overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-gray-900/5">
+                <div className="p-2">
+                  {services.map((item) => (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      className="block rounded-lg px-4 py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
                     >
                       {item.name}
-                    </Link>
-                  )}
+                    </a>
+                  ))}
                 </div>
-              ))}
+              </Popover.Panel>
+            </Transition>
+          </Popover>
+          <Link href="/news" className="text-md font-semibold leading-6 text-blue-900 hover:text-blue-700">
+            News
+          </Link>
+          <Link href="/contact" className="text-md font-semibold leading-6 text-blue-900 hover:text-blue-700">
+            Contact
+          </Link>
+
+        </Popover.Group>
+        <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+          {session && (
+            <div className="flex items-center gap-x-4">
+              <span className="text-sm font-semibold text-gray-900">
+                Welcome, {session.user.name || session.user.email}
+              </span>
+              <button
+                onClick={() => signOut()}
+                className="rounded-md bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              >
+                Sign Out
+              </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </nav>
     </header>
   );
+}
+
+export default function Header() {
+  return (
+    <SessionProvider>
+      <HeaderContent />
+    </SessionProvider>
+  )
 }

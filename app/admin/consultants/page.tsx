@@ -30,6 +30,7 @@ export default function ConsultantsManagement() {
     phone: '',
     status: true
   });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadConsultants();
@@ -52,6 +53,7 @@ export default function ConsultantsManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setSaving(true);
       let imageUrl = formData.image_url;
 
       if (imageFile) {
@@ -77,6 +79,8 @@ export default function ConsultantsManagement() {
     } catch (err) {
       console.error('Error saving consultant:', err);
       setError('Failed to save consultant. Please try again later.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -153,30 +157,34 @@ export default function ConsultantsManagement() {
   }
 
   return (
-    <>
+    <div className="p-8 max-w-7xl mx-auto">
+      {/* Page Header */}
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Manage Consultants</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Consultants</h1>
+          <p className="text-gray-600">Manage expert consultants and trainers for your services</p>
+        </div>
         <button
           onClick={() => setShowForm(true)}
-          className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          className="bg-yellow-600 text-white px-6 py-3 rounded-lg hover:bg-yellow-700 transition-colors font-medium"
         >
           Add New Consultant
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg relative mb-8" role="alert">
           <strong className="font-bold">Error:</strong>
-          <span className="block sm:inline"> {error}</span>
+          <span className="block sm:inline ml-2"> {error}</span>
         </div>
       )}
 
       {showForm ? (
-        <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
-          <h2 className="text-xl font-semibold mb-4">{editingConsultant ? 'Edit Consultant' : 'Add New Consultant'}</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-8">
+          <h2 className="text-2xl font-semibold mb-6">{editingConsultant ? 'Edit Consultant' : 'Add New Consultant'}</h2>
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Name *
               </label>
               <input
@@ -184,19 +192,19 @@ export default function ConsultantsManagement() {
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Role *
               </label>
               <select
                 required
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value as Consultant['role'] })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               >
                 <option value="Senior">Senior</option>
                 <option value="Lead">Lead</option>
@@ -205,15 +213,15 @@ export default function ConsultantsManagement() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Profile Image
               </label>
-              <div className="mt-1 flex items-center space-x-4">
+              <div className="mt-2 flex items-center space-x-4">
                 {imagePreview && (
                   <img
                     src={imagePreview}
                     alt="Preview"
-                    className="h-20 w-20 rounded-full object-cover"
+                    className="h-24 w-24 rounded-full object-cover border-2 border-gray-200"
                   />
                 )}
                 <input
@@ -221,39 +229,39 @@ export default function ConsultantsManagement() {
                   ref={fileInputRef}
                   accept="image/*"
                   onChange={handleImageChange}
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Short Bio *
               </label>
               <textarea
                 required
-                rows={2}
+                rows={3}
                 value={formData.short_bio}
                 onChange={(e) => setFormData({ ...formData, short_bio: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Full Bio *
               </label>
               <textarea
                 required
-                rows={4}
+                rows={6}
                 value={formData.full_bio}
                 onChange={(e) => setFormData({ ...formData, full_bio: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email *
               </label>
               <input
@@ -261,19 +269,19 @@ export default function ConsultantsManagement() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Phone
               </label>
               <input
                 type="tel"
                 value={formData.phone || ''}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               />
             </div>
 
@@ -283,106 +291,120 @@ export default function ConsultantsManagement() {
                 id="status"
                 checked={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
               />
-              <label htmlFor="status" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="status" className="ml-3 block text-sm text-gray-700">
                 Active
               </label>
             </div>
 
-            <div className="flex justify-end space-x-4 mt-6">
+            <div className="flex justify-end space-x-4 pt-6">
               <button
                 type="button"
                 onClick={handleCancel}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                disabled={saving}
+                className="px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 font-medium"
               >
-                {editingConsultant ? 'Update Consultant' : 'Create Consultant'}
+                {saving ? 'Saving...' : (editingConsultant ? 'Update Consultant' : 'Add Consultant')}
               </button>
             </div>
           </form>
         </div>
       ) : (
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Consultant
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {consultants.map((consultant) => (
-                <tr key={consultant.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      {consultant.image_url && (
-                        <img
-                          src={consultant.image_url}
-                          alt={consultant.name}
-                          className="h-10 w-10 rounded-full object-cover mr-3"
-                        />
-                      )}
+        <div className="grid gap-8">
+          {consultants.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="max-w-md mx-auto">
+                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">No Consultants</h3>
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                  Get started by adding your first consultant. This will help showcase your expert team members.
+                </p>
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="bg-yellow-600 text-white px-8 py-3 rounded-lg hover:bg-yellow-700 transition-colors font-medium"
+                >
+                  Add Your First Consultant
+                </button>
+              </div>
+            </div>
+          ) : (
+            consultants.map((consultant) => (
+              <div key={consultant.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                <div className="flex items-start space-x-6">
+                  <div className="flex-shrink-0">
+                    <img
+                      src={consultant.image_url || '/default-avatar.png'}
+                      alt={consultant.name}
+                      className="h-24 w-24 rounded-full object-cover border-2 border-gray-200"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start mb-4">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{consultant.name}</div>
-                        <div className="text-sm text-gray-500">{consultant.short_bio}</div>
+                        <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                          {consultant.name}
+                        </h3>
+                        <p className="text-lg text-gray-600 mb-3">{consultant.role} Consultant</p>
+                        <p className="text-gray-600 mb-4 leading-relaxed">{consultant.short_bio}</p>
+                        <div className="flex flex-wrap gap-6 text-sm text-gray-500 mb-4">
+                          <span className="flex items-center">
+                            <span className="font-medium">Email:</span>
+                            <span className="ml-2">{consultant.email}</span>
+                          </span>
+                          {consultant.phone && (
+                            <span className="flex items-center">
+                              <span className="font-medium">Phone:</span>
+                              <span className="ml-2">{consultant.phone}</span>
+                            </span>
+                          )}
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            consultant.status 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {consultant.status ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={() => handleEdit(consultant)}
+                          className="text-yellow-600 hover:text-yellow-800 px-4 py-2 rounded-lg border border-yellow-600 hover:bg-yellow-50 transition-colors font-medium"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(consultant.id)}
+                          className="text-red-600 hover:text-red-800 px-4 py-2 rounded-lg border border-red-600 hover:bg-red-50 transition-colors font-medium"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {consultant.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div>{consultant.email}</div>
-                    {consultant.phone && <div>{consultant.phone}</div>}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      consultant.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {consultant.status ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleEdit(consultant)}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(consultant.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    {consultant.full_bio && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-3">Full Bio:</h4>
+                        <p className="text-gray-600 leading-relaxed">{consultant.full_bio}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
-    </>
+    </div>
   );
 } 

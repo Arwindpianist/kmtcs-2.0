@@ -2,8 +2,6 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { supabase } from '@/app/lib/supabase'
 
 interface ServiceItem {
   id: string
@@ -15,74 +13,7 @@ interface ServiceItem {
   serviceType: 'technical-training' | 'non-technical-training' | 'consulting'
 }
 
-export default function ServicesOverview() {
-  const [services, setServices] = useState<ServiceItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    async function loadServices() {
-      try {
-        // Fetch technical trainings
-        const { data: technicalTrainings, error: techError } = await supabase
-          .from('technical_trainings')
-          .select('id, title, description, price, duration')
-          .eq('status', true)
-          .limit(3)
-
-        if (techError) throw techError
-
-        // Fetch non-technical trainings
-        const { data: nonTechnicalTrainings, error: nonTechError } = await supabase
-          .from('non_technical_trainings')
-          .select('id, title, description, price, duration')
-          .eq('status', true)
-          .limit(3)
-
-        if (nonTechError) throw nonTechError
-
-        // Fetch consulting services
-        const { data: consultingServices, error: consultingError } = await supabase
-          .from('consulting_services')
-          .select('id, title, description, price')
-          .eq('status', true)
-          .limit(3)
-
-        if (consultingError) throw consultingError
-
-        // Combine and format all services
-        const allServices: ServiceItem[] = [
-          ...(technicalTrainings || []).map(item => ({
-            ...item,
-            category: 'Technical Training',
-            serviceType: 'technical-training' as const
-          })),
-          ...(nonTechnicalTrainings || []).map(item => ({
-            ...item,
-            category: 'Non-Technical Training',
-            serviceType: 'non-technical-training' as const
-          })),
-          ...(consultingServices || []).map(item => ({
-            ...item,
-            category: 'Consulting',
-            serviceType: 'consulting' as const
-          }))
-        ]
-
-        // Shuffle and take first 6 for variety
-        const shuffled = allServices.sort(() => 0.5 - Math.random())
-        setServices(shuffled.slice(0, 6))
-      } catch (err: any) {
-        console.error('Error loading services:', err)
-        setError('Failed to load services')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadServices()
-  }, [])
-
+export default function ServicesOverview({ services }: { services: ServiceItem[] }) {
   const getServiceUrl = (service: ServiceItem) => {
     switch (service.serviceType) {
       case 'technical-training':
@@ -98,51 +29,19 @@ export default function ServicesOverview() {
 
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
-      case 'engineering':
-        return 'bg-blue-100 text-blue-800'
-      case 'management':
-        return 'bg-green-100 text-green-800'
-      case 'it':
-        return 'bg-purple-100 text-purple-800'
-      case 'consulting':
-        return 'bg-orange-100 text-orange-800'
       case 'technical training':
         return 'bg-blue-100 text-blue-800'
       case 'non-technical training':
         return 'bg-green-100 text-green-800'
+      case 'consulting':
+        return 'bg-orange-100 text-orange-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading services...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-600 mb-4">
-            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-          </div>
-          <p className="text-gray-600">{error}</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <section className="py-20 bg-gradient-to-br from-blue-50 to-indigo-50">
+    <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -154,7 +53,7 @@ export default function ServicesOverview() {
             Our Services
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Discover our comprehensive range of training and consulting services designed to elevate your organization's capabilities
+            Discover our comprehensive range of training and consulting services designed to elevate your organization's capabilities.
           </p>
         </motion.div>
 
@@ -168,8 +67,8 @@ export default function ServicesOverview() {
               whileHover={{ y: -5 }}
             >
               <Link href={getServiceUrl(service)}>
-                <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
-                  <div className="p-6">
+                <div className="bg-gray-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group h-full flex flex-col">
+                  <div className="p-6 flex-grow">
                     <div className="flex items-center justify-between mb-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(service.category)}`}>
                         {service.category}
@@ -186,6 +85,8 @@ export default function ServicesOverview() {
                     <p className="text-gray-600 mb-4 line-clamp-3">
                       {service.description}
                     </p>
+                  </div>
+                  <div className="p-6 bg-gray-100/50">
                     <div className="flex items-center justify-between">
                       {service.duration && (
                         <span className="text-sm text-gray-500 flex items-center">

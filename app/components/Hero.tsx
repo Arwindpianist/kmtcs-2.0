@@ -2,76 +2,75 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import BackgroundLines from './BackgroundLines'
+import Image from 'next/image'
 
 const certifications = [
-  'hrd-claimable.svg',
-  'mof.svg',
-  'sme.svg',
-  'ssm.svg',
-  'hrd-registered.svg',
+  { name: 'HRD Corp Registered', logo: '/kmtcs-certs/hrd-registered.svg' },
+  { name: 'HRD Corp Claimable', logo: '/kmtcs-certs/hrd-claimable.svg' },
+  { name: 'MOF', logo: '/kmtcs-certs/mof.svg' },
+  { name: 'SME', logo: '/kmtcs-certs/sme.svg' },
+  { name: 'SSM', logo: '/kmtcs-certs/ssm.svg' },
 ]
 
-export default function Hero() {
+const Hero = () => {
   return (
-    <section className="min-h-screen flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 relavive - z-50">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="text-center max-w-4xl w-full"
-      >
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-blue-900 mb-4 px-2 leading-tight">
-          Welcome to KM Training & Consulting Services (KMTCS)
-        </h1>
-        
-        <p className="text-base sm:text-lg lg:text-xl text-blue-800 mb-6 sm:mb-8 mx-auto max-w-3xl px-4 sm:px-0 leading-relaxed">
-          Engineering, Management, and IT Consulting & Training for Private and Public Enterprises. 
-          We are an accredited Training Provider registered with the SSM, HRDCorp, SMECorp and 
-          Ministry of Finance (MoF).
-        </p>
-
-        {/* Certifications */}
-        <motion.div 
-          className="flex justify-center items-center gap-2 sm:gap-3 lg:gap-4 mb-6 sm:mb-8 flex-wrap"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          {certifications.map((cert, index) => (
-            <motion.img
-              key={cert}
-              src={`/kmtcs-certs/${cert}`}
-              alt={cert.replace('.svg', '')}
-              className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 p-1.5 sm:p-2"
-              animate={{
-                y: [-2, 2, -2],
-              }}
-              transition={{
-                duration: 2 + index * 0.3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              whileHover={{
-                scale: 1.1,
-                transition: { duration: 0.2 }
-              }}
-            />
-          ))}
-        </motion.div>
-
+    <section className="relative bg-gradient-to-b from-blue-50 to-blue-100 py-32 text-center overflow-hidden">
+      <BackgroundLines />
+      <div className="container mx-auto px-4 relative z-10">
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="mt-4 sm:mt-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight">
+            Welcome to <span className="text-blue-600">KM Training &amp; Consulting Services</span>
+          </h1>
+          <p className="mt-6 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+            Your trusted partner for Engineering, Management, and IT training. We are an accredited provider registered with SSM, MOF, and HRDCorp.
+          </p>
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="mt-12"
         >
           <Link 
-            href="/services" 
-            className="bg-baby-blue/30 backdrop-filter backdrop-blur-lg border border-baby-blue/20 text-blue-800 px-6 py-2 sm:px-8 sm:py-3 rounded-full text-base sm:text-lg font-semibold hover:bg-blue-800 hover:text-white hover:border-blue/40 transition-all duration-300 inline-block relative z-50 shadow-md hover:shadow-lg"
+            href="/services"
+            className="inline-block bg-blue-600 text-white font-semibold px-8 py-4 rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
           >
             Explore Our Services
           </Link>
         </motion.div>
-      </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="mt-16"
+        >
+          <h3 className="text-sm font-bold text-gray-500 tracking-wider uppercase mb-4">
+            Our Certifications
+          </h3>
+          <div className="flex justify-center items-center space-x-6">
+            {certifications.map(cert => (
+              <div key={cert.name} className="relative h-12 w-24 grayscale hover:grayscale-0 transition-all duration-300">
+                <Image
+                  src={cert.logo}
+                  alt={cert.name}
+                  layout="fill"
+                  objectFit="contain"
+                  title={cert.name}
+                />
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
     </section>
   )
 }
+
+export default Hero

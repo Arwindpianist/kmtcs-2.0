@@ -1,0 +1,70 @@
+'use client'
+
+import Hero from './components/Hero'
+import ServicesOverview from './components/ServicesOverview'
+import AboutPreview from './components/AboutPreview'
+import ContactCTA from './components/ContactCTA'
+import TrainingCalendar from './components/TrainingCalendar'
+import ClientCarousel from './components/ClientCarousel'
+import Testimonials from './components/Testimonials'
+import BackgroundLines from './components/BackgroundLines'
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+
+export default async function Home() {
+  const supabase = createServerComponentClient({ cookies })
+
+  const { data: technicalTrainings } = await supabase
+    .from('technical_trainings')
+    .select('id, title, description, price, duration')
+    .eq('status', true)
+    .limit(3)
+
+  const { data: nonTechnicalTrainings } = await supabase
+    .from('non_technical_trainings')
+    .select('id, title, description, price, duration')
+    .eq('status', true)
+    .limit(3)
+
+  const { data: consultingServices } = await supabase
+    .from('consulting_services')
+    .select('id, title, description, price')
+    .eq('status', true)
+    .limit(3)
+
+  const allServices = [
+    ...(technicalTrainings || []).map(item => ({
+      ...item,
+      category: 'Technical Training',
+      serviceType: 'technical-training' as const
+    })),
+    ...(nonTechnicalTrainings || []).map(item => ({
+      ...item,
+      category: 'Non-Technical Training',
+      serviceType: 'non-technical-training' as const
+    })),
+    ...(consultingServices || []).map(item => ({
+      ...item,
+      category: 'Consulting',
+      serviceType: 'consulting' as const
+    }))
+  ]
+
+  const shuffledServices = allServices.sort(() => 0.5 - Math.random()).slice(0, 6)
+
+  return (
+    <main className="relative overflow-x-hidden">
+      <BackgroundLines />
+      <div className="relative z-10">
+        <Hero />
+        <ServicesOverview services={shuffledServices} />
+        <AboutPreview />
+        <ClientCarousel />
+        <Testimonials />
+        <TrainingCalendar />
+        <ContactCTA />
+      </div>
+    </main>
+  )
+}
+

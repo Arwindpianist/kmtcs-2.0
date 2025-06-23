@@ -2,14 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabase';
+import { 
+  AcademicCapIcon, 
+  UserGroupIcon, 
+  BriefcaseIcon, 
+  EnvelopeIcon, 
+  UsersIcon,
+  PlusIcon,
+  ArrowRightIcon
+} from '@heroicons/react/24/outline';
 
 interface DashboardStats {
   technicalTrainings: number;
   nonTechnicalTrainings: number;
   consultingServices: number;
-  consultants: number;
   contacts: number;
-  users: number;
 }
 
 export default function AdminDashboard() {
@@ -17,9 +24,7 @@ export default function AdminDashboard() {
     technicalTrainings: 0,
     nonTechnicalTrainings: 0,
     consultingServices: 0,
-    consultants: 0,
-    contacts: 0,
-    users: 0
+    contacts: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -29,32 +34,56 @@ export default function AdminDashboard() {
 
   const loadDashboardStats = async () => {
     try {
+      setLoading(true);
+      
+      // Load stats for existing tables only
       const [
-        { count: technicalTrainings },
-        { count: nonTechnicalTrainings },
-        { count: consultingServices },
-        { count: consultants },
-        { count: contacts },
-        { count: users }
+        technicalTrainingsResult,
+        nonTechnicalTrainingsResult,
+        consultingServicesResult,
+        contactsResult
       ] = await Promise.all([
         supabase.from('technical_trainings').select('*', { count: 'exact', head: true }),
         supabase.from('non_technical_trainings').select('*', { count: 'exact', head: true }),
         supabase.from('consulting_services').select('*', { count: 'exact', head: true }),
-        supabase.from('consultants').select('*', { count: 'exact', head: true }),
-        supabase.from('contact_submissions').select('*', { count: 'exact', head: true }),
-        supabase.from('users').select('*', { count: 'exact', head: true })
+        supabase.from('contact_submissions').select('*', { count: 'exact', head: true })
       ]);
 
-      setStats({
-        technicalTrainings: technicalTrainings || 0,
-        nonTechnicalTrainings: nonTechnicalTrainings || 0,
-        consultingServices: consultingServices || 0,
-        consultants: consultants || 0,
-        contacts: contacts || 0,
-        users: users || 0
-      });
+      // Check for errors in each query and provide fallbacks
+      const stats = {
+        technicalTrainings: technicalTrainingsResult.count || 0,
+        nonTechnicalTrainings: nonTechnicalTrainingsResult.count || 0,
+        consultingServices: consultingServicesResult.count || 0,
+        contacts: contactsResult.count || 0
+      };
+
+      // Log any errors for debugging
+      if (technicalTrainingsResult.error) {
+        console.error('Error loading technical trainings:', technicalTrainingsResult.error);
+      }
+      if (nonTechnicalTrainingsResult.error) {
+        console.error('Error loading non-technical trainings:', nonTechnicalTrainingsResult.error);
+      }
+      if (consultingServicesResult.error) {
+        console.error('Error loading consulting services:', consultingServicesResult.error);
+      }
+      if (contactsResult.error) {
+        console.error('Error loading contact submissions:', contactsResult.error);
+      }
+
+      setStats(stats);
+
+      console.log('Dashboard stats loaded successfully:', stats);
+
     } catch (error) {
       console.error('Error loading dashboard stats:', error);
+      // Set default stats on error
+      setStats({
+        technicalTrainings: 0,
+        nonTechnicalTrainings: 0,
+        consultingServices: 0,
+        contacts: 0
+      });
     } finally {
       setLoading(false);
     }
@@ -69,197 +98,168 @@ export default function AdminDashboard() {
   }
 
   return (
-    <>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
+    <div className="p-8 max-w-7xl mx-auto">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Overview</h1>
+        <p className="text-gray-600">Monitor and manage your KMTCS services and content</p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
         {/* Technical Trainings */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Technical Trainings</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.technicalTrainings}</p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-6">
+            <div className="p-4 bg-blue-100 rounded-xl">
+              <AcademicCapIcon className="w-7 h-7 text-blue-600" />
             </div>
-            <div className="p-3 bg-blue-100 rounded-full">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
+            <div className="text-right">
+              <p className="text-3xl font-bold text-gray-900">{stats.technicalTrainings}</p>
+              <p className="text-sm text-gray-600">Total</p>
             </div>
           </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-3">Technical Trainings</h3>
+          <p className="text-gray-600 mb-6 leading-relaxed">Engineering and technical skill development programs</p>
           <a
             href="/admin/technical-trainings"
-            className="mt-4 inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+            className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
           >
-            Manage Technical Trainings
-            <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            Manage Trainings
+            <ArrowRightIcon className="ml-2 w-4 h-4" />
           </a>
         </div>
 
         {/* Non-Technical Trainings */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Non-Technical Trainings</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.nonTechnicalTrainings}</p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-6">
+            <div className="p-4 bg-green-100 rounded-xl">
+              <AcademicCapIcon className="w-7 h-7 text-green-600" />
             </div>
-            <div className="p-3 bg-green-100 rounded-full">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+            <div className="text-right">
+              <p className="text-3xl font-bold text-gray-900">{stats.nonTechnicalTrainings}</p>
+              <p className="text-sm text-gray-600">Total</p>
             </div>
           </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-3">Non-Technical Trainings</h3>
+          <p className="text-gray-600 mb-6 leading-relaxed">Management and soft skills development programs</p>
           <a
             href="/admin/non-technical-trainings"
-            className="mt-4 inline-flex items-center text-sm text-green-600 hover:text-green-800"
+            className="inline-flex items-center text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
           >
-            Manage Non-Technical Trainings
-            <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            Manage Trainings
+            <ArrowRightIcon className="ml-2 w-4 h-4" />
           </a>
         </div>
 
         {/* Consulting Services */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Consulting Services</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.consultingServices}</p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-6">
+            <div className="p-4 bg-purple-100 rounded-xl">
+              <BriefcaseIcon className="w-7 h-7 text-purple-600" />
             </div>
-            <div className="p-3 bg-purple-100 rounded-full">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
+            <div className="text-right">
+              <p className="text-3xl font-bold text-gray-900">{stats.consultingServices}</p>
+              <p className="text-sm text-gray-600">Total</p>
             </div>
           </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-3">Consulting Services</h3>
+          <p className="text-gray-600 mb-6 leading-relaxed">Professional consulting and advisory services</p>
           <a
             href="/admin/services"
-            className="mt-4 inline-flex items-center text-sm text-purple-600 hover:text-purple-800"
+            className="inline-flex items-center text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors"
           >
-            Manage Consulting Services
-            <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </a>
-        </div>
-
-        {/* Consultants */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Consultants</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.consultants}</p>
-            </div>
-            <div className="p-3 bg-yellow-100 rounded-full">
-              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-          </div>
-          <a
-            href="/admin/consultants"
-            className="mt-4 inline-flex items-center text-sm text-yellow-600 hover:text-yellow-800"
-          >
-            Manage Consultants
-            <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            Manage Services
+            <ArrowRightIcon className="ml-2 w-4 h-4" />
           </a>
         </div>
 
         {/* Contact Messages */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Contact Messages</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.contacts}</p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-6">
+            <div className="p-4 bg-red-100 rounded-xl">
+              <EnvelopeIcon className="w-7 h-7 text-red-600" />
             </div>
-            <div className="p-3 bg-red-100 rounded-full">
-              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
+            <div className="text-right">
+              <p className="text-3xl font-bold text-gray-900">{stats.contacts}</p>
+              <p className="text-sm text-gray-600">Total</p>
             </div>
           </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-3">Contact Messages</h3>
+          <p className="text-gray-600 mb-6 leading-relaxed">Inquiries and contact form submissions</p>
           <a
             href="/admin/contacts"
-            className="mt-4 inline-flex items-center text-sm text-red-600 hover:text-red-800"
+            className="inline-flex items-center text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
           >
-            View Contact Messages
-            <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </a>
-        </div>
-
-        {/* Users */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Users</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.users}</p>
-            </div>
-            <div className="p-3 bg-indigo-100 rounded-full">
-              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-              </svg>
-            </div>
-          </div>
-          <a
-            href="/admin/users"
-            className="mt-4 inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800"
-          >
-            Manage Users
-            <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            View Messages
+            <ArrowRightIcon className="ml-2 w-4 h-4" />
           </a>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-12">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-semibold text-gray-900">Quick Actions</h2>
+          <p className="text-gray-600">Common administrative tasks</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <a
             href="/admin/technical-trainings"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            className="group flex items-center p-6 border border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-all"
           >
-            <svg className="w-5 h-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <span className="text-gray-700">Add Technical Training</span>
+            <div className="p-3 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+              <PlusIcon className="w-6 h-6 text-blue-600" />
+            </div>
+            <span className="ml-4 text-gray-700 font-medium">Add Technical Training</span>
           </a>
           <a
             href="/admin/non-technical-trainings"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            className="group flex items-center p-6 border border-gray-200 rounded-xl hover:bg-green-50 hover:border-green-200 transition-all"
           >
-            <svg className="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <span className="text-gray-700">Add Non-Technical Training</span>
+            <div className="p-3 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+              <PlusIcon className="w-6 h-6 text-green-600" />
+            </div>
+            <span className="ml-4 text-gray-700 font-medium">Add Non-Technical Training</span>
           </a>
           <a
             href="/admin/services"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            className="group flex items-center p-6 border border-gray-200 rounded-xl hover:bg-purple-50 hover:border-purple-200 transition-all"
           >
-            <svg className="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <span className="text-gray-700">Add Consulting Service</span>
+            <div className="p-3 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
+              <PlusIcon className="w-6 h-6 text-purple-600" />
+            </div>
+            <span className="ml-4 text-gray-700 font-medium">Add Consulting Service</span>
           </a>
           <a
-            href="/admin/consultants"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            href="/admin/contacts"
+            className="group flex items-center p-6 border border-gray-200 rounded-xl hover:bg-red-50 hover:border-red-200 transition-all"
           >
-            <svg className="w-5 h-5 text-yellow-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <span className="text-gray-700">Add Consultant</span>
+            <div className="p-3 bg-red-100 rounded-lg group-hover:bg-red-200 transition-colors">
+              <PlusIcon className="w-6 h-6 text-red-600" />
+            </div>
+            <span className="ml-4 text-gray-700 font-medium">View Contact Messages</span>
           </a>
         </div>
       </div>
-    </>
+
+      {/* System Overview */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-8">System Overview</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="text-center p-8 bg-blue-50 rounded-xl">
+            <p className="text-4xl font-bold text-blue-600 mb-2">{stats.technicalTrainings + stats.nonTechnicalTrainings}</p>
+            <p className="text-gray-600 font-medium">Total Training Programs</p>
+          </div>
+          <div className="text-center p-8 bg-purple-50 rounded-xl">
+            <p className="text-4xl font-bold text-purple-600 mb-2">{stats.consultingServices}</p>
+            <p className="text-gray-600 font-medium">Consulting Services</p>
+          </div>
+          <div className="text-center p-8 bg-gray-50 rounded-xl">
+            <p className="text-4xl font-bold text-gray-600 mb-2">{stats.contacts}</p>
+            <p className="text-gray-600 font-medium">Pending Inquiries</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 } 

@@ -7,9 +7,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Testing database connection and admin tables...');
-    console.log('Supabase URL:', supabaseUrl ? 'Set' : 'Missing');
-    console.log('Service Key:', supabaseServiceKey ? 'Set' : 'Missing');
+    console.log('Testing admin tables...');
 
     if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json({ 
@@ -26,9 +24,7 @@ export async function GET(request: NextRequest) {
       'technical_trainings',
       'non_technical_trainings', 
       'consulting_services',
-      'consultants',
-      'contact_submissions',
-      'users'
+      'contact_submissions'
     ];
 
     const results: any = {};

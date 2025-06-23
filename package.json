@@ -14,6 +14,7 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
     "@stripe/stripe-js": "^1.54.1",
     "@supabase/auth-helpers-nextjs": "^0.9.0",
@@ -22,6 +23,7 @@
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.16",
     "@types/dompurify": "^3.0.5",
+    "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.7.9",
     "cheerio": "^1.0.0",

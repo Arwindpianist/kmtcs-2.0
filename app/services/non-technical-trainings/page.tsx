@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabase';
-import Header from '@/app/components/Header';
-import Footer from '@/app/components/Footer';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 interface NonTechnicalTraining {
   id: string;
@@ -49,96 +48,152 @@ export default function NonTechnicalTrainingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading non-technical trainings...</p>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
+    <div className="bg-gray-50 min-h-screen">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-green-600 to-green-800 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+      <div className="relative bg-gradient-to-r from-green-600 to-green-700 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-black opacity-10"></div>
+        <div className="relative max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
+          >
+            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl mb-6">
               Non-Technical Training Programs
             </h1>
-            <p className="text-xl text-green-100 mb-8">
+            <p className="text-xl text-green-100 max-w-3xl mx-auto">
               Professional development and soft skills training to enhance workplace effectiveness and leadership
             </p>
-          </div>
+            <div className="mt-8 flex justify-center">
+              <div className="bg-green-500 bg-opacity-20 rounded-full px-6 py-2">
+                <span className="text-green-100 font-medium">{trainings.length} Programs Available</span>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
 
       {/* Trainings Grid */}
-      <div className="container mx-auto px-4 py-16">
-        {trainings.length > 0 ? (
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {trainings.map((training) => (
-              <div key={training.id} className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
-                <div className="p-6 flex flex-col flex-grow">
-                  <h2 className="text-xl font-bold mb-2">{training.title}</h2>
-                  <p className="text-gray-700 mb-4 flex-grow line-clamp-4">{training.description}</p>
-                  <div className="mt-auto">
-                    <Link href={`/services/non-technical-trainings/${training.id}`} className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
-                      Learn More
+      <div className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {trainings.length > 0 ? (
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {trainings.map((training, index) => (
+                <motion.div
+                  key={training.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  whileHover={{ y: -5 }}
+                  className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                >
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                        Non-Technical Training
+                      </span>
+                      {training.price && (
+                        <span className="text-lg font-bold text-green-600">
+                          RM {training.price.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors">
+                      {training.title}
+                    </h2>
+                    <p className="text-gray-600 mb-4 line-clamp-3">{training.description}</p>
+                    <div className="flex items-center text-sm text-gray-500 mb-4">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {training.duration}
+                    </div>
+                    <Link 
+                      href={`/services/non-technical-trainings/${training.id}`} 
+                      className="inline-flex items-center text-green-600 font-semibold hover:text-green-800 transition-colors"
+                    >
+                      View Details
+                      <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </Link>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <div className="max-w-md mx-auto">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No non-technical trainings available</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Check back later for new non-technical training programs.
-              </p>
+                </motion.div>
+              ))}
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* CTA Section */}
-      <div className="bg-gray-100 py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Ready to Develop Your Professional Skills?
-          </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Contact us to learn more about our non-technical training programs and how they can benefit your team.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/contact"
-              className="bg-green-600 text-white px-8 py-3 rounded-md hover:bg-green-700 transition-colors"
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-16"
             >
-              Contact Us
-            </a>
-            <a
-              href="/services"
-              className="bg-gray-600 text-white px-8 py-3 rounded-md hover:bg-gray-700 transition-colors"
-            >
-              View All Services
-            </a>
-          </div>
+              <div className="max-w-md mx-auto">
+                <div className="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Non-Technical Trainings Available</h3>
+                <p className="text-gray-600 mb-6">
+                  Check back later for new non-technical training programs.
+                </p>
+                <Link 
+                  href="/services" 
+                  className="inline-flex items-center text-green-600 hover:text-green-800 font-medium"
+                >
+                  View All Services
+                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
 
-      <Footer />
+      {/* CTA Section */}
+      <div className="bg-gradient-to-r from-green-50 to-green-100 py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Ready to Develop Your Professional Skills?
+            </h2>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Contact us to learn more about our non-technical training programs and how they can benefit your team.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/contact"
+                className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold"
+              >
+                Contact Us
+              </Link>
+              <Link
+                href="/services"
+                className="bg-white text-green-600 px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors font-semibold border border-green-200"
+              >
+                View All Services
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </div>
     </div>
   );
 } 

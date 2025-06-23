@@ -2,9 +2,10 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import ClientLayout from './components/ClientLayout'
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 import type { Metadata } from 'next'
+import LayoutWrapper from './components/LayoutWrapper'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -35,11 +36,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-baby-blue min-h-screen`}>
-        <ClientLayout>
-          <main>{children}</main>
-        </ClientLayout>
+      <body className={`${inter.className} bg-white min-h-screen flex flex-col`}>
+        <LayoutWrapper>
+          {children}
+        </LayoutWrapper>
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   )
