@@ -47,7 +47,7 @@ export default function NonTechnicalTrainingsAdmin() {
     }
   };
 
-  const handleSave = async (courseData: any) => {
+  const handleSave = async (courseData: Omit<TrainingCourse, 'service_type'>) => {
     setSaving(true);
     try {
       if (editingCourse) {
