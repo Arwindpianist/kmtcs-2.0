@@ -135,10 +135,11 @@ export default function NonTechnicalTrainingsAdmin() {
             {editingCourse ? 'Edit Course' : 'Add New Course'}
           </h2>
           <TrainingCourseForm
-            initialData={editingCourse || undefined}
+            initialData={editingCourse ? { ...editingCourse, service_type: 'non_technical_training' } : { service_type: 'non_technical_training' }}
             onSubmit={handleSave}
             onCancel={handleCancel}
             loading={saving}
+            hideServiceType={true}
           />
         </div>
       ) : (

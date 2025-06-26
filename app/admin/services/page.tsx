@@ -9,6 +9,13 @@ interface ConsultingService {
   description: string;
   category: string;
   status: boolean;
+  objectives: string[];
+  deliverables: string[];
+  methodology: string;
+  duration: string;
+  target_audience: string;
+  benefits: string[];
+  price: number | null;
   created_at: string;
 }
 
@@ -22,7 +29,14 @@ export default function ConsultingServicesAdmin() {
     title: '',
     description: '',
     category: '',
-    status: true
+    status: true,
+    objectives: [''],
+    deliverables: [''],
+    methodology: '',
+    duration: '',
+    target_audience: '',
+    benefits: [''],
+    price: null
   });
 
   useEffect(() => {
@@ -49,11 +63,19 @@ export default function ConsultingServicesAdmin() {
     e.preventDefault();
     setSaving(true);
     try {
+      // Clean the data by removing empty strings from arrays
+      const cleanData = {
+        ...formData,
+        objectives: formData.objectives.filter(obj => obj.trim() !== ''),
+        deliverables: formData.deliverables.filter(del => del.trim() !== ''),
+        benefits: formData.benefits.filter(ben => ben.trim() !== '')
+      };
+
       if (editingService) {
         // Update existing service
         const { error } = await supabase
           .from('consulting_services')
-          .update(formData)
+          .update(cleanData)
           .eq('id', editingService.id);
 
         if (error) throw error;
@@ -61,7 +83,7 @@ export default function ConsultingServicesAdmin() {
         // Create new service
         const { error } = await supabase
           .from('consulting_services')
-          .insert(formData);
+          .insert(cleanData);
 
         if (error) throw error;
       }
@@ -69,7 +91,7 @@ export default function ConsultingServicesAdmin() {
       await loadServices();
       setShowForm(false);
       setEditingService(null);
-      setFormData({ title: '', description: '', category: '', status: true });
+      setFormData({ title: '', description: '', category: '', status: true, objectives: [''], deliverables: [''], methodology: '', duration: '', target_audience: '', benefits: [''], price: null });
     } catch (error) {
       console.error('Error saving service:', error);
       alert('Error saving service');
@@ -84,7 +106,14 @@ export default function ConsultingServicesAdmin() {
       title: service.title,
       description: service.description,
       category: service.category,
-      status: service.status
+      status: service.status,
+      objectives: service.objectives,
+      deliverables: service.deliverables,
+      methodology: service.methodology,
+      duration: service.duration,
+      target_audience: service.target_audience,
+      benefits: service.benefits,
+      price: service.price
     });
     setShowForm(true);
   };
@@ -109,7 +138,70 @@ export default function ConsultingServicesAdmin() {
   const handleCancel = () => {
     setShowForm(false);
     setEditingService(null);
-    setFormData({ title: '', description: '', category: '', status: true });
+    setFormData({ title: '', description: '', category: '', status: true, objectives: [''], deliverables: [''], methodology: '', duration: '', target_audience: '', benefits: [''], price: null });
+  };
+
+  const addObjective = () => {
+    setFormData(prev => ({
+      ...prev,
+      objectives: [...prev.objectives, '']
+    }));
+  };
+
+  const removeObjective = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      objectives: prev.objectives.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateObjective = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      objectives: prev.objectives.map((obj, i) => i === index ? value : obj)
+    }));
+  };
+
+  const addDeliverable = () => {
+    setFormData(prev => ({
+      ...prev,
+      deliverables: [...prev.deliverables, '']
+    }));
+  };
+
+  const removeDeliverable = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      deliverables: prev.deliverables.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateDeliverable = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      deliverables: prev.deliverables.map((del, i) => i === index ? value : del)
+    }));
+  };
+
+  const addBenefit = () => {
+    setFormData(prev => ({
+      ...prev,
+      benefits: [...prev.benefits, '']
+    }));
+  };
+
+  const removeBenefit = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      benefits: prev.benefits.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateBenefit = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      benefits: prev.benefits.map((ben, i) => i === index ? value : ben)
+    }));
   };
 
   if (loading) {
@@ -142,65 +234,221 @@ export default function ConsultingServicesAdmin() {
             {editingService ? 'Edit Service' : 'Add New Service'}
           </h2>
           <form onSubmit={handleSave} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                required
-              />
+            {/* Basic Information */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Service Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="e.g., Management, Technical, Strategy"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Duration
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.duration}
+                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                    placeholder="e.g., 2 weeks, 3 months"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Price (RM)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.price || ''}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value ? parseFloat(e.target.value) : null })}
+                    placeholder="e.g., 5000.00"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description *
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    required
+                  />
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
+            {/* Service Objectives */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold mb-4">Service Objectives</h3>
+              <div className="space-y-3">
+                {formData.objectives.map((objective, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={objective}
+                      onChange={(e) => updateObjective(index, e.target.value)}
+                      placeholder={`Objective ${index + 1}`}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeObjective(index)}
+                      className="px-3 py-2 text-red-600 hover:text-red-800"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addObjective}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                >
+                  Add Objective
+                </button>
+              </div>
+            </div>
+
+            {/* Target Audience */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold mb-4">Target Audience</h3>
               <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                value={formData.target_audience}
+                onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })}
+                rows={3}
+                placeholder="Who is this service designed for?"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+
+            {/* Service Benefits */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold mb-4">Key Benefits</h3>
+              <div className="space-y-3">
+                {formData.benefits.map((benefit, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={benefit}
+                      onChange={(e) => updateBenefit(index, e.target.value)}
+                      placeholder={`Benefit ${index + 1}`}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeBenefit(index)}
+                      className="px-3 py-2 text-red-600 hover:text-red-800"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addBenefit}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                >
+                  Add Benefit
+                </button>
+              </div>
+            </div>
+
+            {/* Service Deliverables */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold mb-4">Service Deliverables</h3>
+              <div className="space-y-3">
+                {formData.deliverables.map((deliverable, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={deliverable}
+                      onChange={(e) => updateDeliverable(index, e.target.value)}
+                      placeholder={`Deliverable ${index + 1}`}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeDeliverable(index)}
+                      className="px-3 py-2 text-red-600 hover:text-red-800"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addDeliverable}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                >
+                  Add Deliverable
+                </button>
+              </div>
+            </div>
+
+            {/* Methodology */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold mb-4">Our Approach</h3>
+              <textarea
+                value={formData.methodology}
+                onChange={(e) => setFormData({ ...formData, methodology: e.target.value })}
                 rows={4}
+                placeholder="Describe the methodology and approach for this service..."
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                required
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <input
-                type="text"
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                placeholder="e.g., Management, Technical, Strategy"
-              />
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="status"
-                checked={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.checked })}
-                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-              />
-              <label htmlFor="status" className="ml-3 block text-sm text-gray-900">
-                Active
-              </label>
+            {/* Status */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="status"
+                  checked={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.checked })}
+                  className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                />
+                <label htmlFor="status" className="ml-3 block text-sm text-gray-900">
+                  Active
+                </label>
+              </div>
             </div>
 
             <div className="flex space-x-4">
               <button
                 type="submit"
                 disabled={saving}
-                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 font-medium"
+                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50"
               >
-                {saving ? 'Saving...' : 'Save Service'}
+                {saving ? 'Saving...' : (editingService ? 'Update Service' : 'Create Service')}
               </button>
               <button
                 type="button"
