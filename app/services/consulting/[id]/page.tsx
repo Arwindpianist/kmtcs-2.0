@@ -9,6 +9,12 @@ interface ConsultingService {
   price: number | null;
   category: string;
   status: boolean;
+  objectives: string[];
+  deliverables: string[];
+  methodology: string;
+  duration: string;
+  target_audience: string;
+  benefits: string[];
   image_url?: string;
 }
 

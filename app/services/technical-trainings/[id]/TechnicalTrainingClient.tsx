@@ -14,7 +14,13 @@ interface TrainingCourse {
   target_audience: string;
   prerequisites: string;
   course_outline: string;
+  objectives: string[];
+  course_contents: string;
+  methodology: string;
+  certification: string;
+  hrdcorp_approval_no: string;
   status: boolean;
+  image_url?: string;
 }
 
 export default function TechnicalTrainingClient({ course }: { course: TrainingCourse }) {
@@ -155,7 +161,33 @@ export default function TechnicalTrainingClient({ course }: { course: TrainingCo
                   Duration: {course.duration}
                 </div>
               )}
+              {course.hrdcorp_approval_no && (
+                <div className="bg-green-100 text-green-800 text-sm font-semibold px-4 py-2 rounded-full">
+                  HRDCorp Claimable
+                </div>
+              )}
+              {course.certification && (
+                <div className="bg-purple-100 text-purple-800 text-sm font-semibold px-4 py-2 rounded-full">
+                  Certification Included
+                </div>
+              )}
             </div>
+
+            {course.objectives && course.objectives.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Course Objectives</h3>
+                <div className="bg-blue-50 p-6 rounded-lg">
+                  <ul className="space-y-3">
+                    {course.objectives.map((objective, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-blue-600 mr-3 mt-1">•</span>
+                        <span className="text-gray-700 leading-relaxed">{objective}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               <div>
@@ -170,10 +202,56 @@ export default function TechnicalTrainingClient({ course }: { course: TrainingCo
               )}
             </div>
 
+            {course.course_contents && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Course Contents</h3>
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <div className="prose prose-gray max-w-none">
+                    <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                      {course.course_contents}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {course.course_outline && (
-              <div className="prose max-w-none mb-8">
-                <h3 className="font-semibold text-gray-800 text-xl mb-2">Course Outline</h3>
-                <div dangerouslySetInnerHTML={{ __html: course.course_outline }} />
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Course Outline</h3>
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <div className="prose prose-gray max-w-none">
+                    <div dangerouslySetInnerHTML={{ __html: course.course_outline }} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {course.methodology && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Training Methodology</h3>
+                <div className="bg-orange-50 p-6 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed">{course.methodology}</p>
+                </div>
+              </div>
+            )}
+
+            {course.certification && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Certification</h3>
+                <div className="bg-green-50 p-6 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed">{course.certification}</p>
+                </div>
+              </div>
+            )}
+
+            {course.hrdcorp_approval_no && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">HRDCorp Approval</h3>
+                <div className="bg-blue-50 p-6 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed">
+                    This course is HRDCorp claimable. Approval Number: <strong>{course.hrdcorp_approval_no}</strong>
+                  </p>
+                </div>
               </div>
             )}
 

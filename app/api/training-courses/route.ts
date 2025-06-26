@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Prepare data for insertion
+    // Prepare data for insertion (excluding service_type as it's not in the individual tables)
     const courseData = {
       title: body.title,
       description: body.description || '',
@@ -131,6 +131,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Course ID and service_type are required' }, { status: 400 });
     }
 
+    // Prepare update data (excluding service_type as it's not in the individual tables)
     const updateData = {
       title: body.title,
       description: body.description,

@@ -10,6 +10,13 @@ interface ConsultingService {
   price: number | null;
   category: string;
   status: boolean;
+  objectives: string[];
+  deliverables: string[];
+  methodology: string;
+  duration: string;
+  target_audience: string;
+  benefits: string[];
+  image_url?: string;
 }
 
 export default function ConsultingClient({ service }: { service: ConsultingService }) {
@@ -114,9 +121,10 @@ export default function ConsultingClient({ service }: { service: ConsultingServi
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="p-8">
+            {/* Header Section */}
             <div className="flex items-center justify-between mb-6">
               <span className="px-4 py-2 rounded-full text-sm font-semibold bg-orange-100 text-orange-800">
-                Consulting
+                Consulting Service
               </span>
               {service.price && (
                 <span className="text-2xl font-bold text-blue-600">
@@ -129,19 +137,106 @@ export default function ConsultingClient({ service }: { service: ConsultingServi
               {service.title}
             </h1>
             
+            {/* Description */}
             <div className="prose prose-lg max-w-none mb-8">
               <p className="text-gray-600 leading-relaxed">
                 {service.description}
               </p>
             </div>
 
+            {/* Key Information Badges */}
+            <div className="flex flex-wrap gap-4 mb-8">
+              {service.duration && (
+                <div className="bg-orange-100 text-orange-800 text-sm font-semibold px-4 py-2 rounded-full">
+                  Duration: {service.duration}
+                </div>
+              )}
+              {service.category && (
+                <div className="bg-blue-100 text-blue-800 text-sm font-semibold px-4 py-2 rounded-full">
+                  {service.category}
+                </div>
+              )}
+            </div>
+
+            {/* Service Objectives */}
+            {service.objectives && service.objectives.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Service Objectives</h3>
+                <div className="bg-orange-50 p-6 rounded-lg">
+                  <ul className="space-y-3">
+                    {service.objectives.map((objective, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-orange-600 mr-3 mt-1">•</span>
+                        <span className="text-gray-700 leading-relaxed">{objective}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Target Audience */}
+            {service.target_audience && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Target Audience</h3>
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed">{service.target_audience}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Service Benefits */}
+            {service.benefits && service.benefits.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Key Benefits</h3>
+                <div className="bg-green-50 p-6 rounded-lg">
+                  <ul className="space-y-3">
+                    {service.benefits.map((benefit, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-green-600 mr-3 mt-1">✓</span>
+                        <span className="text-gray-700 leading-relaxed">{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Service Deliverables */}
+            {service.deliverables && service.deliverables.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Service Deliverables</h3>
+                <div className="bg-blue-50 p-6 rounded-lg">
+                  <ul className="space-y-3">
+                    {service.deliverables.map((deliverable, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-blue-600 mr-3 mt-1">📋</span>
+                        <span className="text-gray-700 leading-relaxed">{deliverable}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Methodology */}
+            {service.methodology && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Our Approach</h3>
+                <div className="bg-purple-50 p-6 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed">{service.methodology}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Payment and Enquiry Section */}
             <div className="bg-gray-50 p-6 rounded-lg">
               {service.price && (
                 <div className="mb-8">
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">RM {service.price.toFixed(2)}</h3>
                   <button 
                     onClick={handlePayment}
-                    className="w-full bg-blue-600 text-white px-8 py-3 rounded-md font-semibold hover:bg-blue-700 transition-colors"
+                    className="w-full bg-orange-600 text-white px-8 py-3 rounded-md font-semibold hover:bg-orange-700 transition-colors"
                   >
                     Book Now
                   </button>
@@ -163,7 +258,7 @@ export default function ConsultingClient({ service }: { service: ConsultingServi
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                     placeholder="Your Name"
                   />
                 </div>
@@ -178,7 +273,7 @@ export default function ConsultingClient({ service }: { service: ConsultingServi
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                     placeholder="Your Email"
                   />
                 </div>
@@ -192,7 +287,7 @@ export default function ConsultingClient({ service }: { service: ConsultingServi
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                     placeholder="Your Phone (Optional)"
                   />
                 </div>
@@ -206,7 +301,7 @@ export default function ConsultingClient({ service }: { service: ConsultingServi
                     name="company"
                     value={formData.company}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                     placeholder="Your Company (Optional)"
                   />
                 </div>
@@ -221,7 +316,7 @@ export default function ConsultingClient({ service }: { service: ConsultingServi
                     rows={4}
                     value={formData.message}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                     placeholder="Your Message"
                   />
                 </div>

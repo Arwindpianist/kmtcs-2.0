@@ -13,7 +13,13 @@ interface TrainingCourse {
   target_audience: string;
   prerequisites: string;
   course_outline: string;
+  objectives: string[];
+  course_contents: string;
+  methodology: string;
+  certification: string;
+  hrdcorp_approval_no: string;
   status: boolean;
+  image_url?: string;
 }
 
 export default function NonTechnicalTrainingClient({ course }: { course: TrainingCourse }) {
@@ -150,29 +156,103 @@ export default function NonTechnicalTrainingClient({ course }: { course: Trainin
 
             <div className="flex flex-wrap gap-4 mb-8">
               {course.duration && (
-                <div className="bg-blue-100 text-blue-800 text-sm font-semibold mr-2 px-4 py-2 rounded-full">
+                <div className="bg-green-100 text-green-800 text-sm font-semibold px-4 py-2 rounded-full">
                   Duration: {course.duration}
                 </div>
               )}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              <div>
-                <h3 className="font-semibold text-gray-800">Target Audience:</h3>
-                <p>{course.target_audience}</p>
-              </div>
-              {course.prerequisites && (
-                <div>
-                  <h3 className="font-semibold text-gray-800">Prerequisites:</h3>
-                  <p>{course.prerequisites}</p>
+              {course.hrdcorp_approval_no && (
+                <div className="bg-blue-100 text-blue-800 text-sm font-semibold px-4 py-2 rounded-full">
+                  HRDCorp Claimable
+                </div>
+              )}
+              {course.certification && (
+                <div className="bg-purple-100 text-purple-800 text-sm font-semibold px-4 py-2 rounded-full">
+                  Certification Included
                 </div>
               )}
             </div>
 
+            {course.objectives && course.objectives.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Course Objectives</h3>
+                <div className="bg-green-50 p-6 rounded-lg">
+                  <ul className="space-y-3">
+                    {course.objectives.map((objective, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-green-600 mr-3 mt-1">•</span>
+                        <span className="text-gray-700 leading-relaxed">{objective}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              {course.target_audience && (
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <h3 className="font-bold text-gray-900 mb-3">Target Audience</h3>
+                  <p className="text-gray-700 leading-relaxed">{course.target_audience}</p>
+                </div>
+              )}
+              {course.prerequisites && (
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <h3 className="font-bold text-gray-900 mb-3">Prerequisites</h3>
+                  <p className="text-gray-700 leading-relaxed">{course.prerequisites}</p>
+                </div>
+              )}
+            </div>
+
+            {course.course_contents && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Course Contents</h3>
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <div className="prose prose-gray max-w-none">
+                    <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                      {course.course_contents}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {course.course_outline && (
-              <div className="prose max-w-none mb-8">
-                <h3 className="font-semibold text-gray-800 text-xl mb-2">Course Outline</h3>
-                <div dangerouslySetInnerHTML={{ __html: course.course_outline }} />
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Course Outline</h3>
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <div className="prose prose-gray max-w-none">
+                    <div dangerouslySetInnerHTML={{ __html: course.course_outline }} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {course.methodology && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Training Methodology</h3>
+                <div className="bg-orange-50 p-6 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed">{course.methodology}</p>
+                </div>
+              </div>
+            )}
+
+            {course.certification && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Certification</h3>
+                <div className="bg-green-50 p-6 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed">{course.certification}</p>
+                </div>
+              </div>
+            )}
+
+            {course.hrdcorp_approval_no && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">HRDCorp Approval</h3>
+                <div className="bg-blue-50 p-6 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed">
+                    This course is HRDCorp claimable. Approval Number: <strong>{course.hrdcorp_approval_no}</strong>
+                  </p>
+                </div>
               </div>
             )}
 
@@ -182,7 +262,7 @@ export default function NonTechnicalTrainingClient({ course }: { course: Trainin
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">RM {course.price.toFixed(2)}</h3>
                   <button 
                     onClick={handlePayment}
-                    className="w-full bg-blue-600 text-white px-8 py-3 rounded-md font-semibold hover:bg-blue-700 transition-colors"
+                    className="w-full bg-green-600 text-white px-8 py-3 rounded-md font-semibold hover:bg-green-700 transition-colors"
                   >
                     Enroll Now
                   </button>
@@ -204,7 +284,7 @@ export default function NonTechnicalTrainingClient({ course }: { course: Trainin
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="Your Name"
                   />
                 </div>
@@ -219,7 +299,7 @@ export default function NonTechnicalTrainingClient({ course }: { course: Trainin
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="Your Email"
                   />
                 </div>
@@ -233,7 +313,7 @@ export default function NonTechnicalTrainingClient({ course }: { course: Trainin
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="Your Phone (Optional)"
                   />
                 </div>
@@ -247,7 +327,7 @@ export default function NonTechnicalTrainingClient({ course }: { course: Trainin
                     name="company"
                     value={formData.company}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="Your Company (Optional)"
                   />
                 </div>
@@ -262,7 +342,7 @@ export default function NonTechnicalTrainingClient({ course }: { course: Trainin
                     rows={4}
                     value={formData.message}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="Your Message"
                   />
                 </div>
