@@ -41,7 +41,7 @@ export default function ServicesOverview({ services }: { services: ServiceItem[]
   }
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-background-secondary">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -49,10 +49,10 @@ export default function ServicesOverview({ services }: { services: ServiceItem[]
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-primary mb-6">
             Our Services
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-secondary max-w-3xl mx-auto">
             Discover our comprehensive range of training and consulting services designed to elevate your organization's capabilities.
           </p>
         </motion.div>
@@ -67,7 +67,7 @@ export default function ServicesOverview({ services }: { services: ServiceItem[]
               whileHover={{ y: -5 }}
             >
               <Link href={getServiceUrl(service)}>
-                <div className="bg-gray-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group h-full flex flex-col">
+                <div className="bg-card rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group h-full flex flex-col border border-theme">
                   <div className="p-6 flex-grow">
                     <div className="flex items-center justify-between mb-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(service.category)}`}>
@@ -79,17 +79,17 @@ export default function ServicesOverview({ services }: { services: ServiceItem[]
                         </span>
                       )}
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-xl font-bold text-primary mb-3 group-hover:text-blue-600 transition-colors">
                       {service.title}
                     </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-secondary mb-4 line-clamp-3">
                       {service.description}
                     </p>
                   </div>
-                  <div className="p-6 bg-gray-100/50">
+                  <div className="p-6 bg-background-secondary">
                     <div className="flex items-center justify-between">
                       {service.duration && (
-                        <span className="text-sm text-gray-500 flex items-center">
+                        <span className="text-sm text-secondary flex items-center">
                           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
@@ -115,7 +115,7 @@ export default function ServicesOverview({ services }: { services: ServiceItem[]
         >
           <Link
             href="/services"
-            className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300 shadow-lg hover:shadow-xl"
+            className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-300 shadow-lg hover:shadow-xl"
           >
             View All Services
             <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -157,9 +157,9 @@ export default function ContactPage() {
                 <h3 className="text-lg font-semibold text-gray-900">Visit Us</h3>
               </div>
               <p className="text-gray-600">
-                No. 123, Jalan ABC,<br />
-                Taman XYZ, 50000<br />
-                Kuala Lumpur, Malaysia
+                D5-10-3A Evergreen Park Scot Pine,<br />
+                Persiaran SL 1, Bandar Sungai Long,<br />
+                43000 Kajang, Selangor.
               </p>
             </motion.div>
           </div>

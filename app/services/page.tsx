@@ -1,11 +1,10 @@
 // app/services/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { supabase } from '@/app/lib/supabase';
 import FilterButtons from '@/app/components/FilterButtons';
 import BackgroundLines from '../components/BackgroundLines';
 
@@ -59,46 +58,43 @@ export default function ServicesPage() {
     async function loadData() {
       try {
         // Fetch technical trainings
-        const { data: technicalData, error: technicalError } = await supabase
-          .from('technical_trainings')
-          .select('*')
-          .eq('status', true)
-          .order('created_at', { ascending: false });
-        
-        if (technicalError) throw technicalError;
+        const technicalResponse = await fetch('/api/technical-trainings?status=true');
+        if (!technicalResponse.ok) {
+          throw new Error('Failed to fetch technical trainings');
+        }
+        const technicalResult = await technicalResponse.json();
+        const technicalData = technicalResult.data || [];
 
         // Fetch non-technical trainings
-        const { data: nonTechnicalData, error: nonTechnicalError } = await supabase
-          .from('non_technical_trainings')
-          .select('*')
-          .eq('status', true)
-          .order('created_at', { ascending: false });
-        
-        if (nonTechnicalError) throw nonTechnicalError;
+        const nonTechnicalResponse = await fetch('/api/non-technical-trainings?status=true');
+        if (!nonTechnicalResponse.ok) {
+          throw new Error('Failed to fetch non-technical trainings');
+        }
+        const nonTechnicalResult = await nonTechnicalResponse.json();
+        const nonTechnicalData = nonTechnicalResult.data || [];
 
         // Fetch consulting services
-        const { data: consultingData, error: consultingError } = await supabase
-          .from('consulting_services')
-          .select('*')
-          .eq('status', true)
-          .order('created_at', { ascending: false });
-        
-        if (consultingError) throw consultingError;
+        const consultingResponse = await fetch('/api/consulting-services?status=true');
+        if (!consultingResponse.ok) {
+          throw new Error('Failed to fetch consulting services');
+        }
+        const consultingResult = await consultingResponse.json();
+        const consultingData = consultingResult.data || [];
 
         // Add category field to each service type
-        const technicalWithCategory = (technicalData || []).map(item => ({
+        const technicalWithCategory = technicalData.map((item: any) => ({
           ...item,
           category: 'Technical Training',
           image_url: item.image_url || null
         }));
         
-        const nonTechnicalWithCategory = (nonTechnicalData || []).map(item => ({
+        const nonTechnicalWithCategory = nonTechnicalData.map((item: any) => ({
           ...item,
           category: 'Non-Technical Training',
           image_url: item.image_url || null
         }));
         
-        const consultingWithCategory = (consultingData || []).map(item => ({
+        const consultingWithCategory = (consultingData || []).map((item: any) => ({
           ...item,
           category: 'Consulting',
           image_url: item.image_url || null

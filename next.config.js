@@ -12,7 +12,7 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'hrdcorp.gov.my',
         port: '',
-        pathname: '/uc/**',
+        pathname: '/**',
       },
       {
         protocol: 'https',

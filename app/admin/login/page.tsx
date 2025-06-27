@@ -25,17 +25,13 @@ export default function AdminLogin() {
       if (signInError) throw signInError;
 
       if (session) {
-        // Check if user has admin/editor role
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-
-        if (userError) throw userError;
-
-        if (!userData || !['admin', 'editor'].includes(userData.role)) {
-          throw new Error('Unauthorized access');
+        // Check if user email is authorized
+        const userEmail = session.user.email;
+        const authorizedEmails = ['admin@kmtcs.com.my', 'info@kmtcs.com.my']; // Replace with your actual admin emails
+        
+        if (!userEmail || !authorizedEmails.includes(userEmail)) {
+          await supabase.auth.signOut();
+          throw new Error('Access denied. Only authorized administrators can access this area.');
         }
 
         router.push('/admin');
@@ -55,6 +51,7 @@ export default function AdminLogin() {
             Admin Login
           </h2>
           <p className="text-gray-600">Sign in to access the admin dashboard</p>
+          <p className="text-sm text-gray-500 mt-2">Only authorized administrators can access this area</p>
         </div>
       </div>
 

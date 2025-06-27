@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/app/lib/supabase';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -32,14 +31,12 @@ export default function TechnicalTrainingsPage() {
 
   const loadTrainings = async () => {
     try {
-      const { data, error } = await supabase
-        .from('technical_trainings')
-        .select('*')
-        .eq('status', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setTrainings(data || []);
+      const response = await fetch('/api/technical-trainings?status=true');
+      if (!response.ok) {
+        throw new Error('Failed to fetch trainings');
+      }
+      const result = await response.json();
+      setTrainings(result.data || []);
     } catch (error) {
       console.error('Error loading trainings:', error);
     } finally {

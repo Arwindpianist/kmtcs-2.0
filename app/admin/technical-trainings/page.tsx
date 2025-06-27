@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/app/lib/supabase';
 import TrainingCourseForm from '@/app/components/TrainingCourseForm';
 
 interface TrainingCourse {
@@ -33,13 +32,12 @@ export default function TechnicalTrainingsAdmin() {
 
   const loadCourses = async () => {
     try {
-      const { data, error } = await supabase
-        .from('technical_trainings')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setCourses(data || []);
+      const response = await fetch('/api/technical-trainings');
+      if (!response.ok) {
+        throw new Error('Failed to fetch courses');
+      }
+      const result = await response.json();
+      setCourses(result.data || []);
     } catch (error) {
       console.error('Error loading courses:', error);
     } finally {
@@ -52,19 +50,30 @@ export default function TechnicalTrainingsAdmin() {
     try {
       if (editingCourse) {
         // Update existing course
-        const { error } = await supabase
-          .from('technical_trainings')
-          .update(courseData)
-          .eq('id', editingCourse.id);
+        const response = await fetch('/api/technical-trainings', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ...courseData, id: editingCourse.id }),
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error('Failed to update course');
+        }
       } else {
         // Create new course
-        const { error } = await supabase
-          .from('technical_trainings')
-          .insert(courseData);
+        const response = await fetch('/api/technical-trainings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(courseData),
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error('Failed to create course');
+        }
       }
 
       await loadCourses();
@@ -87,12 +96,14 @@ export default function TechnicalTrainingsAdmin() {
     if (!confirm('Are you sure you want to delete this course?')) return;
 
     try {
-      const { error } = await supabase
-        .from('technical_trainings')
-        .delete()
-        .eq('id', id);
+      const response = await fetch(`/api/technical-trainings?id=${id}`, {
+        method: 'DELETE',
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Failed to delete course');
+      }
+
       await loadCourses();
     } catch (error) {
       console.error('Error deleting course:', error);

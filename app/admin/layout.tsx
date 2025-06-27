@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabase';
 import Link from 'next/link';
@@ -20,30 +20,66 @@ interface AdminLayoutProps {
   children: ReactNode;
 }
 
+// List of authorized admin emails - replace with your actual admin emails
+const AUTHORIZED_ADMIN_EMAILS = [
+  'admin@kmtcs.com.my',  // Replace with your first admin email
+  'info@kmtcs.com.my'    // Replace with your second admin email
+];
+
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error || !session) {
-        router.push('/admin/login');
-        return;
-      }
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error || !session) {
+          router.push('/admin/login');
+          return;
+        }
 
-      // For now, allow any authenticated user to access admin
-      // In the future, you can add role checking when the users table is created
-      console.log('User authenticated:', session.user.email);
+        // Check if the user's email is in the authorized list
+        const userEmail = session.user.email;
+        if (!userEmail || !AUTHORIZED_ADMIN_EMAILS.includes(userEmail)) {
+          console.log('Unauthorized access attempt:', userEmail);
+          await supabase.auth.signOut();
+          router.push('/admin/login');
+          return;
+        }
+
+        setIsAuthorized(true);
+        console.log('Authorized admin access:', userEmail);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        router.push('/admin/login');
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     checkAuth();
 
     // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
+        setIsAuthorized(false);
         router.push('/admin/login');
+        return;
       }
+
+      // Re-check authorization on auth state change
+      const userEmail = session.user.email;
+      if (!userEmail || !AUTHORIZED_ADMIN_EMAILS.includes(userEmail)) {
+        setIsAuthorized(false);
+        await supabase.auth.signOut();
+        router.push('/admin/login');
+        return;
+      }
+
+      setIsAuthorized(true);
     });
 
     return () => {
@@ -55,6 +91,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     await supabase.auth.signOut();
     router.push('/admin/login');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking authorization...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null; // Will redirect to login
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

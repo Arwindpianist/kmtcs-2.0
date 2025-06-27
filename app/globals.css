@@ -3,17 +3,45 @@
 @tailwind utilities;
 
 :root {
-  --baby-blue: #89CFF0;
+  --background-primary: #f8fafc;
+  --background-secondary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent-blue: #3b82f6;
+  --border-color: #e2e8f0;
+  --card-background: #ffffff;
+  --hover-background: #f8fafc;
+}
+
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 body {
-  background-color: var(--baby-blue);
-  color: #1e3a8a;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
 }
 
 @layer utilities {
-  .bg-baby-blue {
-    background-color: var(--baby-blue);
+  .bg-mellow-blue {
+    background-color: var(--background-primary);
+  }
+  
+  .bg-card {
+    background-color: var(--card-background);
+  }
+  
+  .text-primary {
+    color: var(--text-primary);
+  }
+  
+  .text-secondary {
+    color: var(--text-secondary);
+  }
+  
+  .border-theme {
+    border-color: var(--border-color);
   }
 }
 

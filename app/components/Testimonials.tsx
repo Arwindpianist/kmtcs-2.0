@@ -45,9 +45,9 @@ const Testimonials = () => {
   };
 
   return (
-    <section className="bg-gray-50 py-20">
+    <section className="bg-background-secondary py-20">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
+        <h2 className="text-3xl font-bold text-center text-primary mb-12">
           What Our Clients Say
         </h2>
         <div className="max-w-3xl mx-auto">

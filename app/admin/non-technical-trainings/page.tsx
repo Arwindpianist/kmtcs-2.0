@@ -33,13 +33,12 @@ export default function NonTechnicalTrainingsAdmin() {
 
   const loadCourses = async () => {
     try {
-      const { data, error } = await supabase
-        .from('non_technical_trainings')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setCourses(data || []);
+      const response = await fetch('/api/non-technical-trainings');
+      if (!response.ok) {
+        throw new Error('Failed to fetch courses');
+      }
+      const result = await response.json();
+      setCourses(result.data || []);
     } catch (error) {
       console.error('Error loading courses:', error);
     } finally {
@@ -52,19 +51,30 @@ export default function NonTechnicalTrainingsAdmin() {
     try {
       if (editingCourse) {
         // Update existing course
-        const { error } = await supabase
-          .from('non_technical_trainings')
-          .update(courseData)
-          .eq('id', editingCourse.id);
+        const response = await fetch('/api/non-technical-trainings', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ...courseData, id: editingCourse.id }),
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error('Failed to update course');
+        }
       } else {
         // Create new course
-        const { error } = await supabase
-          .from('non_technical_trainings')
-          .insert(courseData);
+        const response = await fetch('/api/non-technical-trainings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(courseData),
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error('Failed to create course');
+        }
       }
 
       await loadCourses();
@@ -87,12 +97,14 @@ export default function NonTechnicalTrainingsAdmin() {
     if (!confirm('Are you sure you want to delete this course?')) return;
 
     try {
-      const { error } = await supabase
-        .from('non_technical_trainings')
-        .delete()
-        .eq('id', id);
+      const response = await fetch(`/api/non-technical-trainings?id=${id}`, {
+        method: 'DELETE',
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Failed to delete course');
+      }
+
       await loadCourses();
     } catch (error) {
       console.error('Error deleting course:', error);

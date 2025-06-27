@@ -39,7 +39,7 @@ const Hero = () => {
         >
           <Link 
             href="/services"
-            className="inline-block bg-blue-600 text-white font-semibold px-8 py-4 rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
           >
             Explore Our Services
           </Link>
@@ -54,14 +54,14 @@ const Hero = () => {
           <h3 className="text-sm font-bold text-gray-500 tracking-wider uppercase mb-4">
             Our Certifications
           </h3>
-          <div className="flex justify-center items-center space-x-6">
+          <div className="flex justify-center items-center space-x-8">
             {certifications.map(cert => (
-              <div key={cert.name} className="relative h-12 w-24 grayscale hover:grayscale-0 transition-all duration-300">
+              <div key={cert.name} className="relative h-16 w-32 grayscale hover:grayscale-0 transition-all duration-300">
                 <Image
                   src={cert.logo}
                   alt={cert.name}
-                  layout="fill"
-                  objectFit="contain"
+                  fill
+                  className="object-contain"
                   title={cert.name}
                 />
               </div>
