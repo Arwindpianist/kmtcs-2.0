@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Image from "next/image";
 
 interface ClientProps {
   name: string;
@@ -12,8 +12,9 @@ const Client = ({ name, logo }: ClientProps) => {
         <Image
           src={logo}
           alt={name}
-          layout="fill"
-          objectFit="contain"
+          fill
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
+          style={{ objectFit: 'contain' }}
         />
       </div>
     </div>

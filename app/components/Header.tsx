@@ -90,6 +90,7 @@ function HeaderContent() {
               alt="KMTCS Logo"
               width={64}
               height={64}
+              priority
             />
           </Link>
         </div>
@@ -229,6 +230,7 @@ function HeaderContent() {
                 alt="KMTCS Logo"
                 width={32}
                 height={32}
+                priority
               />
             </Link>
             <button

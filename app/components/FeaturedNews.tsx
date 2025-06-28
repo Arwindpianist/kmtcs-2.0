@@ -55,12 +55,11 @@ export default function FeaturedNews({ news }: FeaturedNewsProps) {
               >
                 {item.image && (
                   <div className={`relative overflow-hidden ${index === 0 ? 'h-64' : 'h-48'}`}>
-                    <Image
+                    <img
                       src={item.image}
                       alt={item.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      sizes={index === 0 ? "(max-width: 768px) 100vw, 66vw" : "(max-width: 768px) 100vw, 33vw"}
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                      style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                     <div className="absolute top-4 left-4 flex gap-2">
