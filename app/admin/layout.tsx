@@ -270,7 +270,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </li>
               <li>
                 <Link
-                  href="/admin/consulting-services"
+                  href="/admin/services"
                   className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
                 >
                   <BriefcaseIcon className="w-5 h-5 mr-3" />
