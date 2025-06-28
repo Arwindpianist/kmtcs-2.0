@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabase';
+import { AdminAuthService } from '@/app/lib/adminAuth';
+import type { AdminUser } from '@/app/lib/adminAuth';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -22,17 +24,12 @@ interface AdminLayoutProps {
   children: ReactNode;
 }
 
-// List of authorized admin emails - replace with your actual admin emails
-const AUTHORIZED_ADMIN_EMAILS = [
-  'admin@kmtcs.com.my',  // Replace with your first admin email
-  'info@kmtcs.com.my'    // Replace with your second admin email
-];
-
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentAdmin, setCurrentAdmin] = useState<AdminUser | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -40,21 +37,30 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error || !session) {
+          console.log('No session found, redirecting to login');
           router.push('/admin/login');
           return;
         }
 
-        // Check if the user's email is in the authorized list
-        const userEmail = session.user.email;
-        if (!userEmail || !AUTHORIZED_ADMIN_EMAILS.includes(userEmail)) {
-          console.log('Unauthorized access attempt:', userEmail);
+        // Check if the user is an admin using our service
+        const isAdmin = await AdminAuthService.isAdmin();
+        if (!isAdmin) {
+          console.log('User is not an admin, redirecting to login');
           await supabase.auth.signOut();
           router.push('/admin/login');
           return;
         }
 
+        // Get admin user data
+        const adminUser = await AdminAuthService.getCurrentAdmin();
+        if (adminUser) {
+          setCurrentAdmin(adminUser);
+          // Update last sign in
+          await AdminAuthService.updateLastSignIn(adminUser.id);
+        }
+
         setIsAuthorized(true);
-        console.log('Authorized admin access:', userEmail);
+        console.log('Authorized admin access:', adminUser?.email);
       } catch (error) {
         console.error('Auth check error:', error);
         router.push('/admin/login');
@@ -69,19 +75,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
         setIsAuthorized(false);
+        setCurrentAdmin(null);
         router.push('/admin/login');
         return;
       }
 
       // Re-check authorization on auth state change
-      const userEmail = session.user.email;
-      if (!userEmail || !AUTHORIZED_ADMIN_EMAILS.includes(userEmail)) {
+      const isAdmin = await AdminAuthService.isAdmin();
+      if (!isAdmin) {
         setIsAuthorized(false);
+        setCurrentAdmin(null);
         await supabase.auth.signOut();
         router.push('/admin/login');
         return;
       }
 
+      const adminUser = await AdminAuthService.getCurrentAdmin();
+      setCurrentAdmin(adminUser);
       setIsAuthorized(true);
     });
 
@@ -91,7 +101,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }, [router]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await AdminAuthService.signOut();
     router.push('/admin/login');
   };
 
@@ -145,13 +155,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <span className="ml-3 lg:ml-4 text-lg lg:text-xl font-semibold text-gray-900">Admin Panel</span>
             </Link>
           </div>
-          <button
-            onClick={handleSignOut}
-            className="flex items-center px-3 lg:px-4 py-2 lg:py-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors text-sm lg:text-base"
-          >
-            <ArrowRightOnRectangleIcon className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Sign Out</span>
-          </button>
+          
+          <div className="flex items-center space-x-4">
+            {currentAdmin && (
+              <div className="hidden sm:block text-right">
+                <p className="text-sm font-medium text-gray-900">{currentAdmin.full_name || currentAdmin.email}</p>
+                <p className="text-xs text-gray-500 capitalize">{currentAdmin.role}</p>
+              </div>
+            )}
+            <button
+              onClick={handleSignOut}
+              className="flex items-center px-3 lg:px-4 py-2 lg:py-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors text-sm lg:text-base"
+            >
+              <ArrowRightOnRectangleIcon className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          </div>
         </div>
       </header>
 

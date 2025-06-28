@@ -3,65 +3,57 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabase';
-import { AdminAuthService } from '@/app/lib/adminAuth';
 import Link from 'next/link';
 
-export default function AdminLogin() {
+export default function AdminSignup() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
-    
-    // Check if user is already logged in and is an admin
-    const checkExistingSession = async () => {
-      const isAdmin = await AdminAuthService.isAdmin();
-      if (isAdmin) {
-        router.push('/admin');
-      }
-    };
-    
-    checkExistingSession();
-  }, [router]);
+  }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
     setLoading(true);
 
     try {
-      console.log('Attempting login with:', email);
+      console.log('Attempting signup with:', email);
       
-      const { data: { session }, error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+          }
+        }
       });
 
-      if (signInError) {
-        console.error('Sign in error:', signInError);
-        throw signInError;
+      if (signUpError) {
+        console.error('Sign up error:', signUpError);
+        throw signUpError;
       }
 
-      if (session) {
-        console.log('Login successful, checking admin status');
+      if (user) {
+        console.log('Signup successful, user created:', user.id);
+        setSuccess('Account created successfully! Please check your email for verification. After verifying your email, you will need to be granted admin access by an existing administrator.');
         
-        // Check if the user is an admin
-        const isAdmin = await AdminAuthService.isAdmin();
-        if (!isAdmin) {
-          console.log('User is not an admin');
-          await supabase.auth.signOut();
-          throw new Error('Access denied. Only authorized administrators can access this area.');
-        }
-
-        console.log('Admin access granted, redirecting to admin panel');
-        router.push('/admin');
+        // Clear form
+        setEmail('');
+        setPassword('');
+        setFullName('');
       }
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('Signup error:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -85,22 +77,46 @@ export default function AdminLogin() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Admin Login
+            Admin Signup
           </h2>
-          <p className="text-gray-600">Sign in to access the admin dashboard</p>
-          <p className="text-sm text-gray-500 mt-2">Only authorized administrators can access this area</p>
+          <p className="text-gray-600">Create a new admin account</p>
+          <p className="text-sm text-gray-500 mt-2">After signup, you'll need admin access granted by an existing administrator</p>
         </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-8 shadow-sm border border-gray-200 rounded-xl">
-          <form className="space-y-6" onSubmit={handleLogin}>
+          <form className="space-y-6" onSubmit={handleSignup}>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
                 <strong className="font-medium">Error:</strong>
                 <span className="ml-2">{error}</span>
               </div>
             )}
+
+            {success && (
+              <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg">
+                <strong className="font-medium">Success:</strong>
+                <span className="ml-2">{success}</span>
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name
+              </label>
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                autoComplete="name"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter your full name"
+              />
+            </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -127,12 +143,13 @@ export default function AdminLogin() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your password"
+                minLength={6}
               />
             </div>
 
@@ -142,16 +159,16 @@ export default function AdminLogin() {
                 disabled={loading}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
               >
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? 'Creating account...' : 'Create account'}
               </button>
             </div>
 
             <div className="text-center">
               <Link 
-                href="/admin/signup" 
+                href="/admin/login" 
                 className="text-sm text-blue-600 hover:text-blue-500"
               >
-                Need an admin account? Sign up
+                Already have an account? Sign in
               </Link>
             </div>
           </form>
