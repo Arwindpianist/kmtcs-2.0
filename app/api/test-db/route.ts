@@ -1,26 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+import { createSupabaseServerClient } from '@/app/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Testing database connection and admin tables...');
-    console.log('Supabase URL:', supabaseUrl ? 'Set' : 'Missing');
-    console.log('Service Key:', supabaseServiceKey ? 'Set' : 'Missing');
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      return NextResponse.json({ 
-        error: 'Missing environment variables',
-        supabaseUrl: !!supabaseUrl,
-        serviceKey: !!supabaseServiceKey
-      }, { status: 500 });
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
+    const supabase = createSupabaseServerClient();
+    
     // Test all tables needed by admin dashboard
     const tables = [
       'technical_trainings',
@@ -38,7 +22,7 @@ export async function GET(request: NextRequest) {
         const { data, error, count } = await supabase
           .from(table)
           .select('*', { count: 'exact', head: true });
-
+        
         if (error) {
           results[table] = {
             exists: false,
@@ -64,7 +48,7 @@ export async function GET(request: NextRequest) {
     const allTablesExist = Object.values(results).every((result: any) => result.exists);
     const allTablesAccessible = Object.values(results).every((result: any) => result.accessible);
 
-    return NextResponse.json({
+    return NextResponse.json({ 
       success: allTablesExist && allTablesAccessible,
       message: allTablesExist && allTablesAccessible 
         ? 'All admin tables exist and are accessible' 
@@ -78,9 +62,10 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Test error:', error);
+    console.error('Test API error:', error);
     return NextResponse.json({ 
-      error: `Test failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 } 

@@ -74,12 +74,23 @@ async function fetchServices() {
   try {
     console.log('Fetching services for home page...');
     
-    // Fetch all services data using API routes
+    // Fetch all services data using API routes with relative URLs
     const [technicalResponse, nonTechnicalResponse, consultingResponse] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/technical-trainings?status=true&limit=3`),
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/non-technical-trainings?status=true&limit=3`),
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/consulting-services?status=true&limit=3`)
+      fetch('/api/technical-trainings?status=true&limit=3'),
+      fetch('/api/non-technical-trainings?status=true&limit=3'),
+      fetch('/api/consulting-services?status=true&limit=3')
     ]);
+
+    // Check if responses are ok
+    if (!technicalResponse.ok) {
+      console.error('Technical trainings API error:', technicalResponse.status, technicalResponse.statusText);
+    }
+    if (!nonTechnicalResponse.ok) {
+      console.error('Non-technical trainings API error:', nonTechnicalResponse.status, nonTechnicalResponse.statusText);
+    }
+    if (!consultingResponse.ok) {
+      console.error('Consulting services API error:', consultingResponse.status, consultingResponse.statusText);
+    }
 
     const technicalData = await technicalResponse.json();
     const nonTechnicalData = await nonTechnicalResponse.json();
@@ -89,20 +100,37 @@ async function fetchServices() {
     console.log('Non-technical trainings:', nonTechnicalData.data?.length || 0);
     console.log('Consulting services:', consultingData.data?.length || 0);
 
+    // Log any errors from the API responses
+    if (technicalData.error) console.error('Technical trainings error:', technicalData.error);
+    if (nonTechnicalData.error) console.error('Non-technical trainings error:', nonTechnicalData.error);
+    if (consultingData.error) console.error('Consulting services error:', consultingData.error);
+
     // Combine and format the services
     const allServices: ServiceItem[] = [
       ...(technicalData.data || []).map((item: any) => ({
-        ...item,
+        id: item.id,
+        title: item.title,
+        description: item.description || '',
+        price: item.price,
+        duration: item.duration || '',
         category: 'Technical Training',
         serviceType: 'technical-training' as const
       })),
       ...(nonTechnicalData.data || []).map((item: any) => ({
-        ...item,
+        id: item.id,
+        title: item.title,
+        description: item.description || '',
+        price: item.price,
+        duration: item.duration || '',
         category: 'Non-Technical Training',
         serviceType: 'non-technical-training' as const
       })),
       ...(consultingData.data || []).map((item: any) => ({
-        ...item,
+        id: item.id,
+        title: item.title,
+        description: item.description || '',
+        price: item.price,
+        duration: item.duration || '',
         category: 'Consulting',
         serviceType: 'consulting' as const
       }))
@@ -120,8 +148,14 @@ export default async function Home() {
   // Fetch services using API routes
   const allServices = await fetchServices();
 
+  // Log the raw data for debugging
+  console.log('Raw services data:', JSON.stringify(allServices, null, 2));
+
   // Shuffle and select a subset to display
   const shuffledServices = allServices.sort(() => 0.5 - Math.random()).slice(0, 6)
+
+  console.log('Services being passed to component:', shuffledServices.length);
+  console.log('Sample service:', shuffledServices[0]);
 
   return (
     <main>
