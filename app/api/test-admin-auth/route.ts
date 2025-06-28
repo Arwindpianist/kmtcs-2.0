@@ -1,25 +1,46 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import { supabase } from '@/app/lib/supabase';
 
 export async function GET() {
   try {
-    const supabase = createSupabaseServerClient();
+    const supabaseServer = createSupabaseServerClient();
     
     console.log('Testing admin authentication...');
     
-    // Test 1: Check if we can access the users table
-    const { data: users, error: usersError } = await supabase
+    // Test 1: Check current session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    // Test 2: Check if we can access the users table
+    const { data: users, error: usersError } = await supabaseServer
       .from('users')
       .select('*')
       .limit(5);
     
-    // Test 2: Check if there are any admin users
-    const { data: adminUsers, error: adminError } = await supabase
+    // Test 3: Check if there are any admin users
+    const { data: adminUsers, error: adminError } = await supabaseServer
       .from('users')
       .select('*')
       .eq('role', 'admin');
     
-    // Test 3: Check environment variables
+    // Test 4: Check if current user exists in users table
+    let currentUserInTable = null;
+    if (session?.user) {
+      const { data: currentUser, error: currentUserError } = await supabaseServer
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+      
+      currentUserInTable = {
+        found: !!currentUser,
+        isAdmin: currentUser?.role === 'admin',
+        user: currentUser,
+        error: currentUserError?.message
+      };
+    }
+    
+    // Test 5: Check environment variables
     const envCheck = {
       hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
       hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -27,10 +48,10 @@ export async function GET() {
       hasSiteUrl: !!process.env.NEXT_PUBLIC_SITE_URL
     };
     
-    // Test 4: Check if we can query the auth.users table (if it exists)
+    // Test 6: Check if we can query the auth.users table (if it exists)
     let authUsers = null;
     try {
-      const { data: authData, error: authError } = await supabase
+      const { data: authData, error: authError } = await supabaseServer
         .from('auth.users')
         .select('*')
         .limit(1);
@@ -50,6 +71,13 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       message: 'Admin authentication test results',
+      session: {
+        exists: !!session,
+        userId: session?.user?.id,
+        email: session?.user?.email,
+        error: sessionError?.message
+      },
+      currentUserInTable,
       usersTable: {
         accessible: !usersError,
         count: users?.length || 0,
