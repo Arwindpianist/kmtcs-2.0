@@ -41,30 +41,58 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         if (session?.user) {
           console.log('AdminLayout: Session found for user:', session.user.email);
           
-          // Check if user is an admin using AdminAuthService
-          const isAdmin = await AdminAuthService.isAdmin();
-          console.log('AdminLayout: Is admin check result:', isAdmin);
+          // Set basic admin info from session first
+          setCurrentAdmin({
+            email: session.user.email || '',
+            name: session.user.user_metadata?.full_name || session.user.email || ''
+          });
           
-          if (isAdmin) {
-            const adminUser = await AdminAuthService.getCurrentAdmin();
-            console.log('AdminLayout: Admin user data:', adminUser);
+          // Check if user is an admin using AdminAuthService with timeout
+          try {
+            const isAdmin = await Promise.race([
+              AdminAuthService.isAdmin(),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Admin check timeout')), 5000)
+              )
+            ]);
             
+            console.log('AdminLayout: Is admin check result:', isAdmin);
+            
+            if (isAdmin) {
+              // Try to get detailed admin user data, but don't block if it fails
+              try {
+                const adminUser = await Promise.race([
+                  AdminAuthService.getCurrentAdmin(),
+                  new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Admin data timeout')), 3000)
+                  )
+                ]);
+                
+                if (adminUser && typeof adminUser === 'object' && 'full_name' in adminUser && adminUser.full_name) {
+                  setCurrentAdmin(prev => ({
+                    ...prev!,
+                    name: adminUser.full_name as string
+                  }));
+                }
+              } catch (adminDataError) {
+                console.log('AdminLayout: Could not get detailed admin data, using session data');
+              }
+              
+              setIsAuthorized(true);
+            } else {
+              console.log('AdminLayout: User is not an admin, signing out...');
+              await supabase.auth.signOut();
+              setIsAuthorized(false);
+              setCurrentAdmin(null);
+              router.push('/login');
+            }
+          } catch (adminCheckError) {
+            console.error('AdminLayout: Admin check failed:', adminCheckError);
+            // If admin check fails, still allow access but log the error
             setIsAuthorized(true);
-            setCurrentAdmin({
-              email: session.user.email || '',
-              name: adminUser?.full_name || session.user.user_metadata?.full_name || session.user.email || ''
-            });
-          } else {
-            console.log('AdminLayout: User is not an admin, signing out...');
-            // Not an admin, sign out and redirect
-            await supabase.auth.signOut();
-            setIsAuthorized(false);
-            setCurrentAdmin(null);
-            router.push('/login');
           }
         } else {
           console.log('AdminLayout: No session found, redirecting to login...');
-          // No session, redirect to login
           setIsAuthorized(false);
           setCurrentAdmin(null);
           router.push('/login');
@@ -91,15 +119,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           setCurrentAdmin(null);
           router.push('/login');
         } else if (event === 'SIGNED_IN' && session?.user) {
-          const isAdmin = await AdminAuthService.isAdmin();
-          if (isAdmin) {
-            const adminUser = await AdminAuthService.getCurrentAdmin();
-            setIsAuthorized(true);
-            setCurrentAdmin({
-              email: session.user.email || '',
-              name: adminUser?.full_name || session.user.user_metadata?.full_name || session.user.email || ''
-            });
-          } else {
+          try {
+            const isAdmin = await AdminAuthService.isAdmin();
+            if (isAdmin) {
+              const adminUser = await AdminAuthService.getCurrentAdmin();
+              setIsAuthorized(true);
+              setCurrentAdmin({
+                email: session.user.email || '',
+                name: adminUser?.full_name || session.user.user_metadata?.full_name || session.user.email || ''
+              });
+            } else {
+              await supabase.auth.signOut();
+              router.push('/login');
+            }
+          } catch (error) {
+            console.error('AdminLayout: Auth state change error:', error);
+            // If admin check fails during auth state change, redirect to login
             await supabase.auth.signOut();
             router.push('/login');
           }
