@@ -2,8 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/app/lib/supabase';
-import Link from 'next/link';
+
+const ADMIN_USERS = [
+  {
+    email: process.env.NEXT_PUBLIC_ADMIN_EMAIL_1,
+    password: process.env.NEXT_PUBLIC_ADMIN_PASSWORD_1,
+    name: process.env.NEXT_PUBLIC_ADMIN_NAME_1,
+  },
+  {
+    email: process.env.NEXT_PUBLIC_ADMIN_EMAIL_2,
+    password: process.env.NEXT_PUBLIC_ADMIN_PASSWORD_2,
+    name: process.env.NEXT_PUBLIC_ADMIN_NAME_2,
+  },
+];
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -12,107 +23,59 @@ export default function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [supabaseStatus, setSupabaseStatus] = useState<string>('Checking...');
+  const [envDebug, setEnvDebug] = useState('');
 
   useEffect(() => {
-    console.log('AdminLogin component mounted');
     setIsClient(true);
-    
-    // Test Supabase connection
-    const testSupabase = async () => {
-      try {
-        console.log('Testing Supabase connection...');
-        setSupabaseStatus('Testing connection...');
-        
-        // Check if environment variables are set
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        
-        console.log('Supabase URL exists:', !!url);
-        console.log('Supabase Key exists:', !!key);
-        
-        if (!url || !key) {
-          setSupabaseStatus('Missing environment variables');
-          return;
-        }
-
-        // Try to get session
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Supabase session error:', error);
-          setSupabaseStatus('Connection error: ' + error.message);
-        } else {
-          console.log('Supabase connected successfully');
-          setSupabaseStatus('Connected successfully');
-          
-          if (session) {
-            console.log('Session found:', session.user.email);
-            setSupabaseStatus('Session found for: ' + session.user.email);
-          } else {
-            console.log('No session found');
-            setSupabaseStatus('No session found');
-          }
-        }
-      } catch (error) {
-        console.error('Supabase test error:', error);
-        setSupabaseStatus('Test failed: ' + error);
+    // If already logged in, redirect to /admin
+    if (typeof window !== 'undefined') {
+      const session = localStorage.getItem('admin_session');
+      if (session) {
+        router.push('/admin');
       }
-    };
-    
-    testSupabase();
-  }, []);
+    }
+    // Debug: check if env variables are set
+    const missing = ADMIN_USERS.filter(u => !u.email || !u.password).length > 0;
+    if (missing) {
+      setEnvDebug('One or more admin credentials are missing from environment variables.');
+    } else {
+      setEnvDebug('');
+    }
+  }, [router]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    try {
-      console.log('Attempting login with:', email);
-      
-      const { data: { session }, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) {
-        console.error('Sign in error:', signInError);
-        throw signInError;
-      }
-
-      if (session) {
-        console.log('Login successful:', session.user.email);
-        setError('Login successful! User: ' + session.user.email);
-        // For now, just show success instead of redirecting
-      }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
+    // Check credentials
+    const user = ADMIN_USERS.find(
+      (u) => u.email === email && u.password === password
+    );
+    if (user) {
+      // Save session in localStorage
+      localStorage.setItem(
+        'admin_session',
+        JSON.stringify({ email: user.email, name: user.name })
+      );
+      router.push('/admin');
+    } else {
+      setError('Invalid email or password');
     }
+    setLoading(false);
   };
 
-  // Don't render until client-side hydration is complete
   if (!isClient) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {/* Debug info */}
-      <div className="fixed top-4 left-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded text-sm max-w-md">
-        <strong>Supabase Status:</strong> {supabaseStatus}
-      </div>
-
+      {envDebug && (
+        <div className="fixed top-4 left-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded text-sm max-w-md z-50">
+          <strong>Debug:</strong> {envDebug}
+        </div>
+      )}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
@@ -175,15 +138,6 @@ export default function AdminLogin() {
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
-            </div>
-
-            <div className="text-center">
-              <Link 
-                href="/admin/signup" 
-                className="text-sm text-blue-600 hover:text-blue-500"
-              >
-                Need an admin account? Sign up
-              </Link>
             </div>
           </form>
         </div>

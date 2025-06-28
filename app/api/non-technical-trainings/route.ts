@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const id = searchParams.get('id');
+    const limit = searchParams.get('limit');
 
     const supabase = createSupabaseServerClient();
     
@@ -24,6 +25,13 @@ export async function GET(request: NextRequest) {
       
       if (status !== null) {
         query = query.eq('status', status === 'true');
+      }
+
+      if (limit !== null) {
+        const limitNum = parseInt(limit);
+        if (!isNaN(limitNum)) {
+          query = query.limit(limitNum);
+        }
       }
       
       result = await query.order('created_at', { ascending: false });

@@ -29,11 +29,22 @@ async function getService(id: string): Promise<ConsultingService | null> {
   if (error || !data) {
     return null;
   }
-  return data;
+
+  // Ensure arrays are properly initialized
+  const service: ConsultingService = {
+    ...data,
+    objectives: Array.isArray(data.objectives) ? data.objectives : [],
+    deliverables: Array.isArray(data.deliverables) ? data.deliverables : [],
+    benefits: Array.isArray(data.benefits) ? data.benefits : [],
+    category: data.category || 'General'
+  };
+
+  return service;
 }
 
-export default async function ConsultingServicePage({ params }: { params: { id: string } }) {
-  const service = await getService(params.id);
+export default async function ConsultingServicePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const service = await getService(id);
 
   if (!service) {
     notFound();

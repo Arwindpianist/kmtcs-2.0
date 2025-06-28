@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/app/lib/supabase';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -25,14 +24,13 @@ export default function ConsultingServicesPage() {
 
   const loadServices = async () => {
     try {
-      const { data, error } = await supabase
-        .from('consulting_services')
-        .select('*')
-        .eq('status', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setServices(data || []);
+      // Use API route instead of direct Supabase call
+      const response = await fetch('/api/consulting-services?status=true');
+      if (!response.ok) {
+        throw new Error('Failed to fetch consulting services');
+      }
+      const result = await response.json();
+      setServices(result.data || []);
     } catch (error) {
       console.error('Error loading services:', error);
     } finally {

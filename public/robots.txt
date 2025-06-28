@@ -1,9 +1,88 @@
-# *
+# Robots.txt for KMTCS - KM Training & Consulting Services
+# https://www.kmtcs.com.my
+
+# Allow all crawlers
 User-agent: *
 Allow: /
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 1
+
+# AI/LLM Crawlers
+User-agent: GPTBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: ChatGPT-User
+Allow: /
+Crawl-delay: 1
+
+User-agent: CCBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: anthropic-ai
+Allow: /
+Crawl-delay: 1
+
+User-agent: Claude-Web
+Allow: /
+Crawl-delay: 1
+
+User-agent: Omgilibot
+Allow: /
+Crawl-delay: 1
+
+# Block access to admin areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /login/
+Disallow: /signup/
+
+# Block access to private files
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /sitemap*.xml
+Disallow: /robots.txt
+
+# Allow access to important files
+Allow: /sitemap.xml
+Allow: /robots.txt
+Allow: /llms.txt
+
+# Block access to temporary and cache files
+Disallow: /temp/
+Disallow: /cache/
+Disallow: /tmp/
+
+# Block access to development files
+Disallow: /.env
+Disallow: /.git/
+Disallow: /node_modules/
+
+# Sitemap location
+Sitemap: https://www.kmtcs.com.my/sitemap.xml
+
+# LLMs.txt location for AI/LLM crawlers
+LLMs: https://www.kmtcs.com.my/llms.txt
 
 # Host
 Host: https://www.kmtcs.com.my
 
-# Sitemaps
-Sitemap: https://www.kmtcs.com.my/sitemap.xml
+# Crawl-delay for all bots (1 second)
+Crawl-delay: 1

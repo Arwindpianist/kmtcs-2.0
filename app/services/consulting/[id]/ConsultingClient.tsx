@@ -159,7 +159,7 @@ export default function ConsultingClient({ service }: { service: ConsultingServi
             </div>
 
             {/* Service Objectives */}
-            {service.objectives && service.objectives.length > 0 && (
+            {service.objectives && Array.isArray(service.objectives) && service.objectives.length > 0 && (
               <div className="mb-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Service Objectives</h3>
                 <div className="bg-orange-50 p-6 rounded-lg">
@@ -186,7 +186,7 @@ export default function ConsultingClient({ service }: { service: ConsultingServi
             )}
 
             {/* Service Benefits */}
-            {service.benefits && service.benefits.length > 0 && (
+            {service.benefits && Array.isArray(service.benefits) && service.benefits.length > 0 && (
               <div className="mb-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Key Benefits</h3>
                 <div className="bg-green-50 p-6 rounded-lg">
@@ -203,7 +203,7 @@ export default function ConsultingClient({ service }: { service: ConsultingServi
             )}
 
             {/* Service Deliverables */}
-            {service.deliverables && service.deliverables.length > 0 && (
+            {service.deliverables && Array.isArray(service.deliverables) && service.deliverables.length > 0 && (
               <div className="mb-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Service Deliverables</h3>
                 <div className="bg-blue-50 p-6 rounded-lg">

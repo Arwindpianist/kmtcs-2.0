@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/app/lib/supabase';
-import { AdminAuthService } from '@/app/lib/adminAuth';
-import type { AdminUser } from '@/app/lib/adminAuth';
 import Link from 'next/link';
 import Image from 'next/image';
+import { supabase } from '@/app/lib/supabase';
 import { 
   HomeIcon,
   AcademicCapIcon, 
@@ -20,6 +18,12 @@ import {
 } from '@heroicons/react/24/outline';
 import type { ReactNode } from 'react';
 
+// Admin emails that are allowed to access the admin panel
+const ADMIN_EMAILS = [
+  process.env.NEXT_PUBLIC_ADMIN_EMAIL_1,
+  process.env.NEXT_PUBLIC_ADMIN_EMAIL_2,
+].filter(Boolean);
+
 interface AdminLayoutProps {
   children: ReactNode;
 }
@@ -29,38 +33,40 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentAdmin, setCurrentAdmin] = useState<AdminUser | null>(null);
+  const [currentAdmin, setCurrentAdmin] = useState<{ email: string; name: string } | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Get current session
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (error || !session) {
-          router.push('/admin/login');
-          return;
+        if (session?.user) {
+          // Check if user is an admin
+          if (ADMIN_EMAILS.includes(session.user.email)) {
+            setIsAuthorized(true);
+            setCurrentAdmin({
+              email: session.user.email,
+              name: session.user.user_metadata?.full_name || session.user.email
+            });
+          } else {
+            // Not an admin, sign out and redirect
+            await supabase.auth.signOut();
+            setIsAuthorized(false);
+            setCurrentAdmin(null);
+            router.push('/login');
+          }
+        } else {
+          // No session, redirect to login
+          setIsAuthorized(false);
+          setCurrentAdmin(null);
+          router.push('/login');
         }
-
-        // Check if the user is an admin using our service
-        const isAdmin = await AdminAuthService.isAdmin();
-        if (!isAdmin) {
-          await supabase.auth.signOut();
-          router.push('/admin/login');
-          return;
-        }
-
-        // Get admin user data
-        const adminUser = await AdminAuthService.getCurrentAdmin();
-        if (adminUser) {
-          setCurrentAdmin(adminUser);
-          // Update last sign in
-          await AdminAuthService.updateLastSignIn(adminUser.id);
-        }
-
-        setIsAuthorized(true);
       } catch (error) {
         console.error('Auth check error:', error);
-        router.push('/admin/login');
+        setIsAuthorized(false);
+        setCurrentAdmin(null);
+        router.push('/login');
       } finally {
         setIsLoading(false);
       }
@@ -68,38 +74,40 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
     checkAuth();
 
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        setIsAuthorized(false);
-        setCurrentAdmin(null);
-        router.push('/admin/login');
-        return;
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_OUT') {
+          setIsAuthorized(false);
+          setCurrentAdmin(null);
+          router.push('/login');
+        } else if (event === 'SIGNED_IN' && session?.user) {
+          if (ADMIN_EMAILS.includes(session.user.email)) {
+            setIsAuthorized(true);
+            setCurrentAdmin({
+              email: session.user.email,
+              name: session.user.user_metadata?.full_name || session.user.email
+            });
+          } else {
+            await supabase.auth.signOut();
+            router.push('/login');
+          }
+        }
       }
+    );
 
-      // Re-check authorization on auth state change
-      const isAdmin = await AdminAuthService.isAdmin();
-      if (!isAdmin) {
-        setIsAuthorized(false);
-        setCurrentAdmin(null);
-        await supabase.auth.signOut();
-        router.push('/admin/login');
-        return;
-      }
-
-      const adminUser = await AdminAuthService.getCurrentAdmin();
-      setCurrentAdmin(adminUser);
-      setIsAuthorized(true);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [router]);
 
   const handleSignOut = async () => {
-    await AdminAuthService.signOut();
-    router.push('/admin/login');
+    try {
+      await supabase.auth.signOut();
+      setIsAuthorized(false);
+      setCurrentAdmin(null);
+      router.push('/login');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   if (isLoading) {
@@ -156,8 +164,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex items-center space-x-4">
             {currentAdmin && (
               <div className="hidden sm:block text-right">
-                <p className="text-sm font-medium text-gray-900">{currentAdmin.full_name || currentAdmin.email}</p>
-                <p className="text-xs text-gray-500 capitalize">{currentAdmin.role}</p>
+                <p className="text-sm font-medium text-gray-900">{currentAdmin.name || currentAdmin.email}</p>
+                <p className="text-xs text-gray-500 capitalize">admin</p>
               </div>
             )}
             <button
@@ -229,12 +237,32 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </li>
               <li>
                 <Link
+                  href="/admin/consultants"
+                  className="flex items-center px-4 lg:px-5 py-3 lg:py-4 text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 rounded-xl transition-colors group"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <UserGroupIcon className="w-5 h-5 mr-3 lg:mr-4 text-gray-400 group-hover:text-yellow-600" />
+                  <span className="text-sm lg:text-base">Consultants</span>
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/admin/contacts"
                   className="flex items-center px-4 lg:px-5 py-3 lg:py-4 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-colors group"
                   onClick={() => setSidebarOpen(false)}
                 >
                   <EnvelopeIcon className="w-5 h-5 mr-3 lg:mr-4 text-gray-400 group-hover:text-red-600" />
                   <span className="text-sm lg:text-base">Contact Messages</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin/test-auth"
+                  className="flex items-center px-4 lg:px-5 py-3 lg:py-4 text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 rounded-xl transition-colors group"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <UsersIcon className="w-5 h-5 mr-3 lg:mr-4 text-gray-400 group-hover:text-yellow-600" />
+                  <span className="text-sm lg:text-base">Test Auth</span>
                 </Link>
               </li>
             </ul>

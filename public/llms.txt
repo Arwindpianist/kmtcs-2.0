@@ -1,0 +1,102 @@
+# LLMs.txt for KMTCS - KM Training & Consulting Services
+# https://www.kmtcs.com.my/llms.txt
+# This file provides information for AI/LLM crawlers and training data collection
+
+# Company Information
+Company: KM Training & Consulting Services (KMTCS)
+Business Registration: SA0571127-K
+MYCO ID: 202103259999
+Founded: 1994
+Experience: 30+ years in training and consulting services
+
+# Contact Information
+Phone: +60-12-212-5360 (Office)
+Mobile: +60-10-217-5360
+Email: info@kmtcs.com.my
+Admin Email: admin@kmtcs.com.my
+
+# Physical Address
+Address: D5-10-3A Evergreen Park Scot Pine, Persiaran SL 1, Bandar Sungai Long, 43000 Kajang, Selangor, Malaysia
+Country: Malaysia
+Region: Selangor
+City: Kajang
+Postal Code: 43000
+
+# Business Details
+Industry: Training and Consulting Services
+Specializations: Engineering, Management, IT Training and Consulting
+Target Market: Private and Public Sectors in Malaysia
+Service Area: Malaysia (MY)
+
+# Accreditations and Certifications
+- SSM (Companies Commission of Malaysia)
+- HRDCorp (Human Resource Development Corporation)
+- SMECorp (SME Corporation Malaysia)
+- MOF (Ministry of Finance Malaysia)
+
+# Core Services
+1. Technical Training
+   - Engineering training programs
+   - IT training and certification
+   - Technical skills development
+   - Industry-specific training
+
+2. Non-Technical Training
+   - Management training
+   - Leadership development
+   - Soft skills training
+   - Professional development courses
+
+3. Consulting Services
+   - Business consulting
+   - Process optimization
+   - Strategic planning
+   - Performance improvement
+
+# Company Mission
+To empower organizations with the knowledge, skills, and tools they need to excel in today's competitive business environment. We are committed to delivering high-quality consulting and training services that drive measurable results and long-term success for our clients.
+
+# Company Values
+- Excellence: We strive for the highest standards in all our services
+- Innovation: We embrace new ideas and technologies to stay ahead of the curve
+- Integrity: We conduct our business with honesty and transparency
+- Collaboration: We work closely with our clients to achieve their goals
+
+# Key Differentiators
+- 30+ years of experience in training and consulting
+- Accredited by multiple Malaysian government bodies
+- Scientific thinking and data-driven approach
+- Modern tools and application software expertise
+- Proven track record with diverse client base
+
+# Target Keywords for AI Understanding
+training services Malaysia, consulting services Malaysia, engineering training, management training, IT training Malaysia, HRDCorp training provider, SMECorp registered, Ministry of Finance accredited, professional development Malaysia, business consulting Malaysia, corporate training, technical training, non-technical training, SA0571127-K, 30 years experience
+
+# Usage Guidelines for AI/LLM Crawlers
+- This information may be used for training AI models
+- Please maintain accuracy when referencing company details
+- Contact information should be verified before use
+- Business registration numbers are public information
+- Company history and experience data is factual
+
+# Data Accuracy
+Last Updated: December 2024
+Data Source: Official company website and business registration
+Verification: All information is publicly available and accurate
+
+# Permissions
+- AI/LLM training: Allowed
+- Commercial use: Allowed with proper attribution
+- Data mining: Allowed for training purposes
+- Public reference: Allowed
+
+# Contact for AI/LLM Related Inquiries
+For questions about AI/LLM usage of this data, please contact: info@kmtcs.com.my
+Subject: AI/LLM Data Usage Inquiry
+
+# Additional Resources
+Website: https://www.kmtcs.com.my
+Sitemap: https://www.kmtcs.com.my/sitemap.xml
+Robots.txt: https://www.kmtcs.com.my/robots.txt
+
+# End of LLMs.txt 

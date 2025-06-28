@@ -11,6 +11,10 @@ import {
   QuestionMarkCircleIcon,
   ShieldCheckIcon,
   ViewColumnsIcon,
+  UserGroupIcon,
+  AcademicCapIcon,
+  CogIcon,
+  LightBulbIcon,
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -27,15 +31,44 @@ const callsToAction = [
   { name: 'View News', href: '/news', icon: ViewColumnsIcon },
 ]
 
+const aboutOptions = [
+  { 
+    name: 'About Us', 
+    href: '/about', 
+    icon: ChartPieIcon,
+    description: 'Learn about our mission, vision, and company values'
+  },
+  { 
+    name: 'Our Consultants', 
+    href: '/consultants', 
+    icon: UserGroupIcon,
+    description: 'Meet our team of expert professionals and consultants'
+  },
+]
+
 const services = [
-  { name: 'Technical Trainings', href: '/services/technical-trainings' },
-  { name: 'Non-Technical Trainings', href: '/services/non-technical-trainings' },
-  { name: 'Consulting', href: '/services/consulting' },
+  { 
+    name: 'Technical Trainings', 
+    href: '/services/technical-trainings',
+    icon: CogIcon,
+    description: 'Specialized technical skills and industry training programs'
+  },
+  { 
+    name: 'Non-Technical Trainings', 
+    href: '/services/non-technical-trainings',
+    icon: LightBulbIcon,
+    description: 'Soft skills, leadership, and professional development courses'
+  },
+  { 
+    name: 'Consulting', 
+    href: '/services/consulting',
+    icon: AcademicCapIcon,
+    description: 'Expert consulting services for your business needs'
+  },
 ]
 
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'About', href: '/about' },
   { name: 'Services', href: '/services' },
   { name: 'News', href: '/news' },
   { name: 'Contact', href: '/contact' },
@@ -75,16 +108,14 @@ function HeaderContent() {
 
         {/* Desktop navigation */}
         <Popover.Group className="hidden lg:flex lg:gap-x-12">
-          <Link href="/" className="text-md font-semibold leading-6 text-primary hover:text-blue-600">
+          <Link href="/" className="text-md font-semibold leading-6 text-primary hover:text-blue-600 transition-colors duration-200">
             Home
           </Link>
-          <Link href="/about" className="text-md font-semibold leading-6 text-primary hover:text-blue-600">
-              About
-          </Link>
+          
           <Popover className="relative">
-            <Popover.Button className="flex items-center gap-x-1 text-md font-semibold leading-6 text-primary hover:text-blue-600">
-              Services
-              <ChevronDownIcon className="h-5 w-5 flex-none text-secondary" aria-hidden="true" />
+            <Popover.Button className="flex items-center gap-x-1 text-md font-semibold leading-6 text-primary hover:text-blue-600 transition-colors duration-200">
+              About
+              <ChevronDownIcon className="h-4 w-4 flex-none text-secondary transition-transform duration-200 group-hover:text-blue-600" aria-hidden="true" />
             </Popover.Button>
 
             <Transition
@@ -96,25 +127,74 @@ function HeaderContent() {
               leaveFrom="opacity-100 translate-y-0"
               leaveTo="opacity-0 translate-y-1"
             >
-              <Popover.Panel className="absolute -left-8 top-full z-10 mt-3 w-64 overflow-hidden rounded-xl bg-card shadow-lg ring-1 ring-theme">
+              <Popover.Panel className="absolute -left-8 top-full z-10 mt-3 w-80 overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5">
                 <div className="p-2">
-                  {services.map((item) => (
+                  {aboutOptions.map((item) => (
                     <a
                       key={item.name}
                       href={item.href}
-                      className="block rounded-lg px-4 py-2 text-sm font-semibold leading-6 text-primary hover:bg-hover-background"
+                      className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm leading-6 hover:bg-gray-50 transition-colors duration-200"
                     >
-                      {item.name}
+                      <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-blue-50 transition-colors duration-200">
+                        <item.icon className="h-6 w-6 text-gray-600 group-hover:text-blue-600 transition-colors duration-200" aria-hidden="true" />
+                      </div>
+                      <div className="flex-auto">
+                        <div className="block font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                          {item.name}
+                          <span className="absolute inset-0" />
+                        </div>
+                        <p className="mt-1 text-gray-600 text-xs leading-5">{item.description}</p>
+                      </div>
                     </a>
                   ))}
                 </div>
               </Popover.Panel>
             </Transition>
           </Popover>
-          <Link href="/news" className="text-md font-semibold leading-6 text-primary hover:text-blue-600">
+
+          <Popover className="relative">
+            <Popover.Button className="flex items-center gap-x-1 text-md font-semibold leading-6 text-primary hover:text-blue-600 transition-colors duration-200">
+              Services
+              <ChevronDownIcon className="h-4 w-4 flex-none text-secondary transition-transform duration-200 group-hover:text-blue-600" aria-hidden="true" />
+            </Popover.Button>
+
+            <Transition
+              as={Fragment}
+              enter="transition ease-out duration-200"
+              enterFrom="opacity-0 translate-y-1"
+              enterTo="opacity-100 translate-y-0"
+              leave="transition ease-in duration-150"
+              leaveFrom="opacity-100 translate-y-0"
+              leaveTo="opacity-0 translate-y-1"
+            >
+              <Popover.Panel className="absolute -left-8 top-full z-10 mt-3 w-80 overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+                <div className="p-2">
+                  {services.map((item) => (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm leading-6 hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-blue-50 transition-colors duration-200">
+                        <item.icon className="h-6 w-6 text-gray-600 group-hover:text-blue-600 transition-colors duration-200" aria-hidden="true" />
+                      </div>
+                      <div className="flex-auto">
+                        <div className="block font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                          {item.name}
+                          <span className="absolute inset-0" />
+                        </div>
+                        <p className="mt-1 text-gray-600 text-xs leading-5">{item.description}</p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </Popover.Panel>
+            </Transition>
+          </Popover>
+          <Link href="/news" className="text-md font-semibold leading-6 text-primary hover:text-blue-600 transition-colors duration-200">
             News
           </Link>
-          <Link href="/contact" className="text-md font-semibold leading-6 text-primary hover:text-blue-600">
+          <Link href="/contact" className="text-md font-semibold leading-6 text-primary hover:text-blue-600 transition-colors duration-200">
             Contact
           </Link>
         </Popover.Group>
@@ -127,7 +207,7 @@ function HeaderContent() {
               </span>
               <button
                 onClick={() => signOut()}
-                className="rounded-md bg-blue-600 hover:bg-blue-700 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                className="rounded-md bg-blue-600 hover:bg-blue-700 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors duration-200"
               >
                 Sign Out
               </button>
@@ -163,16 +243,43 @@ function HeaderContent() {
           <div className="mt-6 flow-root">
             <div className="-my-6 divide-y divide-gray-500/10">
               <div className="space-y-2 py-6">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
+                <Link
+                  href="/"
+                  className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Home
+                </Link>
+                <div className="px-3 py-2">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2">About</h3>
+                  <div className="space-y-1">
+                    {aboutOptions.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className="flex items-center gap-x-3 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 transition-colors duration-200"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <item.icon className="h-5 w-5 text-gray-600" />
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+                <Link
+                  href="/news"
+                  className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  News
+                </Link>
+                <Link
+                  href="/contact"
+                  className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Contact
+                </Link>
               </div>
               <div className="py-6">
                 <h3 className="text-sm font-semibold text-gray-900 mb-4">Services</h3>
@@ -180,9 +287,10 @@ function HeaderContent() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    className="flex items-center gap-x-3 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 transition-colors duration-200"
                     onClick={() => setMobileMenuOpen(false)}
                   >
+                    <item.icon className="h-5 w-5 text-gray-600" />
                     {item.name}
                   </Link>
                 ))}
@@ -196,7 +304,7 @@ function HeaderContent() {
                         signOut()
                         setMobileMenuOpen(false)
                       }}
-                      className="w-full rounded-md bg-blue-600 hover:bg-blue-700 px-3 py-2 text-sm font-semibold text-white shadow-sm"
+                      className="w-full rounded-md bg-blue-600 hover:bg-blue-700 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-200"
                     >
                       Sign Out
                     </button>
@@ -208,7 +316,7 @@ function HeaderContent() {
         </Dialog.Panel>
       </Dialog>
     </header>
-  );
+  )
 }
 
 export default function Header() {

@@ -1,0 +1,228 @@
+{
+  "geo_targeting": {
+    "primary_location": {
+      "country": "MY",
+      "country_name": "Malaysia",
+      "region": "MY-10",
+      "region_name": "Selangor",
+      "city": "Kajang",
+      "postal_code": "43000",
+      "coordinates": {
+        "latitude": 3.1390,
+        "longitude": 101.6869
+      },
+      "timezone": "Asia/Kuala_Lumpur",
+      "currency": "MYR",
+      "language": "en-MY"
+    },
+    "business_address": {
+      "street": "D5-10-3A Evergreen Park Scot Pine, Persiaran SL 1, Bandar Sungai Long",
+      "city": "Kajang",
+      "state": "Selangor",
+      "postal_code": "43000",
+      "country": "Malaysia",
+      "full_address": "D5-10-3A Evergreen Park Scot Pine, Persiaran SL 1, Bandar Sungai Long, 43000 Kajang, Selangor, Malaysia"
+    },
+    "service_areas": [
+      {
+        "name": "Kajang",
+        "type": "primary",
+        "coordinates": {
+          "latitude": 3.1390,
+          "longitude": 101.6869
+        }
+      },
+      {
+        "name": "Kuala Lumpur",
+        "type": "secondary",
+        "coordinates": {
+          "latitude": 3.1390,
+          "longitude": 101.6869
+        }
+      },
+      {
+        "name": "Selangor",
+        "type": "regional",
+        "coordinates": {
+          "latitude": 3.1390,
+          "longitude": 101.6869
+        }
+      },
+      {
+        "name": "Malaysia",
+        "type": "national",
+        "coordinates": {
+          "latitude": 3.1390,
+          "longitude": 101.6869
+        }
+      }
+    ],
+    "target_keywords": {
+      "local": [
+        "training services Kajang",
+        "consulting services Kajang",
+        "corporate training Kajang",
+        "professional development Kajang",
+        "business consulting Kajang"
+      ],
+      "regional": [
+        "training services Selangor",
+        "consulting services Selangor",
+        "corporate training Selangor",
+        "professional development Selangor",
+        "business consulting Selangor"
+      ],
+      "national": [
+        "training services Malaysia",
+        "consulting services Malaysia",
+        "corporate training Malaysia",
+        "professional development Malaysia",
+        "business consulting Malaysia"
+      ]
+    },
+    "local_business_info": {
+      "name": "KMTCS - KM Training & Consulting Services",
+      "phone": "+60-12-212-5360",
+      "mobile": "+60-10-217-5360",
+      "email": "info@kmtcs.com.my",
+      "admin_email": "admin@kmtcs.com.my",
+      "business_hours": {
+        "monday": "09:00-18:00",
+        "tuesday": "09:00-18:00",
+        "wednesday": "09:00-18:00",
+        "thursday": "09:00-18:00",
+        "friday": "09:00-18:00",
+        "saturday": "Closed",
+        "sunday": "Closed"
+      },
+      "payment_methods": [
+        "Cash",
+        "Credit Card",
+        "Bank Transfer",
+        "Online Payment"
+      ],
+      "currencies_accepted": ["MYR"],
+      "languages": ["English", "Malay"]
+    },
+    "seo_meta_tags": {
+      "geo_region": "MY-10",
+      "geo_placename": "Kajang, Selangor, Malaysia",
+      "geo_position": "3.1390;101.6869",
+      "icbm": "3.1390, 101.6869",
+      "geo_country": "MY",
+      "geo_state": "Selangor",
+      "geo_city": "Kajang",
+      "geo_postalcode": "43000",
+      "region": "MY-10",
+      "country": "MY",
+      "state": "Selangor",
+      "city": "Kajang",
+      "postal_code": "43000",
+      "place_location": "Kajang, Selangor, Malaysia",
+      "place_coordinates": "3.1390, 101.6869",
+      "place_timezone": "Asia/Kuala_Lumpur",
+      "place_currency": "MYR",
+      "place_language": "en-MY"
+    },
+    "structured_data": {
+      "organization": {
+        "@type": "Organization",
+        "name": "KMTCS - KM Training & Consulting Services",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "D5-10-3A Evergreen Park Scot Pine, Persiaran SL 1, Bandar Sungai Long",
+          "addressLocality": "Kajang",
+          "addressRegion": "Selangor",
+          "postalCode": "43000",
+          "addressCountry": "MY"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 3.1390,
+          "longitude": 101.6869
+        }
+      },
+      "local_business": {
+        "@type": "LocalBusiness",
+        "name": "KMTCS - KM Training & Consulting Services",
+        "telephone": "+60-12-212-5360",
+        "email": "info@kmtcs.com.my",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "D5-10-3A Evergreen Park Scot Pine, Persiaran SL 1, Bandar Sungai Long",
+          "addressLocality": "Kajang",
+          "addressRegion": "Selangor",
+          "postalCode": "43000",
+          "addressCountry": "MY"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 3.1390,
+          "longitude": 101.6869
+        },
+        "areaServed": {
+          "@type": "Country",
+          "name": "Malaysia"
+        }
+      },
+      "place": {
+        "@type": "Place",
+        "name": "KMTCS Office",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "D5-10-3A Evergreen Park Scot Pine, Persiaran SL 1, Bandar Sungai Long",
+          "addressLocality": "Kajang",
+          "addressRegion": "Selangor",
+          "postalCode": "43000",
+          "addressCountry": "MY"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 3.1390,
+          "longitude": 101.6869
+        }
+      }
+    },
+    "local_search_optimization": {
+      "google_my_business": {
+        "business_name": "KMTCS - KM Training & Consulting Services",
+        "category": "Training Center",
+        "subcategories": [
+          "Corporate Training",
+          "Consulting Service",
+          "Professional Training"
+        ],
+        "attributes": [
+          "Wheelchair Accessible",
+          "Free Wi-Fi",
+          "Parking Available",
+          "Business Hours"
+        ]
+      },
+      "local_citations": {
+        "directories": [
+          "Yellow Pages Malaysia",
+          "Malaysia Business Directory",
+          "Selangor Business Directory",
+          "Kajang Business Directory"
+        ],
+        "industry_specific": [
+          "HRDCorp Training Providers",
+          "SMECorp Registered Companies",
+          "MOF Accredited Training Providers"
+        ]
+      }
+    },
+    "regional_targeting": {
+      "primary_market": "Kajang, Selangor",
+      "secondary_markets": [
+        "Kuala Lumpur",
+        "Petaling Jaya",
+        "Shah Alam",
+        "Subang Jaya"
+      ],
+      "national_market": "Malaysia",
+      "international_market": "Southeast Asia"
+    }
+  }
+} 

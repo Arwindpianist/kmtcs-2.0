@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
+    const limit = searchParams.get('limit');
 
     let query = supabase
       .from('consulting_services')
@@ -19,6 +20,13 @@ export async function GET(request: NextRequest) {
 
     if (status !== null) {
       query = query.eq('status', status === 'true');
+    }
+
+    if (limit !== null) {
+      const limitNum = parseInt(limit);
+      if (!isNaN(limitNum)) {
+        query = query.limit(limitNum);
+      }
     }
 
     const { data, error } = await query;

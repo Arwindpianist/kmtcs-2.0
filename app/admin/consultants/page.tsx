@@ -26,8 +26,9 @@ export default function ConsultantsManagement() {
     image_url: null,
     short_bio: '',
     full_bio: '',
-    email: '',
-    phone: '',
+    academic_qualifications: '',
+    professional_certifications: '',
+    career_experiences: '',
     status: true
   });
   const [saving, setSaving] = useState(false);
@@ -92,8 +93,9 @@ export default function ConsultantsManagement() {
       image_url: consultant.image_url,
       short_bio: consultant.short_bio,
       full_bio: consultant.full_bio,
-      email: consultant.email,
-      phone: consultant.phone,
+      academic_qualifications: consultant.academic_qualifications,
+      professional_certifications: consultant.professional_certifications,
+      career_experiences: consultant.career_experiences,
       status: consultant.status
     });
     setImagePreview(consultant.image_url);
@@ -136,8 +138,9 @@ export default function ConsultantsManagement() {
       image_url: null,
       short_bio: '',
       full_bio: '',
-      email: '',
-      phone: '',
+      academic_qualifications: '',
+      professional_certifications: '',
+      career_experiences: '',
       status: true
     });
     setImageFile(null);
@@ -262,25 +265,39 @@ export default function ConsultantsManagement() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email *
+                Academic Qualifications
               </label>
-              <input
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              <textarea
+                rows={4}
+                value={formData.academic_qualifications || ''}
+                onChange={(e) => setFormData({ ...formData, academic_qualifications: e.target.value })}
+                placeholder="e.g., E&E Engineering Degree with Honours awarded by Engineering Council, UK (EC Part 2)"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone
+                Professional Certifications
               </label>
-              <input
-                type="tel"
-                value={formData.phone || ''}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              <textarea
+                rows={6}
+                value={formData.professional_certifications || ''}
+                onChange={(e) => setFormData({ ...formData, professional_certifications: e.target.value })}
+                placeholder="e.g., Professional Engineer (P.Eng), Board of Engineers, Malaysia (BEM)&#10;Chartered Engineer (CEng) by the Engineering Council (EC) of UK&#10;Member of the Institution of Engineering and Technology, UK (MIET)"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Career Experiences
+              </label>
+              <textarea
+                rows={6}
+                value={formData.career_experiences || ''}
+                onChange={(e) => setFormData({ ...formData, career_experiences: e.target.value })}
+                placeholder="e.g., Six Sigma Trainer and Consultant&#10;Senior Staff Engineer at Infineon Technologies Sdn Bhd, Malacca&#10;Staff Process Engineer at Freescale Semiconductor"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               />
             </div>
@@ -358,16 +375,6 @@ export default function ConsultantsManagement() {
                         <p className="text-lg text-gray-600 mb-3">{consultant.role} Consultant</p>
                         <p className="text-gray-600 mb-4 leading-relaxed">{consultant.short_bio}</p>
                         <div className="flex flex-wrap gap-6 text-sm text-gray-500 mb-4">
-                          <span className="flex items-center">
-                            <span className="font-medium">Email:</span>
-                            <span className="ml-2">{consultant.email}</span>
-                          </span>
-                          {consultant.phone && (
-                            <span className="flex items-center">
-                              <span className="font-medium">Phone:</span>
-                              <span className="ml-2">{consultant.phone}</span>
-                            </span>
-                          )}
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                             consultant.status 
                               ? 'bg-green-100 text-green-800' 

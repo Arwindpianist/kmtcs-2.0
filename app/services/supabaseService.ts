@@ -9,8 +9,9 @@ export interface Consultant {
   image_url: string;
   short_bio: string;
   full_bio: string;
-  email: string;
-  phone: string;
+  academic_qualifications?: string;
+  professional_certifications?: string;
+  career_experiences?: string;
   status: boolean;
   created_at: string;
   updated_at: string;
