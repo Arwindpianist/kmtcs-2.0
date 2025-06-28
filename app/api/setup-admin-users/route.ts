@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/app/lib/supabase-server';
 
+export async function GET() {
+  return await setupAdminUsers();
+}
+
 export async function POST() {
+  return await setupAdminUsers();
+}
+
+async function setupAdminUsers() {
   try {
     const supabase = createSupabaseServerClient();
     
