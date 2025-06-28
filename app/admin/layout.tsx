@@ -37,7 +37,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error || !session) {
-          console.log('No session found, redirecting to login');
           router.push('/admin/login');
           return;
         }
@@ -45,7 +44,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         // Check if the user is an admin using our service
         const isAdmin = await AdminAuthService.isAdmin();
         if (!isAdmin) {
-          console.log('User is not an admin, redirecting to login');
           await supabase.auth.signOut();
           router.push('/admin/login');
           return;
@@ -60,7 +58,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         }
 
         setIsAuthorized(true);
-        console.log('Authorized admin access:', adminUser?.email);
       } catch (error) {
         console.error('Auth check error:', error);
         router.push('/admin/login');

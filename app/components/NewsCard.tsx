@@ -51,7 +51,7 @@ export default function NewsCard({ item }: { item: NewsItem }) {
             </span>
             <span className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-full font-medium">
               {getCategoryLabel(item.category)}
-            </span>
+          </span>
           </div>
         </div>
         
@@ -62,19 +62,19 @@ export default function NewsCard({ item }: { item: NewsItem }) {
         <p className="text-secondary text-sm mb-6 line-clamp-3 flex-1">
           {item.summary}
         </p>
-        
+      
         <div className="mt-auto">
-          <Link 
-            href={item.link} 
-            target="_blank" 
-            rel="noopener noreferrer"
+        <Link
+          href={item.link}
+          target="_blank"
+          rel="noopener noreferrer"
             className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm group/link"
-          >
+        >
             Read More
             <svg className="ml-1 w-4 h-4 group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          </Link>
+        </Link>
         </div>
       </div>
     </div>

@@ -79,7 +79,7 @@ function HeaderContent() {
             Home
           </Link>
           <Link href="/about" className="text-md font-semibold leading-6 text-primary hover:text-blue-600">
-            About
+              About
           </Link>
           <Popover className="relative">
             <Popover.Button className="flex items-center gap-x-1 text-md font-semibold leading-6 text-primary hover:text-blue-600">

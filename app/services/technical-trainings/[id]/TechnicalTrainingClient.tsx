@@ -220,7 +220,7 @@ export default function TechnicalTrainingClient({ course }: { course: TrainingCo
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Course Outline</h3>
                 <div className="bg-gray-50 p-6 rounded-lg">
                   <div className="prose prose-gray max-w-none">
-                    <div dangerouslySetInnerHTML={{ __html: course.course_outline }} />
+                <div dangerouslySetInnerHTML={{ __html: course.course_outline }} />
                   </div>
                 </div>
               </div>

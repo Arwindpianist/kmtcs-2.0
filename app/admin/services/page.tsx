@@ -238,31 +238,31 @@ export default function ConsultingServicesAdmin() {
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                     Service Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    required
-                  />
-                </div>
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                required
+              />
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    placeholder="e.g., Management, Technical, Strategy"
-                  />
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Category
+              </label>
+              <input
+                type="text"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                placeholder="e.g., Management, Technical, Strategy"
+              />
+            </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -428,17 +428,17 @@ export default function ConsultingServicesAdmin() {
 
             {/* Status */}
             <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="status"
-                  checked={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.checked })}
-                  className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                />
-                <label htmlFor="status" className="ml-3 block text-sm text-gray-900">
-                  Active
-                </label>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="status"
+                checked={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.checked })}
+                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+              />
+              <label htmlFor="status" className="ml-3 block text-sm text-gray-900">
+                Active
+              </label>
               </div>
             </div>
 

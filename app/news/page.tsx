@@ -10,7 +10,7 @@ export default function NewsPage() {
     <main>
       {/* Hero Section */}
       <section className="relative bg-gradient-to-b from-blue-50 to-blue-100 py-32 text-center overflow-hidden">
-        <BackgroundLines />
+      <BackgroundLines />
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -29,7 +29,7 @@ export default function NewsPage() {
 
       {/* News List Section */}
       <section className="py-20 bg-background-secondary">
-        <div className="container mx-auto px-4 sm:px-6">
+      <div className="container mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -43,7 +43,7 @@ export default function NewsPage() {
               {allNews.length} latest articles from HRDCorp
             </p>
           </motion.div>
-          
+        
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -59,7 +59,7 @@ export default function NewsPage() {
               >
                 <NewsCard item={item} />
               </motion.div>
-            ))}
+          ))}
           </motion.div>
         </div>
       </section>

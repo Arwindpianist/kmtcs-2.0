@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabase';
-import { AdminAuthService } from '@/app/lib/adminAuth';
 import Link from 'next/link';
 
 export default function AdminLogin() {
@@ -13,20 +12,56 @@ export default function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [supabaseStatus, setSupabaseStatus] = useState<string>('Checking...');
 
   useEffect(() => {
+    console.log('AdminLogin component mounted');
     setIsClient(true);
     
-    // Check if user is already logged in and is an admin
-    const checkExistingSession = async () => {
-      const isAdmin = await AdminAuthService.isAdmin();
-      if (isAdmin) {
-        router.push('/admin');
+    // Test Supabase connection
+    const testSupabase = async () => {
+      try {
+        console.log('Testing Supabase connection...');
+        setSupabaseStatus('Testing connection...');
+        
+        // Check if environment variables are set
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        
+        console.log('Supabase URL exists:', !!url);
+        console.log('Supabase Key exists:', !!key);
+        
+        if (!url || !key) {
+          setSupabaseStatus('Missing environment variables');
+          return;
+        }
+
+        // Try to get session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Supabase session error:', error);
+          setSupabaseStatus('Connection error: ' + error.message);
+        } else {
+          console.log('Supabase connected successfully');
+          setSupabaseStatus('Connected successfully');
+          
+          if (session) {
+            console.log('Session found:', session.user.email);
+            setSupabaseStatus('Session found for: ' + session.user.email);
+          } else {
+            console.log('No session found');
+            setSupabaseStatus('No session found');
+          }
+        }
+      } catch (error) {
+        console.error('Supabase test error:', error);
+        setSupabaseStatus('Test failed: ' + error);
       }
     };
     
-    checkExistingSession();
-  }, [router]);
+    testSupabase();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,18 +82,9 @@ export default function AdminLogin() {
       }
 
       if (session) {
-        console.log('Login successful, checking admin status');
-        
-        // Check if the user is an admin
-        const isAdmin = await AdminAuthService.isAdmin();
-        if (!isAdmin) {
-          console.log('User is not an admin');
-          await supabase.auth.signOut();
-          throw new Error('Access denied. Only authorized administrators can access this area.');
-        }
-
-        console.log('Admin access granted, redirecting to admin panel');
-        router.push('/admin');
+        console.log('Login successful:', session.user.email);
+        setError('Login successful! User: ' + session.user.email);
+        // For now, just show success instead of redirecting
       }
     } catch (error: any) {
       console.error('Login error:', error);
@@ -82,6 +108,11 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      {/* Debug info */}
+      <div className="fixed top-4 left-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded text-sm max-w-md">
+        <strong>Supabase Status:</strong> {supabaseStatus}
+      </div>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
