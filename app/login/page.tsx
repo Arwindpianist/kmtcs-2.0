@@ -3,12 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabase';
-
-// Admin emails that are allowed to access the admin panel
-const ADMIN_EMAILS = [
-  process.env.NEXT_PUBLIC_ADMIN_EMAIL_1,
-  process.env.NEXT_PUBLIC_ADMIN_EMAIL_2,
-].filter(Boolean);
+import { AdminAuthService } from '@/app/lib/adminAuth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,7 +21,8 @@ export default function LoginPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         // Check if the logged-in user is an admin
-        if (ADMIN_EMAILS.includes(session.user.email)) {
+        const isAdmin = await AdminAuthService.isAdmin();
+        if (isAdmin) {
           router.push('/admin');
         } else {
           // Not an admin, sign them out
@@ -56,8 +52,11 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        // Check if the user is an admin
-        if (ADMIN_EMAILS.includes(data.user.email)) {
+        // Check if the user is an admin using AdminAuthService
+        const isAdmin = await AdminAuthService.isAdmin();
+        if (isAdmin) {
+          // Update last sign in
+          await AdminAuthService.updateLastSignIn(data.user.id);
           router.push('/admin');
         } else {
           // Not an admin, sign them out and show error

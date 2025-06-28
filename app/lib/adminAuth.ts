@@ -1,4 +1,3 @@
-import { createSupabaseServerClient } from './supabase-server';
 import { supabase } from './supabase';
 
 export interface AdminUser {
@@ -27,40 +26,24 @@ export class AdminAuthService {
 
       console.log('AdminAuthService.isAdmin(): Session found, checking users table for user ID:', session.user.id);
 
-      // Use server-side client to bypass RLS
-      const supabaseServer = createSupabaseServerClient();
+      // Use API call to check admin status since we can't use server client on client side
+      const response = await fetch('/api/check-admin-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId: session.user.id })
+      });
 
-      // First check if the users table exists
-      const { data: tableCheck, error: tableError } = await supabaseServer
-        .from('users')
-        .select('count')
-        .limit(1);
-
-      if (tableError) {
-        console.log('AdminAuthService.isAdmin(): Users table does not exist or is not accessible:', tableError.message);
-        // For now, allow access if the table doesn't exist (development mode)
-        return true;
-      }
-
-      const { data: user, error } = await supabaseServer
-        .from('users')
-        .select('*')
-        .eq('id', session.user.id)
-        .eq('role', 'admin')
-        .single();
-
-      if (error) {
-        console.error('AdminAuthService.isAdmin(): Database error:', error);
+      if (!response.ok) {
+        console.log('AdminAuthService.isAdmin(): API call failed:', response.status);
         return false;
       }
 
-      if (!user) {
-        console.log('AdminAuthService.isAdmin(): User not found in users table or not an admin');
-        return false;
-      }
-
-      console.log('AdminAuthService.isAdmin(): Admin user found:', user);
-      return true;
+      const result = await response.json();
+      console.log('AdminAuthService.isAdmin(): API result:', result);
+      
+      return result.isAdmin || false;
     } catch (error) {
       console.error('AdminAuthService.isAdmin(): Error checking admin status:', error);
       return false;
@@ -83,47 +66,24 @@ export class AdminAuthService {
 
       console.log('AdminAuthService.getCurrentAdmin(): Session found, querying users table');
 
-      // Use server-side client to bypass RLS
-      const supabaseServer = createSupabaseServerClient();
+      // Use API call to get admin user data
+      const response = await fetch('/api/get-admin-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId: session.user.id })
+      });
 
-      // First check if the users table exists
-      const { data: tableCheck, error: tableError } = await supabaseServer
-        .from('users')
-        .select('count')
-        .limit(1);
-
-      if (tableError) {
-        console.log('AdminAuthService.getCurrentAdmin(): Users table does not exist or is not accessible:', tableError.message);
-        // Return a fallback admin user for development
-        return {
-          id: session.user.id,
-          email: session.user.email || '',
-          role: 'admin',
-          full_name: session.user.user_metadata?.full_name || null,
-          created_at: session.user.created_at,
-          last_sign_in: session.user.last_sign_in_at
-        };
-      }
-
-      const { data: user, error } = await supabaseServer
-        .from('users')
-        .select('*')
-        .eq('id', session.user.id)
-        .eq('role', 'admin')
-        .single();
-
-      if (error) {
-        console.error('AdminAuthService.getCurrentAdmin(): Database error:', error);
+      if (!response.ok) {
+        console.log('AdminAuthService.getCurrentAdmin(): API call failed:', response.status);
         return null;
       }
 
-      if (!user) {
-        console.log('AdminAuthService.getCurrentAdmin(): User not found in users table or not an admin');
-        return null;
-      }
-
-      console.log('AdminAuthService.getCurrentAdmin(): Admin user data retrieved:', user);
-      return user as AdminUser;
+      const result = await response.json();
+      console.log('AdminAuthService.getCurrentAdmin(): API result:', result);
+      
+      return result.user || null;
     } catch (error) {
       console.error('AdminAuthService.getCurrentAdmin(): Error getting current admin:', error);
       return null;
@@ -137,26 +97,20 @@ export class AdminAuthService {
     try {
       console.log('AdminAuthService.updateLastSignIn(): Updating last sign in for user:', userId);
       
-      // Use server-side client to bypass RLS
-      const supabaseServer = createSupabaseServerClient();
-      
-      // Check if users table exists first
-      const { data: tableCheck, error: tableError } = await supabaseServer
-        .from('users')
-        .select('count')
-        .limit(1);
+      // Use API call to update last sign in
+      const response = await fetch('/api/update-last-signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId })
+      });
 
-      if (tableError) {
-        console.log('AdminAuthService.updateLastSignIn(): Users table does not exist, skipping update');
-        return;
+      if (response.ok) {
+        console.log('AdminAuthService.updateLastSignIn(): Last sign in updated successfully');
+      } else {
+        console.log('AdminAuthService.updateLastSignIn(): Failed to update last sign in');
       }
-      
-      await supabaseServer
-        .from('users')
-        .update({ last_sign_in: new Date().toISOString() })
-        .eq('id', userId);
-        
-      console.log('AdminAuthService.updateLastSignIn(): Last sign in updated successfully');
     } catch (error) {
       console.error('AdminAuthService.updateLastSignIn(): Error updating last sign in:', error);
     }

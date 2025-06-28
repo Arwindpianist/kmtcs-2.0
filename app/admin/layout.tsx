@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/app/lib/supabase';
+import { AdminAuthService } from '@/app/lib/adminAuth';
 import { 
   HomeIcon,
   AcademicCapIcon, 
@@ -17,12 +18,6 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import type { ReactNode } from 'react';
-
-// Admin emails that are allowed to access the admin panel
-const ADMIN_EMAILS = [
-  process.env.NEXT_PUBLIC_ADMIN_EMAIL_1,
-  process.env.NEXT_PUBLIC_ADMIN_EMAIL_2,
-].filter(Boolean);
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -38,18 +33,29 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log('AdminLayout: Checking authentication...');
+        
         // Get current session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
-          // Check if user is an admin
-          if (ADMIN_EMAILS.includes(session.user.email)) {
+          console.log('AdminLayout: Session found for user:', session.user.email);
+          
+          // Check if user is an admin using AdminAuthService
+          const isAdmin = await AdminAuthService.isAdmin();
+          console.log('AdminLayout: Is admin check result:', isAdmin);
+          
+          if (isAdmin) {
+            const adminUser = await AdminAuthService.getCurrentAdmin();
+            console.log('AdminLayout: Admin user data:', adminUser);
+            
             setIsAuthorized(true);
             setCurrentAdmin({
-              email: session.user.email,
-              name: session.user.user_metadata?.full_name || session.user.email
+              email: session.user.email || '',
+              name: adminUser?.full_name || session.user.user_metadata?.full_name || session.user.email || ''
             });
           } else {
+            console.log('AdminLayout: User is not an admin, signing out...');
             // Not an admin, sign out and redirect
             await supabase.auth.signOut();
             setIsAuthorized(false);
@@ -57,13 +63,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             router.push('/login');
           }
         } else {
+          console.log('AdminLayout: No session found, redirecting to login...');
           // No session, redirect to login
           setIsAuthorized(false);
           setCurrentAdmin(null);
           router.push('/login');
         }
       } catch (error) {
-        console.error('Auth check error:', error);
+        console.error('AdminLayout: Auth check error:', error);
         setIsAuthorized(false);
         setCurrentAdmin(null);
         router.push('/login');
@@ -77,16 +84,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('AdminLayout: Auth state change:', event, session?.user?.email);
+        
         if (event === 'SIGNED_OUT') {
           setIsAuthorized(false);
           setCurrentAdmin(null);
           router.push('/login');
         } else if (event === 'SIGNED_IN' && session?.user) {
-          if (ADMIN_EMAILS.includes(session.user.email)) {
+          const isAdmin = await AdminAuthService.isAdmin();
+          if (isAdmin) {
+            const adminUser = await AdminAuthService.getCurrentAdmin();
             setIsAuthorized(true);
             setCurrentAdmin({
-              email: session.user.email,
-              name: session.user.user_metadata?.full_name || session.user.email
+              email: session.user.email || '',
+              name: adminUser?.full_name || session.user.user_metadata?.full_name || session.user.email || ''
             });
           } else {
             await supabase.auth.signOut();
@@ -101,7 +112,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await AdminAuthService.signOut();
       setIsAuthorized(false);
       setCurrentAdmin(null);
       router.push('/login');
@@ -198,71 +209,64 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <li>
                 <Link
                   href="/admin"
-                  className="flex items-center px-4 lg:px-5 py-3 lg:py-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors group"
-                  onClick={() => setSidebarOpen(false)}
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
                 >
-                  <HomeIcon className="w-5 h-5 mr-3 lg:mr-4 text-gray-400 group-hover:text-blue-600" />
-                  <span className="text-sm lg:text-base">Dashboard</span>
+                  <HomeIcon className="w-5 h-5 mr-3" />
+                  Dashboard
                 </Link>
               </li>
               <li>
                 <Link
                   href="/admin/technical-trainings"
-                  className="flex items-center px-4 lg:px-5 py-3 lg:py-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors group"
-                  onClick={() => setSidebarOpen(false)}
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
                 >
-                  <AcademicCapIcon className="w-5 h-5 mr-3 lg:mr-4 text-gray-400 group-hover:text-blue-600" />
-                  <span className="text-sm lg:text-base">Technical Trainings</span>
+                  <AcademicCapIcon className="w-5 h-5 mr-3" />
+                  Technical Trainings
                 </Link>
               </li>
               <li>
                 <Link
                   href="/admin/non-technical-trainings"
-                  className="flex items-center px-4 lg:px-5 py-3 lg:py-4 text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-xl transition-colors group"
-                  onClick={() => setSidebarOpen(false)}
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
                 >
-                  <AcademicCapIcon className="w-5 h-5 mr-3 lg:mr-4 text-gray-400 group-hover:text-green-600" />
-                  <span className="text-sm lg:text-base">Non-Technical Trainings</span>
+                  <AcademicCapIcon className="w-5 h-5 mr-3" />
+                  Non-Technical Trainings
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/admin/services"
-                  className="flex items-center px-4 lg:px-5 py-3 lg:py-4 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-xl transition-colors group"
-                  onClick={() => setSidebarOpen(false)}
+                  href="/admin/consulting-services"
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
                 >
-                  <BriefcaseIcon className="w-5 h-5 mr-3 lg:mr-4 text-gray-400 group-hover:text-purple-600" />
-                  <span className="text-sm lg:text-base">Consulting Services</span>
+                  <BriefcaseIcon className="w-5 h-5 mr-3" />
+                  Consulting Services
                 </Link>
               </li>
               <li>
                 <Link
                   href="/admin/consultants"
-                  className="flex items-center px-4 lg:px-5 py-3 lg:py-4 text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 rounded-xl transition-colors group"
-                  onClick={() => setSidebarOpen(false)}
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
                 >
-                  <UserGroupIcon className="w-5 h-5 mr-3 lg:mr-4 text-gray-400 group-hover:text-yellow-600" />
-                  <span className="text-sm lg:text-base">Consultants</span>
+                  <UserGroupIcon className="w-5 h-5 mr-3" />
+                  Consultants
                 </Link>
               </li>
               <li>
                 <Link
                   href="/admin/contacts"
-                  className="flex items-center px-4 lg:px-5 py-3 lg:py-4 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-colors group"
-                  onClick={() => setSidebarOpen(false)}
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
                 >
-                  <EnvelopeIcon className="w-5 h-5 mr-3 lg:mr-4 text-gray-400 group-hover:text-red-600" />
-                  <span className="text-sm lg:text-base">Contact Messages</span>
+                  <EnvelopeIcon className="w-5 h-5 mr-3" />
+                  Contact Submissions
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/admin/test-auth"
-                  className="flex items-center px-4 lg:px-5 py-3 lg:py-4 text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 rounded-xl transition-colors group"
-                  onClick={() => setSidebarOpen(false)}
+                  href="/admin/users"
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
                 >
-                  <UsersIcon className="w-5 h-5 mr-3 lg:mr-4 text-gray-400 group-hover:text-yellow-600" />
-                  <span className="text-sm lg:text-base">Test Auth</span>
+                  <UsersIcon className="w-5 h-5 mr-3" />
+                  Users
                 </Link>
               </li>
             </ul>
@@ -270,7 +274,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 lg:ml-0">
           <div className="p-4 lg:p-8">
             {children}
           </div>
