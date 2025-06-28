@@ -74,11 +74,14 @@ async function fetchServices() {
   try {
     console.log('Fetching services for home page...');
     
-    // Fetch all services data using API routes with relative URLs
+    // Get the base URL for API calls
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    
+    // Fetch all services data using API routes with absolute URLs
     const [technicalResponse, nonTechnicalResponse, consultingResponse] = await Promise.all([
-      fetch('/api/technical-trainings?status=true&limit=3'),
-      fetch('/api/non-technical-trainings?status=true&limit=3'),
-      fetch('/api/consulting-services?status=true&limit=3')
+      fetch(`${baseUrl}/api/technical-trainings?status=true&limit=3`),
+      fetch(`${baseUrl}/api/non-technical-trainings?status=true&limit=3`),
+      fetch(`${baseUrl}/api/consulting-services?status=true&limit=3`)
     ]);
 
     // Check if responses are ok

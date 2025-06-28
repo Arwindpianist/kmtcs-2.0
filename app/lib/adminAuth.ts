@@ -1,3 +1,4 @@
+import { createSupabaseServerClient } from './supabase-server';
 import { supabase } from './supabase';
 
 export interface AdminUser {
@@ -26,8 +27,11 @@ export class AdminAuthService {
 
       console.log('AdminAuthService.isAdmin(): Session found, checking users table for user ID:', session.user.id);
 
+      // Use server-side client to bypass RLS
+      const supabaseServer = createSupabaseServerClient();
+
       // First check if the users table exists
-      const { data: tableCheck, error: tableError } = await supabase
+      const { data: tableCheck, error: tableError } = await supabaseServer
         .from('users')
         .select('count')
         .limit(1);
@@ -38,7 +42,7 @@ export class AdminAuthService {
         return true;
       }
 
-      const { data: user, error } = await supabase
+      const { data: user, error } = await supabaseServer
         .from('users')
         .select('*')
         .eq('id', session.user.id)
@@ -79,8 +83,11 @@ export class AdminAuthService {
 
       console.log('AdminAuthService.getCurrentAdmin(): Session found, querying users table');
 
+      // Use server-side client to bypass RLS
+      const supabaseServer = createSupabaseServerClient();
+
       // First check if the users table exists
-      const { data: tableCheck, error: tableError } = await supabase
+      const { data: tableCheck, error: tableError } = await supabaseServer
         .from('users')
         .select('count')
         .limit(1);
@@ -98,7 +105,7 @@ export class AdminAuthService {
         };
       }
 
-      const { data: user, error } = await supabase
+      const { data: user, error } = await supabaseServer
         .from('users')
         .select('*')
         .eq('id', session.user.id)
@@ -130,8 +137,11 @@ export class AdminAuthService {
     try {
       console.log('AdminAuthService.updateLastSignIn(): Updating last sign in for user:', userId);
       
+      // Use server-side client to bypass RLS
+      const supabaseServer = createSupabaseServerClient();
+      
       // Check if users table exists first
-      const { data: tableCheck, error: tableError } = await supabase
+      const { data: tableCheck, error: tableError } = await supabaseServer
         .from('users')
         .select('count')
         .limit(1);
@@ -141,7 +151,7 @@ export class AdminAuthService {
         return;
       }
       
-      await supabase
+      await supabaseServer
         .from('users')
         .update({ last_sign_in: new Date().toISOString() })
         .eq('id', userId);
