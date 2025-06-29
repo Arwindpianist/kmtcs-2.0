@@ -7,16 +7,15 @@ interface ConsultingService {
   id: string;
   title: string;
   description: string;
-  price: number | null;
-  category: string;
-  status: boolean;
-  objectives: string[];
-  deliverables: string[];
-  methodology: string;
   duration: string;
+  price: number | null;
+  objectives: string[];
+  service_contents: string;
   target_audience: string;
-  benefits: string[];
-  image_url?: string;
+  methodology: string;
+  deliverables: string;
+  status: boolean;
+  created_at: string;
 }
 
 export default function ConsultingClient({ service }: { service: ConsultingService }) {
@@ -151,11 +150,6 @@ export default function ConsultingClient({ service }: { service: ConsultingServi
                   Duration: {service.duration}
                 </div>
               )}
-              {service.category && (
-                <div className="bg-blue-100 text-blue-800 text-sm font-semibold px-4 py-2 rounded-full">
-                  {service.category}
-                </div>
-              )}
             </div>
 
             {/* Service Objectives */}
@@ -181,23 +175,6 @@ export default function ConsultingClient({ service }: { service: ConsultingServi
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Target Audience</h3>
                 <div className="bg-gray-50 p-6 rounded-lg">
                   <p className="text-gray-700 leading-relaxed">{service.target_audience}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Service Benefits */}
-            {service.benefits && Array.isArray(service.benefits) && service.benefits.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Key Benefits</h3>
-                <div className="bg-green-50 p-6 rounded-lg">
-                  <ul className="space-y-3">
-                    {service.benefits.map((benefit, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="text-green-600 mr-3 mt-1">✓</span>
-                        <span className="text-gray-700 leading-relaxed">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               </div>
             )}

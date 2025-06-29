@@ -60,6 +60,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log('POST /api/non-technical-trainings - Request body:', body);
+    
     const supabase = createSupabaseServerClient();
     
     const { data, error } = await supabase
@@ -70,17 +72,24 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Supabase error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
       return NextResponse.json(
-        { error: 'Failed to create non-technical training' },
+        { error: 'Failed to create non-technical training', details: error.message },
         { status: 500 }
       );
     }
 
+    console.log('POST /api/non-technical-trainings - Success:', data);
     return NextResponse.json({ data });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

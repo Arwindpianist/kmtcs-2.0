@@ -10,17 +10,13 @@ interface TrainingCourse {
   description: string;
   price: number | null;
   duration: string;
-  category: string;
   target_audience: string;
-  prerequisites: string;
-  course_outline: string;
   objectives: string[];
   course_contents: string;
   methodology: string;
   certification: string;
   hrdcorp_approval_no: string;
   status: boolean;
-  image_url?: string;
 }
 
 export default function TechnicalTrainingClient({ course }: { course: TrainingCourse }) {
@@ -194,12 +190,6 @@ export default function TechnicalTrainingClient({ course }: { course: TrainingCo
                 <h3 className="font-semibold text-gray-800">Target Audience:</h3>
                 <p>{course.target_audience}</p>
               </div>
-              {course.prerequisites && (
-                <div>
-                  <h3 className="font-semibold text-gray-800">Prerequisites:</h3>
-                  <p>{course.prerequisites}</p>
-                </div>
-              )}
             </div>
 
             {course.course_contents && (
@@ -210,17 +200,6 @@ export default function TechnicalTrainingClient({ course }: { course: TrainingCo
                     <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
                       {course.course_contents}
                     </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {course.course_outline && (
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Course Outline</h3>
-                <div className="bg-gray-50 p-6 rounded-lg">
-                  <div className="prose prose-gray max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: course.course_outline }} />
                   </div>
                 </div>
               </div>

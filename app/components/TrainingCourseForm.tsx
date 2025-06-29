@@ -21,7 +21,7 @@ interface TrainingCourse {
 
 interface TrainingCourseFormProps {
   initialData?: Partial<TrainingCourse>;
-  onSubmit: (data: Omit<TrainingCourse, 'service_type'>) => void;
+  onSubmit: (data: TrainingCourse) => void;
   onCancel: () => void;
   loading?: boolean;
   hideServiceType?: boolean;
@@ -100,11 +100,9 @@ export default function TrainingCourseForm({
       objectives: formData.objectives.filter(obj => obj.trim() !== '')
     };
     
-    // Remove service_type from the data being sent to database
-    // as the individual training tables don't have this column
-    const { service_type, ...dataForDatabase } = cleanData;
-    
-    onSubmit(dataForDatabase);
+    // Keep service_type as the database schema requires it
+    // The service_type field is needed for the technical_trainings table
+    onSubmit(cleanData);
   };
 
   return (

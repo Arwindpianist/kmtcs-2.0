@@ -8,7 +8,6 @@ interface TechnicalTraining {
   id: string;
   title: string;
   description: string;
-  image_url: string | null;
   duration: string;
   price: number | null;
   objectives: string[];

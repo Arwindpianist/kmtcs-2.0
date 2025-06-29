@@ -6,16 +6,15 @@ interface ConsultingService {
   id: string;
   title: string;
   description: string;
-  price: number | null;
-  category: string;
-  status: boolean;
-  objectives: string[];
-  deliverables: string[];
-  methodology: string;
   duration: string;
+  price: number | null;
+  objectives: string[];
+  service_contents: string;
   target_audience: string;
-  benefits: string[];
-  image_url?: string;
+  methodology: string;
+  deliverables: string;
+  status: boolean;
+  created_at: string;
 }
 
 async function getService(id: string): Promise<ConsultingService | null> {
@@ -34,9 +33,7 @@ async function getService(id: string): Promise<ConsultingService | null> {
   const service: ConsultingService = {
     ...data,
     objectives: Array.isArray(data.objectives) ? data.objectives : [],
-    deliverables: Array.isArray(data.deliverables) ? data.deliverables : [],
-    benefits: Array.isArray(data.benefits) ? data.benefits : [],
-    category: data.category || 'General'
+    deliverables: Array.isArray(data.deliverables) ? data.deliverables : []
   };
 
   return service;

@@ -8,17 +8,13 @@ interface TrainingCourse {
   description: string;
   price: number | null;
   duration: string;
-  category: string;
   target_audience: string;
-  prerequisites: string;
-  course_outline: string;
   objectives: string[];
   course_contents: string;
   methodology: string;
   certification: string;
   hrdcorp_approval_no: string;
   status: boolean;
-  image_url?: string;
 }
 
 async function getCourse(id: string): Promise<TrainingCourse | null> {

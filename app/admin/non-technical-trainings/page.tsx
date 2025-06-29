@@ -5,7 +5,7 @@ import { supabase } from '@/app/lib/supabase';
 import TrainingCourseForm from '@/app/components/TrainingCourseForm';
 
 interface TrainingCourse {
-  id: string;
+  id?: string;
   title: string;
   description: string;
   duration: string;
@@ -16,8 +16,9 @@ interface TrainingCourse {
   methodology: string;
   certification: string;
   hrdcorp_approval_no: string;
+  service_type: string;
   status: boolean;
-  created_at: string;
+  created_at?: string;
 }
 
 export default function NonTechnicalTrainingsAdmin() {
@@ -46,9 +47,15 @@ export default function NonTechnicalTrainingsAdmin() {
     }
   };
 
-  const handleSave = async (courseData: Omit<TrainingCourse, 'service_type'>) => {
+  const handleSave = async (courseData: TrainingCourse) => {
     setSaving(true);
     try {
+      // Ensure service_type is set to non_technical_training for this page
+      const dataToSave = {
+        ...courseData,
+        service_type: 'non_technical_training'
+      };
+
       if (editingCourse) {
         // Update existing course
         const response = await fetch('/api/non-technical-trainings', {
@@ -56,7 +63,7 @@ export default function NonTechnicalTrainingsAdmin() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ ...courseData, id: editingCourse.id }),
+          body: JSON.stringify({ ...dataToSave, id: editingCourse.id }),
         });
 
         if (!response.ok) {
@@ -69,7 +76,7 @@ export default function NonTechnicalTrainingsAdmin() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(courseData),
+          body: JSON.stringify(dataToSave),
         });
 
         if (!response.ok) {
@@ -219,7 +226,7 @@ export default function NonTechnicalTrainingsAdmin() {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(course.id)}
+                      onClick={() => handleDelete(course.id || '')}
                       className="text-red-600 hover:text-red-800 px-4 py-2 rounded-lg border border-red-600 hover:bg-red-50 transition-colors font-medium"
                     >
                       Delete
