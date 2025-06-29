@@ -136,18 +136,18 @@ export const metadata: Metadata = {
     'place:currency': 'MYR',
     'place:language': 'en-MY',
   },
-  icons: {
-    icon: [
-      {
-        type: 'image/svg+xml',
-        media: '(prefers-color-scheme: light)',
-        url: '/favicon.svg'
-      },
-      {
-        type: 'image/svg+xml',
-        media: '(prefers-color-scheme: dark)',
-        url: '/favicon.svg'
-      }
+	icons: {
+		icon: [
+			{
+				type: 'image/svg+xml',
+				media: '(prefers-color-scheme: light)',
+				url: '/favicon.svg'
+			},
+			{
+				type: 'image/svg+xml',
+				media: '(prefers-color-scheme: dark)',
+				url: '/favicon.svg'
+			}
     ],
     apple: '/favicon.png',
     shortcut: '/favicon.ico',

@@ -1,15 +1,21 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { 
-  fetchConsultants, 
-  createConsultant, 
-  updateConsultant, 
-  deleteConsultant,
-  uploadConsultantImage,
-  deleteConsultantImage,
-  type Consultant 
-} from '@/app/services/supabaseService';
+
+interface Consultant {
+  id: string;
+  name: string;
+  role: 'Senior' | 'Lead' | 'Associate';
+  image_url: string | null;
+  short_bio: string;
+  full_bio: string;
+  academic_qualifications?: string;
+  professional_certifications?: string;
+  career_experiences?: string;
+  status: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 export default function ConsultantsManagement() {
   const [consultants, setConsultants] = useState<Consultant[]>([]);
@@ -40,8 +46,12 @@ export default function ConsultantsManagement() {
   async function loadConsultants() {
     try {
       setLoading(true);
-      const data = await fetchConsultants();
-      setConsultants(data);
+      const response = await fetch('/api/consultants');
+      if (!response.ok) {
+        throw new Error('Failed to fetch consultants');
+      }
+      const result = await response.json();
+      setConsultants(result.data || []);
       setError(null);
     } catch (err) {
       console.error('Error loading consultants:', err);
@@ -57,12 +67,8 @@ export default function ConsultantsManagement() {
       setSaving(true);
       let imageUrl = formData.image_url;
 
-      if (imageFile) {
-        if (editingConsultant?.image_url) {
-          await deleteConsultantImage(editingConsultant.image_url);
-        }
-        imageUrl = await uploadConsultantImage(imageFile);
-      }
+      // For now, skip image upload functionality since it requires storage setup
+      // TODO: Implement image upload when storage is configured
 
       const consultantData = {
         ...formData,
@@ -70,9 +76,29 @@ export default function ConsultantsManagement() {
       };
 
       if (editingConsultant) {
-        await updateConsultant(editingConsultant.id, consultantData);
+        const response = await fetch('/api/consultants', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ...consultantData, id: editingConsultant.id }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update consultant');
+        }
       } else {
-        await createConsultant(consultantData as Omit<Consultant, 'id' | 'created_at' | 'updated_at'>);
+        const response = await fetch('/api/consultants', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(consultantData),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create consultant');
+        }
       }
 
       await loadConsultants();
@@ -106,11 +132,14 @@ export default function ConsultantsManagement() {
     if (!confirm('Are you sure you want to delete this consultant?')) return;
     
     try {
-      const consultant = consultants.find(c => c.id === id);
-      if (consultant?.image_url) {
-        await deleteConsultantImage(consultant.image_url);
+      const response = await fetch(`/api/consultants?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete consultant');
       }
-      await deleteConsultant(id);
+
       await loadConsultants();
     } catch (err) {
       console.error('Error deleting consultant:', err);

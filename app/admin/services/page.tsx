@@ -1,21 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/app/lib/supabase';
 
 interface ConsultingService {
   id: string;
   title: string;
   description: string;
-  category: string;
-  status: boolean;
-  objectives: string[];
-  deliverables: string[];
-  methodology: string;
   duration: string;
-  target_audience: string;
-  benefits: string[];
   price: number | null;
+  objectives: string[];
+  service_contents: string;
+  target_audience: string;
+  methodology: string;
+  deliverables: string;
+  status: boolean;
   created_at: string;
 }
 
@@ -28,15 +26,14 @@ export default function ConsultingServicesAdmin() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category: '',
     status: true,
     objectives: [''],
-    deliverables: [''],
+    service_contents: '',
     methodology: '',
     duration: '',
     target_audience: '',
-    benefits: [''],
-    price: null
+    deliverables: '',
+    price: null as number | null
   });
 
   useEffect(() => {
@@ -45,13 +42,12 @@ export default function ConsultingServicesAdmin() {
 
   const loadServices = async () => {
     try {
-      const { data, error } = await supabase
-        .from('consulting_services')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setServices(data || []);
+      const response = await fetch('/api/consulting-services');
+      if (!response.ok) {
+        throw new Error('Failed to fetch services');
+      }
+      const result = await response.json();
+      setServices(result.data || []);
     } catch (error) {
       console.error('Error loading services:', error);
     } finally {
@@ -66,32 +62,41 @@ export default function ConsultingServicesAdmin() {
       // Clean the data by removing empty strings from arrays
       const cleanData = {
         ...formData,
-        objectives: formData.objectives.filter(obj => obj.trim() !== ''),
-        deliverables: formData.deliverables.filter(del => del.trim() !== ''),
-        benefits: formData.benefits.filter(ben => ben.trim() !== '')
+        objectives: formData.objectives.filter(obj => obj.trim() !== '')
       };
 
       if (editingService) {
         // Update existing service
-        const { error } = await supabase
-          .from('consulting_services')
-          .update(cleanData)
-          .eq('id', editingService.id);
+        const response = await fetch('/api/consulting-services', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ...cleanData, id: editingService.id }),
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error('Failed to update service');
+        }
       } else {
         // Create new service
-        const { error } = await supabase
-          .from('consulting_services')
-          .insert(cleanData);
+        const response = await fetch('/api/consulting-services', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(cleanData),
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error('Failed to create service');
+        }
       }
 
       await loadServices();
       setShowForm(false);
       setEditingService(null);
-      setFormData({ title: '', description: '', category: '', status: true, objectives: [''], deliverables: [''], methodology: '', duration: '', target_audience: '', benefits: [''], price: null });
+      setFormData({ title: '', description: '', status: true, objectives: [''], service_contents: '', methodology: '', duration: '', target_audience: '', deliverables: '', price: null });
     } catch (error) {
       console.error('Error saving service:', error);
       alert('Error saving service');
@@ -105,14 +110,13 @@ export default function ConsultingServicesAdmin() {
     setFormData({
       title: service.title,
       description: service.description,
-      category: service.category,
       status: service.status,
       objectives: service.objectives,
-      deliverables: service.deliverables,
+      service_contents: service.service_contents,
       methodology: service.methodology,
       duration: service.duration,
       target_audience: service.target_audience,
-      benefits: service.benefits,
+      deliverables: service.deliverables,
       price: service.price
     });
     setShowForm(true);
@@ -122,12 +126,13 @@ export default function ConsultingServicesAdmin() {
     if (!confirm('Are you sure you want to delete this service?')) return;
 
     try {
-      const { error } = await supabase
-        .from('consulting_services')
-        .delete()
-        .eq('id', id);
+      const response = await fetch(`/api/consulting-services?id=${id}`, {
+        method: 'DELETE',
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Failed to delete service');
+      }
       await loadServices();
     } catch (error) {
       console.error('Error deleting service:', error);
@@ -138,7 +143,7 @@ export default function ConsultingServicesAdmin() {
   const handleCancel = () => {
     setShowForm(false);
     setEditingService(null);
-    setFormData({ title: '', description: '', category: '', status: true, objectives: [''], deliverables: [''], methodology: '', duration: '', target_audience: '', benefits: [''], price: null });
+    setFormData({ title: '', description: '', status: true, objectives: [''], service_contents: '', methodology: '', duration: '', target_audience: '', deliverables: '', price: null });
   };
 
   const addObjective = () => {
@@ -159,48 +164,6 @@ export default function ConsultingServicesAdmin() {
     setFormData(prev => ({
       ...prev,
       objectives: prev.objectives.map((obj, i) => i === index ? value : obj)
-    }));
-  };
-
-  const addDeliverable = () => {
-    setFormData(prev => ({
-      ...prev,
-      deliverables: [...prev.deliverables, '']
-    }));
-  };
-
-  const removeDeliverable = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      deliverables: prev.deliverables.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateDeliverable = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      deliverables: prev.deliverables.map((del, i) => i === index ? value : del)
-    }));
-  };
-
-  const addBenefit = () => {
-    setFormData(prev => ({
-      ...prev,
-      benefits: [...prev.benefits, '']
-    }));
-  };
-
-  const removeBenefit = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      benefits: prev.benefits.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateBenefit = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      benefits: prev.benefits.map((ben, i) => i === index ? value : ben)
     }));
   };
 
@@ -238,31 +201,18 @@ export default function ConsultingServicesAdmin() {
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Service Title *
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <input
-                type="text"
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                placeholder="e.g., Management, Technical, Strategy"
-              />
-            </div>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    required
+                  />
+                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -338,6 +288,18 @@ export default function ConsultingServicesAdmin() {
               </div>
             </div>
 
+            {/* Service Contents */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold mb-4">Service Contents</h3>
+              <textarea
+                value={formData.service_contents}
+                onChange={(e) => setFormData({ ...formData, service_contents: e.target.value })}
+                rows={6}
+                placeholder="Describe the detailed contents and scope of this service..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+
             {/* Target Audience */}
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-lg font-semibold mb-4">Target Audience</h3>
@@ -350,112 +312,45 @@ export default function ConsultingServicesAdmin() {
               />
             </div>
 
-            {/* Service Benefits */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4">Key Benefits</h3>
-              <div className="space-y-3">
-                {formData.benefits.map((benefit, index) => (
-                  <div key={index} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={benefit}
-                      onChange={(e) => updateBenefit(index, e.target.value)}
-                      placeholder={`Benefit ${index + 1}`}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeBenefit(index)}
-                      className="px-3 py-2 text-red-600 hover:text-red-800"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addBenefit}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                >
-                  Add Benefit
-                </button>
-              </div>
-            </div>
-
-            {/* Service Deliverables */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4">Service Deliverables</h3>
-              <div className="space-y-3">
-                {formData.deliverables.map((deliverable, index) => (
-                  <div key={index} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={deliverable}
-                      onChange={(e) => updateDeliverable(index, e.target.value)}
-                      placeholder={`Deliverable ${index + 1}`}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeDeliverable(index)}
-                      className="px-3 py-2 text-red-600 hover:text-red-800"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addDeliverable}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                >
-                  Add Deliverable
-                </button>
-              </div>
-            </div>
-
             {/* Methodology */}
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4">Our Approach</h3>
+              <h3 className="text-lg font-semibold mb-4">Methodology</h3>
               <textarea
                 value={formData.methodology}
                 onChange={(e) => setFormData({ ...formData, methodology: e.target.value })}
-                rows={4}
-                placeholder="Describe the methodology and approach for this service..."
+                rows={3}
+                placeholder="Describe the approach and methodology used..."
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               />
             </div>
 
-            {/* Status */}
+            {/* Deliverables */}
             <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="status"
-                checked={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.checked })}
-                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+              <h3 className="text-lg font-semibold mb-4">Deliverables</h3>
+              <textarea
+                value={formData.deliverables}
+                onChange={(e) => setFormData({ ...formData, deliverables: e.target.value })}
+                rows={3}
+                placeholder="What will be delivered to the client?"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               />
-              <label htmlFor="status" className="ml-3 block text-sm text-gray-900">
-                Active
-              </label>
-              </div>
             </div>
 
-            <div className="flex space-x-4">
-              <button
-                type="submit"
-                disabled={saving}
-                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50"
-              >
-                {saving ? 'Saving...' : (editingService ? 'Update Service' : 'Create Service')}
-              </button>
+            {/* Form Actions */}
+            <div className="flex justify-end space-x-4">
               <button
                 type="button"
                 onClick={handleCancel}
-                className="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition-colors font-medium"
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : editingService ? 'Update Service' : 'Create Service'}
               </button>
             </div>
           </form>
@@ -467,7 +362,7 @@ export default function ConsultingServicesAdmin() {
               <div className="max-w-md mx-auto">
                 <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">No Consulting Services</h3>
@@ -492,10 +387,14 @@ export default function ConsultingServicesAdmin() {
                     </h3>
                     <p className="text-gray-600 mb-4 leading-relaxed">{service.description}</p>
                     <div className="flex flex-wrap gap-6 text-sm text-gray-500 mb-4">
-                      {service.category && (
+                      <span className="flex items-center">
+                        <span className="font-medium">Duration:</span>
+                        <span className="ml-2">{service.duration || 'Not specified'}</span>
+                      </span>
+                      {service.price && (
                         <span className="flex items-center">
-                          <span className="font-medium">Category:</span>
-                          <span className="ml-2">{service.category}</span>
+                          <span className="font-medium">Price:</span>
+                          <span className="ml-2">RM {service.price}</span>
                         </span>
                       )}
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -522,6 +421,45 @@ export default function ConsultingServicesAdmin() {
                     </button>
                   </div>
                 </div>
+
+                {service.objectives && service.objectives.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="font-semibold text-gray-900 mb-3">Objectives:</h4>
+                    <ul className="list-disc list-inside text-gray-600 space-y-2">
+                      {service.objectives.map((objective, index) => (
+                        <li key={index} className="leading-relaxed">{objective}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {service.target_audience && (
+                  <div className="mb-6">
+                    <h4 className="font-semibold text-gray-900 mb-3">Target Audience:</h4>
+                    <p className="text-gray-600 leading-relaxed">{service.target_audience}</p>
+                  </div>
+                )}
+
+                {service.methodology && (
+                  <div className="mb-6">
+                    <h4 className="font-semibold text-gray-900 mb-3">Methodology:</h4>
+                    <p className="text-gray-600 leading-relaxed">{service.methodology}</p>
+                  </div>
+                )}
+
+                {service.deliverables && (
+                  <div className="mb-6">
+                    <h4 className="font-semibold text-gray-900 mb-3">Deliverables:</h4>
+                    <p className="text-gray-600 leading-relaxed">{service.deliverables}</p>
+                  </div>
+                )}
+
+                {service.service_contents && (
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-3">Service Contents:</h4>
+                    <div className="text-gray-600 leading-relaxed whitespace-pre-wrap">{service.service_contents}</div>
+                  </div>
+                )}
               </div>
             ))
           )}

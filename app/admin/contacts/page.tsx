@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/app/lib/supabase';
 
 interface ContactSubmission {
   id: string;
@@ -26,13 +25,12 @@ export default function ContactsManagement() {
 
   async function fetchSubmissions() {
     try {
-      const { data, error } = await supabase
-        .from('contact_submissions')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setSubmissions(data || []);
+      const response = await fetch('/api/contact-submissions');
+      if (!response.ok) {
+        throw new Error('Failed to fetch submissions');
+      }
+      const result = await response.json();
+      setSubmissions(result.data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -42,15 +40,21 @@ export default function ContactsManagement() {
 
   async function handleStatusChange(id: string, newStatus: ContactSubmission['status']) {
     try {
-      const { error } = await supabase
-        .from('contact_submissions')
-        .update({ 
+      const response = await fetch('/api/contact-submissions', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          id,
           status: newStatus,
           updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
 
       if(selectedSubmission?.id === id) {
         setSelectedSubmission(prev => prev ? {...prev, status: newStatus} : null);
@@ -65,12 +69,13 @@ export default function ContactsManagement() {
     if (!confirm('Are you sure you want to delete this submission?')) return;
 
     try {
-      const { error } = await supabase
-        .from('contact_submissions')
-        .delete()
-        .eq('id', id);
+      const response = await fetch(`/api/contact-submissions?id=${id}`, {
+        method: 'DELETE',
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Failed to delete submission');
+      }
       
       if(selectedSubmission?.id === id) {
         setSelectedSubmission(null);

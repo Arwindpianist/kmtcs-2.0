@@ -16,7 +16,7 @@ interface TrainingCourse {
   methodology: string;
   certification: string;
   hrdcorp_approval_no: string;
-  service_type: string;
+  service_type?: 'technical_training' | 'non_technical_training';
   status: boolean;
   created_at?: string;
 }
@@ -50,11 +50,8 @@ export default function NonTechnicalTrainingsAdmin() {
   const handleSave = async (courseData: TrainingCourse) => {
     setSaving(true);
     try {
-      // Ensure service_type is set to non_technical_training for this page
-      const dataToSave = {
-        ...courseData,
-        service_type: 'non_technical_training'
-      };
+      // Remove service_type field as it doesn't exist in non_technical_trainings table
+      const { service_type, ...dataToSave } = courseData;
 
       if (editingCourse) {
         // Update existing course
@@ -154,7 +151,7 @@ export default function NonTechnicalTrainingsAdmin() {
             {editingCourse ? 'Edit Course' : 'Add New Course'}
           </h2>
           <TrainingCourseForm
-            initialData={editingCourse ? { ...editingCourse, service_type: 'non_technical_training' } : { service_type: 'non_technical_training' }}
+            initialData={editingCourse || undefined}
             onSubmit={handleSave}
             onCancel={handleCancel}
             loading={saving}

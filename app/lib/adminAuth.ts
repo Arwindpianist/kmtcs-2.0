@@ -9,6 +9,13 @@ export interface AdminUser {
   last_sign_in: string | null;
 }
 
+// Cache for admin status and user data
+let adminStatusCache: { [userId: string]: { isAdmin: boolean; timestamp: number } } = {};
+let adminUserCache: { [userId: string]: { user: AdminUser | null; timestamp: number } } = {};
+
+// Cache duration: 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
+
 export class AdminAuthService {
   /**
    * Check if the current user is an admin
@@ -24,7 +31,16 @@ export class AdminAuthService {
         return false;
       }
 
-      console.log('AdminAuthService.isAdmin(): Session found, checking users table for user ID:', session.user.id);
+      const userId = session.user.id;
+      const now = Date.now();
+
+      // Check cache first
+      if (adminStatusCache[userId] && (now - adminStatusCache[userId].timestamp) < CACHE_DURATION) {
+        console.log('AdminAuthService.isAdmin(): Using cached result');
+        return adminStatusCache[userId].isAdmin;
+      }
+
+      console.log('AdminAuthService.isAdmin(): Session found, checking users table for user ID:', userId);
 
       // Use API call to check admin status since we can't use server client on client side
       const response = await fetch('/api/check-admin-status', {
@@ -32,7 +48,7 @@ export class AdminAuthService {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ userId: session.user.id })
+        body: JSON.stringify({ userId })
       });
 
       if (!response.ok) {
@@ -43,7 +59,12 @@ export class AdminAuthService {
       const result = await response.json();
       console.log('AdminAuthService.isAdmin(): API result:', result);
       
-      return result.isAdmin || false;
+      const isAdmin = result.isAdmin || false;
+      
+      // Cache the result
+      adminStatusCache[userId] = { isAdmin, timestamp: now };
+      
+      return isAdmin;
     } catch (error) {
       console.error('AdminAuthService.isAdmin(): Error checking admin status:', error);
       return false;
@@ -64,6 +85,15 @@ export class AdminAuthService {
         return null;
       }
 
+      const userId = session.user.id;
+      const now = Date.now();
+
+      // Check cache first
+      if (adminUserCache[userId] && (now - adminUserCache[userId].timestamp) < CACHE_DURATION) {
+        console.log('AdminAuthService.getCurrentAdmin(): Using cached result');
+        return adminUserCache[userId].user;
+      }
+
       console.log('AdminAuthService.getCurrentAdmin(): Session found, querying users table');
 
       // Use API call to get admin user data
@@ -72,7 +102,7 @@ export class AdminAuthService {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ userId: session.user.id })
+        body: JSON.stringify({ userId })
       });
 
       if (!response.ok) {
@@ -83,10 +113,28 @@ export class AdminAuthService {
       const result = await response.json();
       console.log('AdminAuthService.getCurrentAdmin(): API result:', result);
       
-      return result.user || null;
+      const user = result.user || null;
+      
+      // Cache the result
+      adminUserCache[userId] = { user, timestamp: now };
+      
+      return user;
     } catch (error) {
       console.error('AdminAuthService.getCurrentAdmin(): Error getting current admin:', error);
       return null;
+    }
+  }
+
+  /**
+   * Clear cache for a specific user or all users
+   */
+  static clearCache(userId?: string): void {
+    if (userId) {
+      delete adminStatusCache[userId];
+      delete adminUserCache[userId];
+    } else {
+      adminStatusCache = {};
+      adminUserCache = {};
     }
   }
 
@@ -108,6 +156,8 @@ export class AdminAuthService {
 
       if (response.ok) {
         console.log('AdminAuthService.updateLastSignIn(): Last sign in updated successfully');
+        // Clear cache for this user since data has changed
+        this.clearCache(userId);
       } else {
         console.log('AdminAuthService.updateLastSignIn(): Failed to update last sign in');
       }
@@ -123,6 +173,8 @@ export class AdminAuthService {
     try {
       console.log('AdminAuthService.signOut(): Signing out user');
       await supabase.auth.signOut();
+      // Clear all cache on sign out
+      this.clearCache();
       console.log('AdminAuthService.signOut(): User signed out successfully');
     } catch (error) {
       console.error('AdminAuthService.signOut(): Error signing out:', error);

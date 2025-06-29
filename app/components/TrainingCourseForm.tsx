@@ -15,7 +15,7 @@ interface TrainingCourse {
   methodology: string;
   certification: string;
   hrdcorp_approval_no: string;
-  service_type: 'technical_training' | 'non_technical_training';
+  service_type?: 'technical_training' | 'non_technical_training';
   status: boolean;
 }
 
@@ -45,7 +45,7 @@ export default function TrainingCourseForm({
     methodology: '',
     certification: '',
     hrdcorp_approval_no: '',
-    service_type: 'technical_training',
+    ...(hideServiceType ? {} : { service_type: 'technical_training' }),
     status: true,
     ...initialData
   });
@@ -100,9 +100,13 @@ export default function TrainingCourseForm({
       objectives: formData.objectives.filter(obj => obj.trim() !== '')
     };
     
-    // Keep service_type as the database schema requires it
-    // The service_type field is needed for the technical_trainings table
-    onSubmit(cleanData);
+    // Remove service_type if it's hidden (for non-technical trainings table)
+    if (hideServiceType) {
+      const { service_type, ...dataWithoutServiceType } = cleanData;
+      onSubmit(dataWithoutServiceType as TrainingCourse);
+    } else {
+      onSubmit(cleanData);
+    }
   };
 
   return (

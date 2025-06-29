@@ -15,7 +15,7 @@ interface TrainingCourse {
   methodology: string;
   certification: string;
   hrdcorp_approval_no: string;
-  service_type: string;
+  service_type?: 'technical_training' | 'non_technical_training';
   status: boolean;
   created_at?: string;
 }

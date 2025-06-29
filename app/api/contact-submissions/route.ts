@@ -3,80 +3,22 @@ import { createSupabaseServerClient } from '@/app/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status');
-    const id = searchParams.get('id');
-    const limit = searchParams.get('limit');
-
-    const supabase = createSupabaseServerClient();
-    
-    let result;
-    
-    if (id) {
-      result = await supabase
-        .from('consulting_services')
-        .select('*')
-        .eq('id', id)
-        .single();
-    } else {
-      let query = supabase
-        .from('consulting_services')
-        .select('*');
-      
-      if (status !== null) {
-        query = query.eq('status', status === 'true');
-      }
-
-      if (limit !== null) {
-        const limitNum = parseInt(limit);
-        if (!isNaN(limitNum)) {
-          query = query.limit(limitNum);
-        }
-      }
-      
-      result = await query.order('created_at', { ascending: false });
-    }
-
-    const { data, error } = result;
-
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch consulting services' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ data });
-  } catch (error) {
-    console.error('API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
     const supabase = createSupabaseServerClient();
     
     const { data, error } = await supabase
-      .from('consulting_services')
-      .insert(body)
-      .select()
-      .single();
+      .from('contact_submissions')
+      .select('*')
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Supabase error:', error);
       return NextResponse.json(
-        { error: 'Failed to create consulting service' },
+        { error: 'Failed to fetch contact submissions' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ data: data || [] });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(
@@ -101,7 +43,7 @@ export async function PUT(request: NextRequest) {
     const supabase = createSupabaseServerClient();
     
     const { data, error } = await supabase
-      .from('consulting_services')
+      .from('contact_submissions')
       .update(updateData)
       .eq('id', id)
       .select()
@@ -110,7 +52,7 @@ export async function PUT(request: NextRequest) {
     if (error) {
       console.error('Supabase error:', error);
       return NextResponse.json(
-        { error: 'Failed to update consulting service' },
+        { error: 'Failed to update contact submission' },
         { status: 500 }
       );
     }
@@ -140,14 +82,14 @@ export async function DELETE(request: NextRequest) {
     const supabase = createSupabaseServerClient();
     
     const { error } = await supabase
-      .from('consulting_services')
+      .from('contact_submissions')
       .delete()
       .eq('id', id);
 
     if (error) {
       console.error('Supabase error:', error);
       return NextResponse.json(
-        { error: 'Failed to delete consulting service' },
+        { error: 'Failed to delete contact submission' },
         { status: 500 }
       );
     }

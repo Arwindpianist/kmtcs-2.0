@@ -52,7 +52,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             const isAdmin = await Promise.race([
               AdminAuthService.isAdmin(),
               new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Admin check timeout')), 5000)
+                setTimeout(() => reject(new Error('Admin check timeout')), 3000)
               )
             ]);
             
@@ -64,7 +64,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 const adminUser = await Promise.race([
                   AdminAuthService.getCurrentAdmin(),
                   new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Admin data timeout')), 3000)
+                    setTimeout(() => reject(new Error('Admin data timeout')), 2000)
                   )
                 ]);
                 
