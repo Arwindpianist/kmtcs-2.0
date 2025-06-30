@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from 'react';
 interface Consultant {
   id: string;
   name: string;
-  role: 'Senior' | 'Lead' | 'Associate';
+  role: string;
   image_url: string | null;
   short_bio: string;
   full_bio: string;
@@ -28,7 +28,7 @@ export default function ConsultantsManagement() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<Partial<Consultant>>({
     name: '',
-    role: 'Senior',
+    role: 'Associate Consultant',
     image_url: null,
     short_bio: '',
     full_bio: '',
@@ -179,7 +179,7 @@ export default function ConsultantsManagement() {
     setEditingConsultant(null);
     setFormData({
       name: '',
-      role: 'Senior',
+      role: 'Associate Consultant',
       image_url: null,
       short_bio: '',
       full_bio: '',
@@ -248,16 +248,29 @@ export default function ConsultantsManagement() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Role *
               </label>
-              <select
-                required
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as Consultant['role'] })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-              >
-                <option value="Senior">Senior</option>
-                <option value="Lead">Lead</option>
-                <option value="Associate">Associate</option>
-              </select>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  required
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  placeholder="Enter consultant role"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm text-gray-500">Common roles:</span>
+                  {['Associate Consultant', 'Senior Consultant', 'Lead Consultant', 'Principal Consultant', 'Managing Consultant', 'Technical Consultant', 'Business Consultant'].map((suggestedRole) => (
+                    <button
+                      key={suggestedRole}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, role: suggestedRole })}
+                      className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-yellow-100 hover:text-yellow-800 transition-colors"
+                    >
+                      {suggestedRole}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div>
@@ -423,7 +436,7 @@ export default function ConsultantsManagement() {
                         <h3 className="text-2xl font-semibold text-gray-900 mb-2">
                           {consultant.name}
                         </h3>
-                        <p className="text-lg text-gray-600 mb-3">{consultant.role} Consultant</p>
+                        <p className="text-lg text-gray-600 mb-3">{consultant.role}</p>
                         <p className="text-gray-600 mb-4 leading-relaxed">{consultant.short_bio}</p>
                         <div className="flex flex-wrap gap-6 text-sm text-gray-500 mb-4">
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${

@@ -5,7 +5,7 @@ import type { Service, ServiceType } from '@/app/types/service';
 export interface Consultant {
   id: string;
   name: string;
-  role: 'Senior' | 'Lead' | 'Associate';
+  role: string;
   image_url: string;
   short_bio: string;
   full_bio: string;
@@ -258,7 +258,7 @@ interface ServiceConsultantResponse {
   consultant: {
     id: string;
     name: string;
-    role: "Senior" | "Lead" | "Associate";
+    role: string;
     image_url: string;
     short_bio: string;
     full_bio: string;
@@ -303,7 +303,7 @@ export async function fetchServiceConsultants(serviceId: string): Promise<Consul
     const consultants = (typedData || []).map(item => ({
       id: item.consultant.id,
       name: item.consultant.name,
-      role: item.consultant.role as "Senior" | "Lead" | "Associate",
+      role: item.consultant.role,
       image_url: item.consultant.image_url,
       short_bio: item.consultant.short_bio,
       full_bio: item.consultant.full_bio,
