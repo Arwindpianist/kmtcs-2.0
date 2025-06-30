@@ -31,8 +31,9 @@ async function getCourse(id: string): Promise<TrainingCourse | null> {
   return data;
 }
 
-export default async function TechnicalTrainingPage({ params }: { params: { id: string } }) {
-  const course = await getCourse(params.id);
+export default async function TechnicalTrainingPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const course = await getCourse(id);
 
   if (!course) {
     notFound();

@@ -182,18 +182,21 @@ export async function deleteConsultant(id: string): Promise<void> {
 
 // Enquiry Functions
 export async function createEnquiry(enquiry: Omit<Enquiry, 'id' | 'created_at' | 'updated_at'>): Promise<Enquiry> {
-  const { data, error } = await supabase
-    .from('contact_submissions')
-    .insert([enquiry])
-    .select()
-    .single();
+  const response = await fetch('/api/contact-submissions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(enquiry),
+  });
 
-  if (error) {
-    console.error('Error creating enquiry:', error);
-    throw error;
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to create enquiry');
   }
 
-  return data;
+  const result = await response.json();
+  return result.data;
 }
 
 export async function fetchEnquiries(): Promise<Enquiry[]> {

@@ -106,10 +106,13 @@ function ConsultantCard({ consultant, onSelect }: { consultant: Consultant; onSe
     >
       <div className="relative w-32 h-32 mx-auto mb-6">
         <Image
-          src={consultant.image_url || '/testimonials/user-stroke-rounded.svg'}
+          src={consultant.image_url || '/default-avatar.svg'}
           alt={consultant.name}
           fill
           className="rounded-full object-cover border-4 border-blue-100 shadow-md"
+          onError={(e) => {
+            e.currentTarget.src = '/default-avatar.svg';
+          }}
         />
       </div>
       <h3 className="text-xl font-bold text-gray-900 mb-2">{consultant.name}</h3>
@@ -147,10 +150,13 @@ function ConsultantModal({ consultant, onClose }: { consultant: Consultant; onCl
             <div className="flex items-center space-x-6">
               <div className="relative w-24 h-24 flex-shrink-0">
                 <Image
-                  src={consultant.image_url || '/testimonials/user-stroke-rounded.svg'}
+                  src={consultant.image_url || '/default-avatar.svg'}
                   alt={consultant.name}
                   fill
                   className="rounded-full object-cover border-4 border-white shadow-lg"
+                  onError={(e) => {
+                    e.currentTarget.src = '/default-avatar.svg';
+                  }}
                 />
               </div>
               <div>

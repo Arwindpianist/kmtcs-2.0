@@ -37,7 +37,7 @@ export default function NonTechnicalTrainingClient({ course }: { course: Trainin
 
     try {
       const inquiryMessage = `
-        Training Inquiry: ${course.title}
+        Non-Technical Training Inquiry: ${course.title}
         ---------------------------------
         ${formData.message}
       `;

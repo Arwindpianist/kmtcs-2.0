@@ -5,26 +5,26 @@ export async function GET(request: NextRequest) {
     console.log('Testing homepage services fetching...');
     
     // Fetch all services data using API routes with relative URLs
-    const [technicalResponse, nonTechnicalResponse, consultingResponse] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://v2.kmtcs.com.my'}/api/technical-trainings?status=true&limit=3`),
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://v2.kmtcs.com.my'}/api/non-technical-trainings?status=true&limit=3`),
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://v2.kmtcs.com.my'}/api/consulting-services?status=true&limit=3`)
+    const [technicalTrainings, nonTechnicalTrainings, consultingServices] = await Promise.all([
+      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://kmtcs.com.my'}/api/technical-trainings?status=true&limit=3`),
+      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://kmtcs.com.my'}/api/non-technical-trainings?status=true&limit=3`),
+      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://kmtcs.com.my'}/api/consulting-services?status=true&limit=3`)
     ]);
 
     // Check if responses are ok
-    if (!technicalResponse.ok) {
-      console.error('Technical trainings API error:', technicalResponse.status, technicalResponse.statusText);
+    if (!technicalTrainings.ok) {
+      console.error('Technical trainings API error:', technicalTrainings.status, technicalTrainings.statusText);
     }
-    if (!nonTechnicalResponse.ok) {
-      console.error('Non-technical trainings API error:', nonTechnicalResponse.status, nonTechnicalResponse.statusText);
+    if (!nonTechnicalTrainings.ok) {
+      console.error('Non-technical trainings API error:', nonTechnicalTrainings.status, nonTechnicalTrainings.statusText);
     }
-    if (!consultingResponse.ok) {
-      console.error('Consulting services API error:', consultingResponse.status, consultingResponse.statusText);
+    if (!consultingServices.ok) {
+      console.error('Consulting services API error:', consultingServices.status, consultingServices.statusText);
     }
 
-    const technicalData = await technicalResponse.json();
-    const nonTechnicalData = await nonTechnicalResponse.json();
-    const consultingData = await consultingResponse.json();
+    const technicalData = await technicalTrainings.json();
+    const nonTechnicalData = await nonTechnicalTrainings.json();
+    const consultingData = await consultingServices.json();
 
     console.log('Technical trainings:', technicalData.data?.length || 0);
     console.log('Non-technical trainings:', nonTechnicalData.data?.length || 0);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import { sendFormNotification } from '@/app/lib/emailService';
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,6 +20,45 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ data: data || [] });
+  } catch (error) {
+    console.error('API error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const supabase = createSupabaseServerClient();
+    
+    const { data, error } = await supabase
+      .from('contact_submissions')
+      .insert(body)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json(
+        { error: 'Failed to create contact submission' },
+        { status: 500 }
+      );
+    }
+
+    // Send email notification
+    await sendFormNotification({
+      name: body.name,
+      email: body.email,
+      phone: body.phone,
+      company: body.company,
+      message: body.message,
+      formType: 'Contact Form'
+    });
+
+    return NextResponse.json({ data });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(

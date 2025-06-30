@@ -67,8 +67,24 @@ export default function ConsultantsManagement() {
       setSaving(true);
       let imageUrl = formData.image_url;
 
-      // For now, skip image upload functionality since it requires storage setup
-      // TODO: Implement image upload when storage is configured
+      // Upload image if a new file is selected
+      if (imageFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', imageFile);
+
+        const uploadResponse = await fetch('/api/upload-consultant-image', {
+          method: 'POST',
+          body: uploadFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          const uploadError = await uploadResponse.json();
+          throw new Error(uploadError.error || 'Failed to upload image');
+        }
+
+        const uploadResult = await uploadResponse.json();
+        imageUrl = uploadResult.url;
+      }
 
       const consultantData = {
         ...formData,
@@ -254,6 +270,9 @@ export default function ConsultantsManagement() {
                     src={imagePreview}
                     alt="Preview"
                     className="h-24 w-24 rounded-full object-cover border-2 border-gray-200"
+                    onError={(e) => {
+                      e.currentTarget.src = '/default-avatar.svg';
+                    }}
                   />
                 )}
                 <input
@@ -390,9 +409,12 @@ export default function ConsultantsManagement() {
                 <div className="flex items-start space-x-6">
                   <div className="flex-shrink-0">
                     <img
-                      src={consultant.image_url || '/default-avatar.png'}
+                      src={consultant.image_url || '/default-avatar.svg'}
                       alt={consultant.name}
                       className="h-24 w-24 rounded-full object-cover border-2 border-gray-200"
+                      onError={(e) => {
+                        e.currentTarget.src = '/default-avatar.svg';
+                      }}
                     />
                   </div>
                   <div className="flex-1 min-w-0">

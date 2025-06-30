@@ -38,7 +38,7 @@ export default function TechnicalTrainingClient({ course }: { course: TrainingCo
 
     try {
       const inquiryMessage = `
-        Training Inquiry: ${course.title}
+        Technical Training Inquiry: ${course.title}
         ---------------------------------
         ${formData.message}
       `;
