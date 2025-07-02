@@ -7,19 +7,54 @@ import 'slick-carousel/slick/slick-theme.css';
 
 const testimonials = [
   {
-    quote: "Experienced trainer and always answer all the queries.",
-    name: "Mohd Hafizan Arifin",
-    company: "Engineer, ELP-GTR"
+    quote: "The training was superb, easy to understand and the examples of event very valuable",
+    name: "Wan Asmawati",
+    company: "Engineer, Petronas"
   },
   {
-    quote: "The training was very informative and well-presented. I learned a lot that I can apply to my work.",
-    name: "Sarah Chen",
-    company: "Project Manager, TechForward"
+    quote: "Its about how the engagement are being done and how well the message was delivered",
+    name: "Ahmad Haziq",
+    company: "Engineer, Petronas"
   },
   {
-    quote: "A fantastic course with a knowledgeable instructor. The practical examples were extremely helpful.",
-    name: "David Lee",
-    company: "Lead Developer, Innovate Solutions"
+    quote: "Great instructor, I learnt a lot, thanks.",
+    name: "Wong Kai Zhao",
+    company: "Engineer, Petronas"
+  },
+  {
+    quote: "The presentation style and knowlege sharing by trainer.",
+    name: "Prakash Palanisamy",
+    company: "Engineer, PRefChem"
+  },
+  {
+    quote: "Experienced trainer and always answer all the queries",
+    name: "Mohd Hafwan Affiq",
+    company: "Engineer, PRefChem"
+  },
+  {
+    quote: "The simplicity of explanation by the trainer. He had portrayed an in depth understanding and knowledge of the topic. Easy to engage with the trainer.",
+    name: "Joy Ruran Baru",
+    company: "Engineer, Sarawak Energy"
+  },
+  {
+    quote: "Clear communication, conducive and convenient training place",
+    name: "Dr Bong Yii Change",
+    company: "Manager, Sarawak Energy"
+  },
+  {
+    quote: "The trainer was highly knowledgeable, engaging, and supportive, making learning both enjoyable and effective.",
+    name: "Dhari Abdullateef",
+    company: "Supervisor, KIPIC Kuwait"
+  },
+  {
+    quote: "The training was highly engaging, knowledgeable, and made complex concepts easy to understand.",
+    name: "Thawab Alshahrani",
+    company: "Team Leader, Sabic, KSA"
+  },
+  {
+    quote: "Invaluable insights gained, excellent delivery, engaging, and highly informative!",
+    name: "Abdulla Dukhain",
+    company: "Leader, KIPIC, Kuwait"
   }
 ];
 
