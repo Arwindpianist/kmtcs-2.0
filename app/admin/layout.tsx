@@ -52,7 +52,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             const isAdmin = await Promise.race([
               AdminAuthService.isAdmin(),
               new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Admin check timeout')), 3000)
+                setTimeout(() => reject(new Error('Admin check timeout')), 5000)
               )
             ]);
             
@@ -64,7 +64,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 const adminUser = await Promise.race([
                   AdminAuthService.getCurrentAdmin(),
                   new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Admin data timeout')), 2000)
+                    setTimeout(() => reject(new Error('Admin data timeout')), 3000)
                   )
                 ]);
                 
@@ -88,7 +88,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             }
           } catch (adminCheckError) {
             console.error('AdminLayout: Admin check failed:', adminCheckError);
-            // If admin check fails, still allow access but log the error
+            // If admin check fails, allow access temporarily and log the error
+            // This prevents getting stuck on authorization check
+            console.log('AdminLayout: Allowing access despite admin check failure');
             setIsAuthorized(true);
           }
         } else {
@@ -302,6 +304,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 >
                   <UsersIcon className="w-5 h-5 mr-3" />
                   Users
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin/test-auth"
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                >
+                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Test Auth
                 </Link>
               </li>
             </ul>
