@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/app/lib/supabase';
@@ -25,10 +25,17 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState<{ email: string; name: string } | null>(null);
+
+  // Check if current route should skip admin verification
+  const shouldSkipAdminCheck = pathname?.includes('/admin/technical-trainings') ||
+                              pathname?.includes('/admin/non-technical-trainings') ||
+                              pathname?.includes('/admin/services') ||
+                              pathname?.includes('/admin/consultants');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -41,11 +48,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         if (session?.user) {
           console.log('AdminLayout: Session found for user:', session.user.email);
           
-          // Set basic admin info from session first
+          // Set basic user info from session first
           setCurrentAdmin({
             email: session.user.email || '',
             name: session.user.user_metadata?.full_name || session.user.email || ''
           });
+          
+          // If this is one of the pages that should skip admin check, just authorize
+          if (shouldSkipAdminCheck) {
+            console.log('AdminLayout: Skipping admin check for this route');
+            setIsAuthorized(true);
+            return;
+          }
           
           // Check if user is an admin using AdminAuthService with timeout
           try {
@@ -121,24 +135,40 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           setCurrentAdmin(null);
           router.push('/login');
         } else if (event === 'SIGNED_IN' && session?.user) {
-          try {
-            const isAdmin = await AdminAuthService.isAdmin();
-            if (isAdmin) {
-              const adminUser = await AdminAuthService.getCurrentAdmin();
-              setIsAuthorized(true);
-              setCurrentAdmin({
-                email: session.user.email || '',
-                name: adminUser?.full_name || session.user.user_metadata?.full_name || session.user.email || ''
-              });
-            } else {
+          // Check if current route should skip admin verification
+          const currentPath = window.location.pathname;
+          const shouldSkip = currentPath.includes('/admin/technical-trainings') ||
+                           currentPath.includes('/admin/non-technical-trainings') ||
+                           currentPath.includes('/admin/services') ||
+                           currentPath.includes('/admin/consultants');
+          
+          if (shouldSkip) {
+            console.log('AdminLayout: Skipping admin check for auth state change');
+            setIsAuthorized(true);
+            setCurrentAdmin({
+              email: session.user.email || '',
+              name: session.user.user_metadata?.full_name || session.user.email || ''
+            });
+          } else {
+            try {
+              const isAdmin = await AdminAuthService.isAdmin();
+              if (isAdmin) {
+                const adminUser = await AdminAuthService.getCurrentAdmin();
+                setIsAuthorized(true);
+                setCurrentAdmin({
+                  email: session.user.email || '',
+                  name: adminUser?.full_name || session.user.user_metadata?.full_name || session.user.email || ''
+                });
+              } else {
+                await supabase.auth.signOut();
+                router.push('/login');
+              }
+            } catch (error) {
+              console.error('AdminLayout: Auth state change error:', error);
+              // If admin check fails during auth state change, redirect to login
               await supabase.auth.signOut();
               router.push('/login');
             }
-          } catch (error) {
-            console.error('AdminLayout: Auth state change error:', error);
-            // If admin check fails during auth state change, redirect to login
-            await supabase.auth.signOut();
-            router.push('/login');
           }
         }
       }
