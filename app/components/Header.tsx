@@ -28,7 +28,7 @@ const solutions = [
 
 const callsToAction = [
   { name: 'Contact Us', href: '/contact', icon: QuestionMarkCircleIcon },
-  { name: 'View News', href: '/news', icon: ViewColumnsIcon },
+  { name: 'View Calendar', href: '/calendar', icon: ViewColumnsIcon },
 ]
 
 const aboutOptions = [
@@ -70,7 +70,7 @@ const services = [
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Services', href: '/services' },
-  { name: 'News', href: '/news' },
+  { name: 'Calendar', href: '/calendar' },
   { name: 'Contact', href: '/contact' },
 ]
 
@@ -192,8 +192,8 @@ function HeaderContent() {
               </Popover.Panel>
             </Transition>
           </Popover>
-          <Link href="/news" className="text-md font-semibold leading-6 text-primary hover:text-blue-600 transition-colors duration-200">
-            News
+          <Link href="/calendar" className="text-md font-semibold leading-6 text-primary hover:text-blue-600 transition-colors duration-200">
+            Calendar
           </Link>
           <Link href="/contact" className="text-md font-semibold leading-6 text-primary hover:text-blue-600 transition-colors duration-200">
             Contact
@@ -269,11 +269,11 @@ function HeaderContent() {
                   </div>
                 </div>
                 <Link
-                  href="/news"
+                  href="/calendar"
                   className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 transition-colors duration-200"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  News
+                  Calendar
                 </Link>
                 <Link
                   href="/contact"

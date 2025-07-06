@@ -82,8 +82,8 @@ module.exports = {
         priority = 0.8;
         changefreq = 'monthly';
       }
-      // News pages get medium priority
-      else if (path.startsWith('/news/')) {
+      // Calendar page gets medium priority
+      else if (path === '/calendar') {
         priority = 0.6;
         changefreq = 'weekly';
       }

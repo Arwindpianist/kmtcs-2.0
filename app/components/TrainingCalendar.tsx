@@ -13,13 +13,13 @@ const TrainingCalendar = () => {
           Training Calendar
         </h2>
         <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-          Stay updated with our upcoming training sessions and events. Contact us to schedule custom training programs for your organization.
+          Stay updated with our upcoming training sessions and events. View our calendar to see scheduled programs and contact us to schedule custom training programs for your organization.
         </p>
         <Link 
-          href="/contact"
+          href="/calendar"
           className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-colors"
         >
-          Schedule Training
+          View Calendar
         </Link>
       </div>
     </section>
