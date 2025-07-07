@@ -4,11 +4,15 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const scope = searchParams.get('scope');
+    const testAll = searchParams.get('testAll') === 'true';
     
-    if (!scope) {
+    if (!scope && !testAll) {
       return NextResponse.json({
-        error: 'Please provide a scope parameter',
-        example: '/api/test-zoho-scopes?scope=ZohoCalendar.calendar.READ'
+        error: 'Please provide a scope parameter or testAll=true',
+        examples: [
+          '/api/test-zoho-scopes?scope=ZohoCalendar.calendar.READ',
+          '/api/test-zoho-scopes?testAll=true'
+        ]
       }, { status: 400 });
     }
 
@@ -20,6 +24,75 @@ export async function GET(request: NextRequest) {
         { error: 'Zoho OAuth credentials not configured' },
         { status: 500 }
       );
+    }
+
+    if (testAll) {
+      // Test multiple scopes at once - including the correct Zoho Calendar scopes
+      const scopes = [
+        // Correct Zoho Calendar scopes (singular 'event')
+        'ZohoCalendar.event.ALL',
+        'ZohoCalendar.event.READ',
+        'ZohoCalendar.event.CREATE',
+        'ZohoCalendar.event.UPDATE',
+        'ZohoCalendar.event.DELETE',
+        'ZohoCalendar.event.READ,ZohoCalendar.event.CREATE',
+        'ZohoCalendar.event.READ,ZohoCalendar.event.UPDATE',
+        'ZohoCalendar.event.READ,ZohoCalendar.event.DELETE',
+        'ZohoCalendar.event.READ,ZohoCalendar.event.CREATE,ZohoCalendar.event.UPDATE,ZohoCalendar.event.DELETE',
+        
+        // Calendar scopes
+        'ZohoCalendar.calendar.ALL',
+        'ZohoCalendar.calendar.READ',
+        'ZohoCalendar.calendar.CREATE',
+        'ZohoCalendar.calendar.UPDATE',
+        'ZohoCalendar.calendar.DELETE',
+        
+        // Combined scopes
+        'ZohoCalendar.calendar.READ,ZohoCalendar.event.READ',
+        'ZohoCalendar.calendar.ALL,ZohoCalendar.event.ALL',
+        'ZohoCalendar.ALL',
+        
+        // Alternative formats (plural 'events')
+        'ZohoCalendar.events.ALL',
+        'ZohoCalendar.events.READ',
+        'ZohoCalendar.calendar.READ,ZohoCalendar.events.READ',
+        
+        // Generic scopes
+        'calendar.READ',
+        'events.READ',
+        'calendar.READ,events.READ',
+        'calendar.ALL',
+        'events.ALL',
+        'calendar.ALL,events.ALL',
+      ];
+
+      const authUrls = scopes.map(scope => {
+        const params = new URLSearchParams({
+          scope: scope,
+          client_id: clientId,
+          response_type: 'code',
+          access_type: 'offline',
+          redirect_uri: redirectUri,
+        });
+        
+        return {
+          scope: scope,
+          url: `https://accounts.zoho.com/oauth/v2/auth?${params.toString()}`
+        };
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Test these scopes to find which ones work:',
+        scopes: authUrls,
+        instructions: [
+          '1. Click on each URL to test the scope',
+          '2. If you see a Zoho login page, that scope is valid',
+          '3. If you get "Invalid OAuth Scope", try the next one',
+          '4. After successful login, you\'ll get an authorization code',
+          '5. Use that code with the callback endpoint to get tokens'
+        ]
+      });
     }
 
     // Create authorization URL for the specific scope

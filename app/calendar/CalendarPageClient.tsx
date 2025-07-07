@@ -71,7 +71,7 @@ export default function CalendarPageClient() {
                     View our upcoming training sessions and events
                   </p>
                 </div>
-                <div className="flex justify-center">
+                <div className="w-full">
                   <CustomCalendar />
                 </div>
               </div>
