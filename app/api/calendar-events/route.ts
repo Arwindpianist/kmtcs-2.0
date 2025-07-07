@@ -42,15 +42,17 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Making API call to Zoho Calendar...');
-    const response = await fetch(`${apiUrl}?date_from=${startDate}&date_to=${endDate}`, {
+    
+    // Make the API call without any parameters
+    const response = await fetch(apiUrl, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
     });
-
+    
     console.log('Zoho API response status:', response.status);
-
+    
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Zoho API error response:', errorText);

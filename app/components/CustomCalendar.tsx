@@ -53,10 +53,9 @@ export default function CustomCalendar() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
       
-      const response = await fetch(`/api/calendar-events?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}`);
+      // Fetch all events since Zoho API doesn't support date filtering
+      const response = await fetch('/api/calendar-events');
       
       if (!response.ok) {
         throw new Error('Failed to fetch events');
