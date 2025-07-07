@@ -185,12 +185,14 @@ export default function TechnicalTrainingClient({ course }: { course: TrainingCo
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              <div>
-                <h3 className="font-semibold text-gray-800">Target Audience:</h3>
-                <p>{course.target_audience}</p>
+            {course.target_audience && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Target Audience</h3>
+                <div className="bg-blue-50 p-6 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed">{course.target_audience}</p>
+                </div>
               </div>
-            </div>
+            )}
 
             {course.course_contents && (
               <div className="mb-8">

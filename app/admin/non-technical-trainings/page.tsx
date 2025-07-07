@@ -245,7 +245,9 @@ export default function NonTechnicalTrainingsAdmin() {
                 {course.target_audience && (
                   <div className="mb-6">
                     <h4 className="font-semibold text-gray-900 mb-3">Target Audience:</h4>
-                    <p className="text-gray-600 leading-relaxed">{course.target_audience}</p>
+                    <div className="bg-green-50 p-6 rounded-lg">
+                      <p className="text-gray-700 leading-relaxed">{course.target_audience}</p>
+                    </div>
                   </div>
                 )}
 

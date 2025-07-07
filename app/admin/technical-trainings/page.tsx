@@ -247,7 +247,9 @@ export default function TechnicalTrainingsAdmin() {
                 {course.target_audience && (
                   <div className="mb-4 lg:mb-6">
                     <h4 className="font-semibold text-gray-900 mb-2 lg:mb-3 text-sm lg:text-base">Target Audience:</h4>
-                    <p className="text-gray-600 leading-relaxed text-sm lg:text-base">{course.target_audience}</p>
+                    <div className="bg-blue-50 p-4 lg:p-6 rounded-lg">
+                      <p className="text-gray-700 leading-relaxed text-sm lg:text-base">{course.target_audience}</p>
+                    </div>
                   </div>
                 )}
 
