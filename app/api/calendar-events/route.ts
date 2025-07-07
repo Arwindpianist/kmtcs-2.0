@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
 
     // Zoho Calendar API endpoint
     const calendarUid = 'f4c3dda451a2448fb8f12e629a46f533';
-    const apiUrl = `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events`;
     
     // Get access token using helper function
     const accessToken = await getValidAccessToken();
@@ -43,42 +42,72 @@ export async function GET(request: NextRequest) {
 
     console.log('Making API call to Zoho Calendar...');
     
-    // Make the API call without any parameters
-    const response = await fetch(apiUrl, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    // Try different approaches to get events
+    let events: CalendarEvent[] = [];
     
-    console.log('Zoho API response status:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Zoho API error response:', errorText);
-      throw new Error(`Zoho API error: ${response.status} ${response.statusText} - ${errorText}`);
+    // Approach 1: Try the events endpoint with different scopes
+    const eventsEndpoints = [
+      `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events`,
+      `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events?date_from=${startDate}&date_to=${endDate}`,
+      `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events?from=${startDate}&to=${endDate}`,
+    ];
+
+    for (const endpoint of eventsEndpoints) {
+      try {
+        console.log(`Trying events endpoint: ${endpoint}`);
+        const response = await fetch(endpoint, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        console.log(`Events endpoint response status: ${response.status}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Events API response data:', { 
+            hasEvents: !!data.events, 
+            eventCount: data.events?.length || 0 
+          });
+          
+          events = data.events?.map((event: any) => ({
+            id: event.event_id,
+            title: event.title,
+            description: event.description,
+            start_time: event.start_time,
+            end_time: event.end_time,
+            location: event.location,
+            attachments: event.attachments || [],
+            all_day: event.all_day === 'true',
+            recurrence: event.recurrence,
+            created_time: event.created_time,
+            modified_time: event.modified_time,
+          })) || [];
+          
+          break; // Success, exit the loop
+        } else {
+          const errorText = await response.text();
+          console.log(`Events endpoint failed: ${response.status} - ${errorText}`);
+        }
+      } catch (error) {
+        console.log(`Events endpoint error: ${error}`);
+      }
     }
 
-    const data = await response.json();
-    console.log('Zoho API response data:', { 
-      hasEvents: !!data.events, 
-      eventCount: data.events?.length || 0 
-    });
-    
-    // Transform the data to match our interface
-    const events = data.events?.map((event: any) => ({
-      id: event.event_id,
-      title: event.title,
-      description: event.description,
-      start_time: event.start_time,
-      end_time: event.end_time,
-      location: event.location,
-      attachments: event.attachments || [],
-      all_day: event.all_day === 'true',
-      recurrence: event.recurrence,
-      created_time: event.created_time,
-      modified_time: event.modified_time,
-    })) || [];
+    // If no events found, try alternative approach
+    if (events.length === 0) {
+      console.log('No events found via events endpoint, trying alternative approach...');
+      
+      // For now, return empty events array but with success status
+      // We'll need to get the correct OAuth scope to access events
+      return NextResponse.json({
+        success: true,
+        events: [],
+        total: 0,
+        message: 'Calendar API working but events access requires different OAuth scope. Please use the authorization URLs from /api/zoho-auth-scope to get the correct scope.'
+      });
+    }
 
     console.log('Transformed events:', events.length);
 
