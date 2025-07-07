@@ -130,7 +130,7 @@ export default function CustomCalendar() {
         console.log('Using real events:', data.events.length);
         setEvents(data.events);
       } else {
-        console.log('Using sample events');
+        console.log('Using sample events - no real events found');
         setEvents(sampleEvents);
       }
       
@@ -139,10 +139,10 @@ export default function CustomCalendar() {
       console.error('Error fetching events:', err);
       setError('Failed to load calendar events');
       // Use sample events as fallback
-      console.log('Using sample events as fallback');
+      console.log('Using sample events as fallback due to error');
       setEvents(sampleEvents);
     } finally {
-      console.log('Setting loading to false');
+      console.log('Setting loading to false, total events:', events.length);
       setLoading(false);
     }
   };
@@ -320,6 +320,13 @@ export default function CustomCalendar() {
           </div>
         </div>
       )}
+
+      {/* Debug Info - Remove this after testing */}
+      <div className="bg-gray-50 border-t border-gray-200 p-4 text-xs text-gray-600">
+        <div>Debug: Total events loaded: {events.length}</div>
+        <div>Debug: Events with dates: {events.filter(e => e.start_time).length}</div>
+        <div>Debug: Sample events active: {events.length > 0 && events[0]?.id === '1' ? 'Yes' : 'No'}</div>
+      </div>
 
       {/* Event Detail Modal */}
       <AnimatePresence>

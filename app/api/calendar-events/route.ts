@@ -26,8 +26,8 @@ export async function GET(request: NextRequest) {
 
     console.log('Calendar events request:', { startDate, endDate });
 
-    // Zoho Calendar API endpoint
-    const calendarUid = 'f4c3dda451a2448fb8f12e629a46f533';
+    // Zoho Calendar API endpoint - use environment variable or fallback
+    const calendarUid = process.env.ZOHO_CALENDAR_UID || 'f4c3dda451a2448fb8f12e629a46f533';
     
     // Get access token using helper function
     const accessToken = await getValidAccessToken();
@@ -57,7 +57,11 @@ export async function GET(request: NextRequest) {
     let events: CalendarEvent[] = [];
     
     // Approach 1: Use the correct POST request with range parameter
+    // For production domain kmtcs.com.my, we might need to use a different endpoint
     const eventsEndpoint = `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events`;
+    
+    console.log('Using calendar UID:', calendarUid);
+    console.log('Using events endpoint:', eventsEndpoint);
     
     try {
       console.log(`Making POST request to: ${eventsEndpoint}`);
