@@ -61,8 +61,8 @@ export async function GET(request: NextRequest) {
         const calendarUid = 'f4c3dda451a2448fb8f12e629a46f533';
         const apiUrl = `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events`;
         
-        // First try without parameters
-        let response = await fetch(apiUrl, {
+        // Make the API call without any parameters
+        const response = await fetch(apiUrl, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
@@ -72,32 +72,11 @@ export async function GET(request: NextRequest) {
         if (response.ok) {
           calendarData = await response.json();
           calendarTestSuccess = true;
-          console.log('Calendar API call successful (no params)');
+          console.log('Calendar API call successful');
         } else {
           const errorText = await response.text();
-          console.log('Calendar API failed (no params):', errorText);
-          
-          // Try with parameters
-          const params = new URLSearchParams();
-          params.append('date_from', '2025-01-01');
-          params.append('date_to', '2025-12-31');
-          
-          response = await fetch(`${apiUrl}?${params.toString()}`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (response.ok) {
-            calendarData = await response.json();
-            calendarTestSuccess = true;
-            console.log('Calendar API call successful (with params)');
-          } else {
-            const errorText2 = await response.text();
-            calendarTestError = `Calendar API failed: ${response.status} ${errorText2}`;
-            console.error('Calendar API failed (with params):', errorText2);
-          }
+          calendarTestError = `Calendar API failed: ${response.status} ${errorText}`;
+          console.error('Calendar API failed:', errorText);
         }
       } catch (error) {
         calendarTestError = `Calendar API error: ${error instanceof Error ? error.message : 'Unknown error'}`;
