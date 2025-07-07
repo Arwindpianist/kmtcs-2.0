@@ -22,6 +22,7 @@ interface ConsultingService {
 export default function ConsultingServicesPage() {
   const [services, setServices] = useState<ConsultingService[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     loadServices();
@@ -43,6 +44,14 @@ export default function ConsultingServicesPage() {
     }
   };
 
+  const filterData = (data: ConsultingService[], searchTerm: string) => {
+    if (!searchTerm) return data;
+    return data.filter(item => 
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -53,6 +62,8 @@ export default function ConsultingServicesPage() {
       </div>
     );
   }
+
+  const filteredServices = filterData(services, searchTerm);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -74,8 +85,33 @@ export default function ConsultingServicesPage() {
             </p>
             <div className="mt-8 flex justify-center">
               <div className="bg-purple-500 bg-opacity-20 rounded-full px-6 py-2">
-                <span className="text-purple-100 font-medium">{services.length} Services Available</span>
+                <span className="text-purple-100 font-medium">{filteredServices.length} Services Available</span>
               </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="py-8 bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-md mx-auto"
+          >
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search consulting services..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-6 py-4 pl-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent shadow-sm"
+              />
+              <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
           </motion.div>
         </div>
@@ -84,9 +120,9 @@ export default function ConsultingServicesPage() {
       {/* Services Grid */}
       <div className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {services.length > 0 ? (
+          {filteredServices.length > 0 ? (
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {services.map((service, index) => (
+              {filteredServices.map((service, index) => (
                 <motion.div
                   key={service.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -130,9 +166,11 @@ export default function ConsultingServicesPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Consulting Services Available</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  {searchTerm ? 'No matching consulting services found' : 'No Consulting Services Available'}
+                </h3>
                 <p className="text-gray-600 mb-6">
-                  Check back later for new consulting services.
+                  {searchTerm ? 'Try adjusting your search terms.' : 'Check back later for new consulting services.'}
                 </p>
                 <Link 
                   href="/services" 

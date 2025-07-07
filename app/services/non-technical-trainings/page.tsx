@@ -23,6 +23,7 @@ interface NonTechnicalTraining {
 export default function NonTechnicalTrainingsPage() {
   const [trainings, setTrainings] = useState<NonTechnicalTraining[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     loadTrainings();
@@ -43,6 +44,14 @@ export default function NonTechnicalTrainingsPage() {
     }
   };
 
+  const filterData = (data: NonTechnicalTraining[], searchTerm: string) => {
+    if (!searchTerm) return data;
+    return data.filter(item => 
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -53,6 +62,8 @@ export default function NonTechnicalTrainingsPage() {
       </div>
     );
   }
+
+  const filteredTrainings = filterData(trainings, searchTerm);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -74,8 +85,33 @@ export default function NonTechnicalTrainingsPage() {
             </p>
             <div className="mt-8 flex justify-center">
               <div className="bg-green-500 bg-opacity-20 rounded-full px-6 py-2">
-                <span className="text-green-100 font-medium">{trainings.length} Programs Available</span>
+                <span className="text-green-100 font-medium">{filteredTrainings.length} Programs Available</span>
               </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="py-8 bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-md mx-auto"
+          >
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search non-technical trainings..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-6 py-4 pl-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-sm"
+              />
+              <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
           </motion.div>
         </div>
@@ -84,9 +120,9 @@ export default function NonTechnicalTrainingsPage() {
       {/* Trainings Grid */}
       <div className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {trainings.length > 0 ? (
+          {filteredTrainings.length > 0 ? (
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {trainings.map((training, index) => (
+              {filteredTrainings.map((training, index) => (
                 <motion.div
                   key={training.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -141,9 +177,11 @@ export default function NonTechnicalTrainingsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Non-Technical Trainings Available</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  {searchTerm ? 'No matching non-technical trainings found' : 'No Non-Technical Trainings Available'}
+                </h3>
                 <p className="text-gray-600 mb-6">
-                  Check back later for new non-technical training programs.
+                  {searchTerm ? 'Try adjusting your search terms.' : 'Check back later for new non-technical training programs.'}
                 </p>
                 <Link 
                   href="/services" 
