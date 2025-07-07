@@ -17,10 +17,7 @@ export default function Footer() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
               <div className="space-y-2 text-gray-600">
                 <p>
-                  <a href="tel:+60122125360" className="hover:text-blue-600">+6012 - 212 5360 (Office)</a>
-                </p>
-                <p>
-                  <a href="tel:+60102175360" className="hover:text-blue-600">+6010 - 217 5360 (Mobile)</a>
+                  <a href="tel:+60102175360" className="hover:text-blue-600">+6010 - 217 5360 (Mobile & WhatsApp)</a>
                 </p>
                 <p>
                   <a href="mailto:info@kmtcs.com.my" className="hover:text-blue-600">info@kmtcs.com.my</a>

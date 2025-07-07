@@ -124,8 +124,7 @@ export default function ContactPage() {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">Email Us</h3>
               </div>
-              <p className="text-gray-600 mb-2">info@kmtcs.com.my</p>
-              <p className="text-gray-600">admin@kmtcs.com.my</p>
+              <p className="text-gray-600">info@kmtcs.com.my</p>
             </motion.div>
 
             <motion.div
@@ -140,27 +139,7 @@ export default function ContactPage() {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">Call Us</h3>
               </div>
-              <p className="text-gray-600 mb-2">+60 12-345 6789</p>
-              <p className="text-gray-600">+60 12-345 6790</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300"
-            >
-              <div className="flex items-center mb-4">
-                <div className="bg-purple-100 rounded-full p-3 mr-4">
-                  <FiMapPin className="w-6 h-6 text-purple-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900">Visit Us</h3>
-              </div>
-              <p className="text-gray-600">
-                D5-10-3A Evergreen Park Scot Pine,<br />
-                Persiaran SL 1, Bandar Sungai Long,<br />
-                43000 Kajang, Selangor.
-              </p>
+              <p className="text-gray-600">+6010 - 217 5360 (Mobile & WhatsApp)</p>
             </motion.div>
           </div>
 

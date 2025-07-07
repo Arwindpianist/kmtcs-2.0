@@ -1,6 +1,7 @@
 'use client';
 
 import SEOHead from '@/app/components/SEOHead';
+import CustomCalendar from '@/app/components/CustomCalendar';
 
 export default function CalendarPageClient() {
   return (
@@ -60,7 +61,7 @@ export default function CalendarPageClient() {
         <section className="py-8 md:py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-7xl mx-auto">
-              {/* Calendar Embed */}
+              {/* Custom Calendar */}
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 md:p-8 mb-8 md:mb-12">
                 <div className="text-center mb-6 md:mb-8">
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
@@ -71,15 +72,7 @@ export default function CalendarPageClient() {
                   </p>
                 </div>
                 <div className="flex justify-center">
-                  <iframe 
-                    src="https://calendar.zoho.com/zc/ui/embed/#calendar=zz08011230d99b0256d22c53abcdf1239f92f7762d7288f381bf49812a9e491d0e343c1c8ed6ec5f7bc97b430beaa4a0b95af1d45e&title=Training%20Programs&type=1&language=en&timezone=Asia%2FSingapore&showTitle=1&showTimezone=1&view=month&showDetail=0&theme=1&eventColorType=light" 
-                    title="Training Programs"
-                    width="100%" 
-                    height="600" 
-                    frameBorder="0" 
-                    scrolling="no"
-                    className="rounded-xl shadow-lg"
-                  />
+                  <CustomCalendar />
                 </div>
               </div>
 
