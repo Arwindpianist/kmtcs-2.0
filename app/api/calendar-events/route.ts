@@ -24,6 +24,8 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('start') || new Date().toISOString().split('T')[0];
     const endDate = searchParams.get('end') || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
+    console.log('Calendar events request:', { startDate, endDate });
+
     // Zoho Calendar API endpoint
     const calendarUid = 'f4c3dda451a2448fb8f12e629a46f533';
     const apiUrl = `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events`;
@@ -34,11 +36,12 @@ export async function GET(request: NextRequest) {
     if (!accessToken) {
       console.error('Failed to obtain Zoho access token');
       return NextResponse.json(
-        { error: 'Calendar API authentication failed' },
+        { error: 'Calendar API authentication failed - no access token available' },
         { status: 500 }
       );
     }
 
+    console.log('Making API call to Zoho Calendar...');
     const response = await fetch(`${apiUrl}?date_from=${startDate}&date_to=${endDate}`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -46,11 +49,19 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    console.log('Zoho API response status:', response.status);
+
     if (!response.ok) {
-      throw new Error(`Zoho API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Zoho API error response:', errorText);
+      throw new Error(`Zoho API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('Zoho API response data:', { 
+      hasEvents: !!data.events, 
+      eventCount: data.events?.length || 0 
+    });
     
     // Transform the data to match our interface
     const events = data.events?.map((event: any) => ({
@@ -66,6 +77,8 @@ export async function GET(request: NextRequest) {
       created_time: event.created_time,
       modified_time: event.modified_time,
     })) || [];
+
+    console.log('Transformed events:', events.length);
 
     return NextResponse.json({
       success: true,
@@ -88,9 +101,12 @@ export async function GET(request: NextRequest) {
 // Helper function to get a valid access token
 async function getValidAccessToken(): Promise<string | null> {
   try {
+    console.log('Getting valid access token...');
+    
     // First, try to use existing access token if it's still valid
     const existingToken = process.env.ZOHO_ACCESS_TOKEN;
     if (existingToken) {
+      console.log('Using existing access token');
       return existingToken;
     }
 
@@ -101,6 +117,7 @@ async function getValidAccessToken(): Promise<string | null> {
       return null;
     }
 
+    console.log('Refreshing access token...');
     const tokenResponse = await fetch('https://accounts.zoho.com/oauth/v2/token', {
       method: 'POST',
       headers: {
@@ -115,10 +132,13 @@ async function getValidAccessToken(): Promise<string | null> {
     });
 
     if (!tokenResponse.ok) {
-      throw new Error('Failed to refresh token');
+      const errorText = await tokenResponse.text();
+      console.error('Token refresh failed:', errorText);
+      throw new Error(`Failed to refresh token: ${tokenResponse.status} ${errorText}`);
     }
 
     const tokenData = await tokenResponse.json();
+    console.log('Token refresh successful');
     return tokenData.access_token;
 
   } catch (error) {
