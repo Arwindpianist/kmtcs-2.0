@@ -128,14 +128,6 @@ export default function CustomCalendar() {
       // Use sample events if no real events are available
       if (data.events && data.events.length > 0) {
         console.log('Using real events:', data.events.length);
-        console.log('Real events structure:', data.events.slice(0, 2).map(e => ({
-          id: e.id,
-          title: e.title,
-          start_time: e.start_time,
-          end_time: e.end_time,
-          all_day: e.all_day,
-          location: e.location
-        })));
         setEvents(data.events);
       } else {
         console.log('Using sample events');
@@ -166,14 +158,6 @@ export default function CustomCalendar() {
     const days: DayData[] = [];
     const today = new Date();
     
-    console.log('Current month:', month, 'Year:', year);
-    console.log('Total events to filter:', events.length);
-    console.log('Sample event dates:', events.slice(0, 3).map(e => ({
-      title: e.title,
-      start_time: e.start_time,
-      parsed: new Date(e.start_time).toDateString()
-    })));
-    
     for (let i = 0; i < 42; i++) {
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
@@ -182,11 +166,6 @@ export default function CustomCalendar() {
         const eventDate = new Date(event.start_time);
         const currentDateString = currentDate.toDateString();
         const eventDateString = eventDate.toDateString();
-        
-        // Debug logging for the first few days
-        if (i < 7) {
-          console.log(`Day ${i}: ${currentDateString} - Events: ${events.filter(e => new Date(e.start_time).toDateString() === currentDateString).length}`);
-        }
         
         return eventDateString === currentDateString;
       });

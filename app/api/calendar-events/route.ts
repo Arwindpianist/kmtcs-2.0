@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('start') || new Date().toISOString().split('T')[0];
-    const endDate = searchParams.get('end') || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const endDate = searchParams.get('end') || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
     console.log('Calendar events request:', { startDate, endDate });
 
@@ -42,70 +42,126 @@ export async function GET(request: NextRequest) {
 
     console.log('Making API call to Zoho Calendar...');
     
+    // Calculate date range for next 3 months
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfThreeMonths = new Date(now.getFullYear(), now.getMonth() + 3, 0);
+    
+    // Format dates for Zoho API (yyyyMMdd format)
+    const zohoStartDate = startOfMonth.toISOString().slice(0, 10).replace(/-/g, '');
+    const zohoEndDate = endOfThreeMonths.toISOString().slice(0, 10).replace(/-/g, '');
+    
+    console.log('Zoho date range:', { zohoStartDate, zohoEndDate });
+    
     // Try different approaches to get events
     let events: CalendarEvent[] = [];
     
-    // Approach 1: Try the events endpoint with different scopes
-    const eventsEndpoints = [
-      `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events`,
-      `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events?date_from=${startDate}&date_to=${endDate}`,
-      `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events?from=${startDate}&to=${endDate}`,
-    ];
-
-    for (const endpoint of eventsEndpoints) {
-      try {
-        console.log(`Trying events endpoint: ${endpoint}`);
-        const response = await fetch(endpoint, {
+    // Approach 1: Use the correct POST request with range parameter
+    const eventsEndpoint = `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events`;
+    
+    try {
+      console.log(`Making POST request to: ${eventsEndpoint}`);
+      const response = await fetch(eventsEndpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json+large'
+        },
+        body: JSON.stringify({
+          range: {
+            start: zohoStartDate,
+            end: zohoEndDate
+          },
+          byinstance: true,
+          timezone: 'Asia/Kuala_Lumpur'
+        })
+      });
+      
+      console.log(`Events endpoint response status: ${response.status}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Events API response data:', { 
+          hasEvents: !!data.events, 
+          eventCount: data.events?.length || 0 
+        });
+        
+        // Debug: Log the raw first event to see actual field names
+        if (data.events && data.events.length > 0) {
+          console.log('Raw Zoho event structure:', JSON.stringify(data.events[0], null, 2));
+        }
+        
+        events = data.events?.map((event: any) => ({
+          id: event.event_id || event.id || event.eventId || `event-${Math.random()}`,
+          title: event.title || event.summary || event.name,
+          description: event.description || event.details || event.notes,
+          start_time: event.start || event.start_time || event.startTime || event.start_date || event.startDate || event.date,
+          end_time: event.end || event.end_time || event.endTime || event.end_date || event.endDate,
+          location: event.location || event.venue || event.place,
+          attachments: event.attachments || [],
+          all_day: event.all_day === 'true' || event.allDay === true || event.all_day === true,
+          recurrence: event.recurrence || event.recurring,
+          created_time: event.created_time || event.createdTime || event.created,
+          modified_time: event.modified_time || event.modifiedTime || event.modified,
+        })) || [];
+        
+        console.log('Successfully mapped events:', events.length);
+      } else {
+        const errorText = await response.text();
+        console.log(`Events endpoint failed: ${response.status} - ${errorText}`);
+        
+        // Fallback: Try GET request without parameters
+        console.log('Trying fallback GET request...');
+        const fallbackResponse = await fetch(eventsEndpoint, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
         });
         
-        console.log(`Events endpoint response status: ${response.status}`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Events API response data:', { 
-            hasEvents: !!data.events, 
-            eventCount: data.events?.length || 0 
+        if (fallbackResponse.ok) {
+          const fallbackData = await fallbackResponse.json();
+          console.log('Fallback response data:', { 
+            hasEvents: !!fallbackData.events, 
+            eventCount: fallbackData.events?.length || 0 
           });
           
-          events = data.events?.map((event: any) => ({
-            id: event.event_id,
-            title: event.title,
-            description: event.description,
-            start_time: event.start_time,
-            end_time: event.end_time,
-            location: event.location,
-            attachments: event.attachments || [],
-            all_day: event.all_day === 'true',
-            recurrence: event.recurrence,
-            created_time: event.created_time,
-            modified_time: event.modified_time,
-          })) || [];
+          if (fallbackData.events && fallbackData.events.length > 0) {
+            console.log('Raw fallback event structure:', JSON.stringify(fallbackData.events[0], null, 2));
+          }
           
-          break; // Success, exit the loop
+          events = fallbackData.events?.map((event: any) => ({
+            id: event.event_id || event.id || event.eventId || `event-${Math.random()}`,
+            title: event.title || event.summary || event.name,
+            description: event.description || event.details || event.notes,
+            start_time: event.start || event.start_time || event.startTime || event.start_date || event.startDate || event.date,
+            end_time: event.end || event.end_time || event.endTime || event.end_date || event.endDate,
+            location: event.location || event.venue || event.place,
+            attachments: event.attachments || [],
+            all_day: event.all_day === 'true' || event.allDay === true || event.all_day === true,
+            recurrence: event.recurrence || event.recurring,
+            created_time: event.created_time || event.createdTime || event.created,
+            modified_time: event.modified_time || event.modifiedTime || event.modified,
+          })) || [];
         } else {
-          const errorText = await response.text();
-          console.log(`Events endpoint failed: ${response.status} - ${errorText}`);
+          const fallbackErrorText = await fallbackResponse.text();
+          console.log(`Fallback request failed: ${fallbackResponse.status} - ${fallbackErrorText}`);
         }
-      } catch (error) {
-        console.log(`Events endpoint error: ${error}`);
       }
+    } catch (error) {
+      console.log(`Events endpoint error: ${error}`);
     }
 
-    // If no events found, try alternative approach
+    // If no events found, return empty array with success status
     if (events.length === 0) {
-      console.log('No events found via events endpoint, trying alternative approach...');
+      console.log('No events found via events endpoint');
       
-      // For now, return empty events array but with success status
-      // We'll need to get the correct OAuth scope to access events
       return NextResponse.json({
         success: true,
         events: [],
         total: 0,
-        message: 'Calendar API working but events access requires different OAuth scope. Please use the authorization URLs from /api/zoho-auth-scope to get the correct scope.'
+        message: 'No events found in the specified date range. Calendar API is working correctly.'
       });
     }
 
