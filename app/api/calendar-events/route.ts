@@ -80,30 +80,21 @@ export async function GET(request: NextRequest) {
     // Try different approaches to get events
     let events: CalendarEvent[] = [];
     
-    // Approach 1: Use the correct POST request with range parameter
-    // For production domain kmtcs.com.my, we might need to use a different endpoint
+    // Use the same approach as debug endpoint - simple GET request
     const eventsEndpoint = `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events`;
     
     console.log('Using calendar UID:', calendarUid);
     console.log('Using events endpoint:', eventsEndpoint);
     
+    let zohoApiDebug = {};
     try {
-      console.log(`Making POST request to: ${eventsEndpoint}`);
+      console.log(`Making GET request to: ${eventsEndpoint}`);
       const response = await fetch(eventsEndpoint, {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
-          'Accept': 'application/json+large'
-        },
-        body: JSON.stringify({
-          range: {
-            start: zohoStartDate,
-            end: zohoEndDate
-          },
-          byinstance: true,
-          timezone: 'Asia/Kuala_Lumpur'
-        })
+        }
       });
       
       console.log(`Events endpoint response status: ${response.status}`);
@@ -188,103 +179,6 @@ export async function GET(request: NextRequest) {
       } else {
         const errorText = await response.text();
         console.log(`Events endpoint failed: ${response.status} - ${errorText}`);
-        
-        // Fallback: Try GET request without parameters
-        console.log('Trying fallback GET request...');
-        const fallbackResponse = await fetch(eventsEndpoint, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        if (fallbackResponse.ok) {
-          const fallbackData = await fallbackResponse.json();
-          console.log('Fallback response data:', { 
-            hasEvents: !!fallbackData.events, 
-            eventCount: fallbackData.events?.length || 0 
-          });
-          
-          if (fallbackData.events && fallbackData.events.length > 0) {
-            console.log('Raw fallback event structure:', JSON.stringify(fallbackData.events[0], null, 2));
-          }
-          
-          events = fallbackData.events?.map((event: any) => {
-            // Parse the dateandtime field which contains both start and end times
-            let startTime = '';
-            let endTime = '';
-            
-            console.log(`Processing fallback event: ${event.title}`);
-            console.log(`dateandtime type: ${typeof event.dateandtime}`);
-            console.log(`dateandtime:`, event.dateandtime);
-            
-            if (event.dateandtime) {
-              // dateandtime is already an object, not a JSON string
-              const dateTimeData = event.dateandtime;
-              console.log('Fallback dateTimeData:', dateTimeData);
-              
-              if (dateTimeData.start) {
-                // Handle different date formats
-                if (dateTimeData.start.includes('T')) {
-                  // Full datetime format: "20250709T083000+0800"
-                  startTime = new Date(dateTimeData.start).toISOString();
-                  console.log('Parsed fallback full datetime start:', startTime);
-                } else {
-                  // Date-only format: "20250724" (all-day events)
-                  const year = dateTimeData.start.substring(0, 4);
-                  const month = dateTimeData.start.substring(4, 6);
-                  const day = dateTimeData.start.substring(6, 8);
-                  startTime = new Date(`${year}-${month}-${day}T00:00:00`).toISOString();
-                  console.log('Parsed fallback date-only start:', startTime);
-                }
-              }
-              
-              if (dateTimeData.end) {
-                // Handle different date formats
-                if (dateTimeData.end.includes('T')) {
-                  // Full datetime format: "20250711T173000+0800"
-                  endTime = new Date(dateTimeData.end).toISOString();
-                  console.log('Parsed fallback full datetime end:', endTime);
-                } else {
-                  // Date-only format: "20250726" (all-day events)
-                  const year = dateTimeData.end.substring(0, 4);
-                  const month = dateTimeData.end.substring(4, 6);
-                  const day = dateTimeData.end.substring(6, 8);
-                  endTime = new Date(`${year}-${month}-${day}T23:59:59`).toISOString();
-                  console.log('Parsed fallback date-only end:', endTime);
-                }
-              }
-            }
-            
-            // Fallback: try other date fields if dateandtime parsing failed
-            if (!startTime) {
-              if (event.createdtime) {
-                startTime = new Date(event.createdtime).toISOString();
-                console.log('Using fallback createdtime:', startTime);
-              } else if (event.lastmodifiedtime) {
-                startTime = new Date(event.lastmodifiedtime).toISOString();
-                console.log('Using fallback lastmodifiedtime:', startTime);
-              }
-            }
-            
-            return {
-              id: event.uid || event.event_id || event.id || event.eventId || `event-${Math.random()}`,
-              title: event.title || event.summary || event.name,
-              description: event.description || event.details || event.notes,
-              start_time: startTime || event.start || event.start_time || event.startTime || event.start_date || event.startDate || event.date,
-              end_time: endTime || event.end || event.end_time || event.endTime || event.end_date || event.endDate,
-              location: event.location || event.venue || event.place,
-              attachments: event.attach || event.attachments || [],
-              all_day: event.isallday === 'true' || event.isallday === true || event.all_day === 'true' || event.allDay === true || event.all_day === true,
-              recurrence: event.recurrence || event.recurring,
-              created_time: event.createdtime || event.created_time || event.createdTime || event.created,
-              modified_time: event.lastmodifiedtime || event.modified_time || event.modifiedTime || event.modified,
-            };
-          }) || [];
-        } else {
-          const fallbackErrorText = await fallbackResponse.text();
-          console.log(`Fallback request failed: ${fallbackResponse.status} - ${fallbackErrorText}`);
-        }
       }
     } catch (error) {
       console.log(`Events endpoint error: ${error}`);
@@ -302,7 +196,10 @@ export async function GET(request: NextRequest) {
         message: 'No events found in the specified date range. Calendar API is working correctly.',
         debug: {
           dateRange: { zohoStartDate, zohoEndDate },
-          parsedEventCount: events.length
+          parsedEventCount: events.length,
+          debugEvents: [],
+          apiStatus: 'No events fetched from Zoho',
+          zohoApiDebug
         }
       });
     }
@@ -389,71 +286,18 @@ async function getValidAccessToken(): Promise<string | null> {
   try {
     console.log('Getting valid access token...');
     
-    // First, try to use existing access token if it's still valid
+    // Use existing access token to avoid rate limiting
     const existingToken = process.env.ZOHO_ACCESS_TOKEN;
     if (existingToken) {
-      console.log('Using existing access token');
+      console.log('Using existing access token to avoid rate limiting');
       return existingToken;
     }
 
-    // Only refresh if no existing token
-    const refreshToken = process.env.ZOHO_REFRESH_TOKEN;
-    if (!refreshToken) {
-      console.error('No refresh token configured');
-      return null;
-    }
-
-    console.log('Refreshing access token...');
-    console.log('Using client ID:', process.env.ZOHO_CLIENT_ID ? 'Set' : 'Not set');
-    console.log('Using client secret:', process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set');
-    console.log('Using refresh token:', refreshToken ? 'Set' : 'Not set');
-    
-    const tokenResponse = await fetch('https://accounts.zoho.com/oauth/v2/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        refresh_token: refreshToken,
-        client_id: process.env.ZOHO_CLIENT_ID || '',
-        client_secret: process.env.ZOHO_CLIENT_SECRET || '',
-        grant_type: 'refresh_token',
-      }),
-    });
-
-    console.log('Token refresh response status:', tokenResponse.status);
-    
-    if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      console.error('Token refresh failed:', errorText);
-      
-      // Check for rate limiting
-      if (errorText.includes('too many requests') || errorText.includes('Access Denied')) {
-        console.log('Rate limited by Zoho, using existing token if available');
-        const existingToken = process.env.ZOHO_ACCESS_TOKEN;
-        if (existingToken) {
-          return existingToken;
-        }
-      }
-      
-      throw new Error(`Failed to refresh token: ${tokenResponse.status} ${errorText}`);
-    }
-
-    const tokenData = await tokenResponse.json();
-    console.log('Token refresh successful, new token length:', tokenData.access_token?.length || 0);
-    console.log('Token scope:', tokenData.scope || 'No scope returned');
-    return tokenData.access_token;
+    console.log('No existing token available');
+    return null;
 
   } catch (error) {
     console.error('Error getting access token:', error);
-    
-    // Fallback to existing token if refresh fails
-    const existingToken = process.env.ZOHO_ACCESS_TOKEN;
-    if (existingToken) {
-      console.log('Falling back to existing access token');
-      return existingToken;
-    }
-    
     return null;
   }
 } 
