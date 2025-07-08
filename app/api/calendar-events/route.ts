@@ -115,6 +115,13 @@ export async function GET(request: NextRequest) {
           eventCount: data.events?.length || 0 
         });
         
+        if (data.events && data.events.length > 0) {
+          console.log('Raw events from Zoho:', data.events.map(ev => ({
+            title: ev.title,
+            dateandtime: ev.dateandtime
+          })));
+        }
+        
         // Debug: Log the raw first event to see actual field names
         if (data.events && data.events.length > 0) {
           console.log('Raw Zoho event structure:', JSON.stringify(data.events[0], null, 2));
@@ -129,6 +136,7 @@ export async function GET(request: NextRequest) {
           }
         }
         
+        console.log('Starting to map events, count:', data.events?.length || 0);
         events = data.events?.map((event: any) => {
           let startTime = '';
           let endTime = '';
@@ -304,10 +312,27 @@ export async function GET(request: NextRequest) {
     // Filter events to only include those within the calculated date range
     const startRange = parseZohoDate(zohoStartDate);
     const endRange = parseZohoDate(zohoEndDate);
+    console.log('Date range for filtering:', {
+      startRange: startRange?.toISOString(),
+      endRange: endRange?.toISOString(),
+      zohoStartDate,
+      zohoEndDate
+    });
+    
     const filteredEvents = events.filter(ev => {
-      if (!ev.start_time) return false;
+      if (!ev.start_time) {
+        console.log('Event filtered out - no start_time:', ev.title);
+        return false;
+      }
       const evStart = new Date(ev.start_time);
-      return evStart >= startRange && evStart <= endRange;
+      const inRange = evStart >= startRange && evStart <= endRange;
+      console.log('Event filtering:', {
+        title: ev.title,
+        start_time: ev.start_time,
+        evStart: evStart.toISOString(),
+        inRange
+      });
+      return inRange;
     });
     console.log('Filtered events count:', filteredEvents.length);
     events = filteredEvents;

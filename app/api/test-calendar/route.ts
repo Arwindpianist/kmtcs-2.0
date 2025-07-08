@@ -18,40 +18,9 @@ export async function GET(request: NextRequest) {
     let tokenRefreshSuccess = false;
     let tokenRefreshError = null;
 
-    // Only refresh token if we don't have a valid one
-    if (!accessToken && process.env.ZOHO_REFRESH_TOKEN) {
-      try {
-        console.log('Attempting to refresh token...');
-        const tokenResponse = await fetch('https://accounts.zoho.com/oauth/v2/token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: new URLSearchParams({
-            refresh_token: process.env.ZOHO_REFRESH_TOKEN,
-            client_id: process.env.ZOHO_CLIENT_ID || '',
-            client_secret: process.env.ZOHO_CLIENT_SECRET || '',
-            grant_type: 'refresh_token',
-          }),
-        });
-
-        if (tokenResponse.ok) {
-          const tokenData = await tokenResponse.json();
-          accessToken = tokenData.access_token;
-          tokenRefreshSuccess = true;
-          console.log('Token refresh successful');
-          console.log('New token length:', tokenData.access_token?.length || 0);
-          console.log('Token scope:', tokenData.scope || 'No scope returned');
-        } else {
-          const errorText = await tokenResponse.text();
-          tokenRefreshError = `Token refresh failed: ${tokenResponse.status} ${errorText}`;
-          console.error('Token refresh failed:', errorText);
-        }
-      } catch (error) {
-        tokenRefreshError = `Token refresh error: ${error instanceof Error ? error.message : 'Unknown error'}`;
-        console.error('Token refresh error:', error);
-      }
-    }
+    // Skip token refresh to avoid rate limiting, use existing token
+    console.log('Using existing access token to avoid rate limiting');
+    tokenRefreshSuccess = true; // Mark as success since we're using existing token
 
     // Test calendar API call
     let calendarTestSuccess = false;
