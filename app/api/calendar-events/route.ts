@@ -308,15 +308,34 @@ async function getValidAccessToken(): Promise<string | null> {
   try {
     console.log('Getting valid access token...');
     
-    // Use existing access token to avoid rate limiting
-    const existingToken = process.env.ZOHO_ACCESS_TOKEN;
-    if (existingToken) {
-      console.log('Using existing access token to avoid rate limiting');
-      return existingToken;
+    const refreshToken = process.env.ZOHO_REFRESH_TOKEN;
+    if (!refreshToken) {
+      console.log('No refresh token available');
+      return null;
     }
 
-    console.log('No existing token available');
-    return null;
+    console.log('Refreshing access token...');
+    const tokenResponse = await fetch('https://accounts.zoho.com/oauth/v2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        refresh_token: refreshToken,
+        client_id: process.env.ZOHO_CLIENT_ID || '',
+        client_secret: process.env.ZOHO_CLIENT_SECRET || '',
+        grant_type: 'refresh_token',
+      }),
+    });
+
+    if (!tokenResponse.ok) {
+      console.log('Token refresh failed:', tokenResponse.status);
+      return null;
+    }
+
+    const tokenData = await tokenResponse.json();
+    console.log('Token refresh successful, new token length:', tokenData.access_token?.length || 0);
+    return tokenData.access_token;
 
   } catch (error) {
     console.error('Error getting access token:', error);
