@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
             location: event.location || event.venue || event.place,
             attachments: (event.attach || event.attachments || []).map((att: any) => ({
               name: att.fileName || att.name || 'Attachment',
-              url: `/api/zoho-file-download?fileId=${att.fileId}&fileName=${encodeURIComponent(att.fileName || att.name || 'download')}&eventId=${event.uid || event.event_id || event.id}`,
+              url: `https://mail.zoho.com/_zcl/zcal/attachment?mode=download&fileId=${att.fileId}&caluid=f4c3dda451a2448fb8f12e629a46f533&euid=${event.uid || event.event_id || event.id}`,
               size: att.size || 0
             })),
             all_day: event.isallday === 'true' || event.isallday === true || event.all_day === 'true' || event.allDay === true || event.all_day === true,
