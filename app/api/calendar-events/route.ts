@@ -194,14 +194,7 @@ async function getValidAccessToken(): Promise<string | null> {
   try {
     console.log('Getting valid access token...');
     
-    // First, try to use existing access token if it's still valid
-    const existingToken = process.env.ZOHO_ACCESS_TOKEN;
-    if (existingToken) {
-      console.log('Using existing access token');
-      return existingToken;
-    }
-
-    // If no existing token or it's expired, use refresh token
+    // Always refresh the token to ensure we have a fresh one
     const refreshToken = process.env.ZOHO_REFRESH_TOKEN;
     if (!refreshToken) {
       console.error('No refresh token configured');
@@ -209,6 +202,10 @@ async function getValidAccessToken(): Promise<string | null> {
     }
 
     console.log('Refreshing access token...');
+    console.log('Using client ID:', process.env.ZOHO_CLIENT_ID ? 'Set' : 'Not set');
+    console.log('Using client secret:', process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set');
+    console.log('Using refresh token:', refreshToken ? 'Set' : 'Not set');
+    
     const tokenResponse = await fetch('https://accounts.zoho.com/oauth/v2/token', {
       method: 'POST',
       headers: {
@@ -222,6 +219,8 @@ async function getValidAccessToken(): Promise<string | null> {
       }),
     });
 
+    console.log('Token refresh response status:', tokenResponse.status);
+    
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
       console.error('Token refresh failed:', errorText);
@@ -229,11 +228,20 @@ async function getValidAccessToken(): Promise<string | null> {
     }
 
     const tokenData = await tokenResponse.json();
-    console.log('Token refresh successful');
+    console.log('Token refresh successful, new token length:', tokenData.access_token?.length || 0);
+    console.log('Token scope:', tokenData.scope || 'No scope returned');
     return tokenData.access_token;
 
   } catch (error) {
     console.error('Error getting access token:', error);
+    
+    // Fallback to existing token if refresh fails
+    const existingToken = process.env.ZOHO_ACCESS_TOKEN;
+    if (existingToken) {
+      console.log('Falling back to existing access token');
+      return existingToken;
+    }
+    
     return null;
   }
 } 

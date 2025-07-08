@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
     let tokenRefreshSuccess = false;
     let tokenRefreshError = null;
 
-    if (!accessToken && process.env.ZOHO_REFRESH_TOKEN) {
+    // Always try to refresh the token to get a fresh one
+    if (process.env.ZOHO_REFRESH_TOKEN) {
       try {
         console.log('Attempting to refresh token...');
         const tokenResponse = await fetch('https://accounts.zoho.com/oauth/v2/token', {
@@ -39,6 +40,8 @@ export async function GET(request: NextRequest) {
           accessToken = tokenData.access_token;
           tokenRefreshSuccess = true;
           console.log('Token refresh successful');
+          console.log('New token length:', tokenData.access_token?.length || 0);
+          console.log('Token scope:', tokenData.scope || 'No scope returned');
         } else {
           const errorText = await tokenResponse.text();
           tokenRefreshError = `Token refresh failed: ${tokenResponse.status} ${errorText}`;
