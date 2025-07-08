@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
     let tokenRefreshSuccess = false;
     let tokenRefreshError = null;
 
-    // Always try to refresh the token to get a fresh one
-    if (process.env.ZOHO_REFRESH_TOKEN) {
+    // Only refresh token if we don't have a valid one
+    if (!accessToken && process.env.ZOHO_REFRESH_TOKEN) {
       try {
         console.log('Attempting to refresh token...');
         const tokenResponse = await fetch('https://accounts.zoho.com/oauth/v2/token', {

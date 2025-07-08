@@ -321,7 +321,14 @@ async function getValidAccessToken(): Promise<string | null> {
   try {
     console.log('Getting valid access token...');
     
-    // Always refresh the token to ensure we have a fresh one
+    // First, try to use existing access token if it's still valid
+    const existingToken = process.env.ZOHO_ACCESS_TOKEN;
+    if (existingToken) {
+      console.log('Using existing access token');
+      return existingToken;
+    }
+
+    // Only refresh if no existing token
     const refreshToken = process.env.ZOHO_REFRESH_TOKEN;
     if (!refreshToken) {
       console.error('No refresh token configured');
@@ -351,6 +358,16 @@ async function getValidAccessToken(): Promise<string | null> {
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
       console.error('Token refresh failed:', errorText);
+      
+      // Check for rate limiting
+      if (errorText.includes('too many requests') || errorText.includes('Access Denied')) {
+        console.log('Rate limited by Zoho, using existing token if available');
+        const existingToken = process.env.ZOHO_ACCESS_TOKEN;
+        if (existingToken) {
+          return existingToken;
+        }
+      }
+      
       throw new Error(`Failed to refresh token: ${tokenResponse.status} ${errorText}`);
     }
 
