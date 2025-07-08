@@ -18,6 +18,30 @@ interface CalendarEvent {
   modified_time: string;
 }
 
+// Helper to robustly parse Zoho date strings
+function parseZohoDate(str: string) {
+  if (!str) return null;
+  if (typeof str !== 'string') return null;
+  if (str.length === 8) {
+    // All-day event: YYYYMMDD
+    return new Date(`${str.slice(0,4)}-${str.slice(4,6)}-${str.slice(6,8)}T00:00:00Z`);
+  }
+  // Timed event: YYYYMMDDTHHmmss+ZZZZ
+  const match = str.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})([+-]\d{2})(\d{2})$/);
+  if (match) {
+    const [ , y, m, d, h, min, s, tzh, tzm ] = match;
+    const tzIso = `${tzh}:${tzm}`;
+    return new Date(`${y}-${m}-${d}T${h}:${min}:${s}${tzIso}`);
+  }
+  // Timed event: YYYYMMDDTHHmmssZ (UTC)
+  const matchUtc = str.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/);
+  if (matchUtc) {
+    const [ , y, m, d, h, min, s ] = matchUtc;
+    return new Date(`${y}-${m}-${d}T${h}:${min}:${s}Z`);
+  }
+  return new Date(str); // fallback
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -106,69 +130,36 @@ export async function GET(request: NextRequest) {
         }
         
         events = data.events?.map((event: any) => {
-          // Parse the dateandtime field which contains both start and end times
           let startTime = '';
           let endTime = '';
-          
-          console.log(`Processing event: ${event.title}`);
-          console.log(`dateandtime type: ${typeof event.dateandtime}`);
-          console.log(`dateandtime:`, event.dateandtime);
-          
           if (event.dateandtime) {
-            // dateandtime is already an object, not a JSON string
             const dateTimeData = event.dateandtime;
-            console.log('dateTimeData:', dateTimeData);
-            
             if (dateTimeData.start) {
-              // Handle different date formats
-              if (dateTimeData.start.includes('T')) {
-                // Full datetime format: "20250709T083000+0800"
-                startTime = new Date(dateTimeData.start).toISOString();
-                console.log('Parsed full datetime start:', startTime);
-              } else {
-                // Date-only format: "20250724" (all-day events)
-                const year = dateTimeData.start.substring(0, 4);
-                const month = dateTimeData.start.substring(4, 6);
-                const day = dateTimeData.start.substring(6, 8);
-                startTime = new Date(`${year}-${month}-${day}T00:00:00`).toISOString();
-                console.log('Parsed date-only start:', startTime);
-              }
+              startTime = parseZohoDate(dateTimeData.start)?.toISOString() || '';
             }
-            
             if (dateTimeData.end) {
-              // Handle different date formats
-              if (dateTimeData.end.includes('T')) {
-                // Full datetime format: "20250711T173000+0800"
-                endTime = new Date(dateTimeData.end).toISOString();
-                console.log('Parsed full datetime end:', endTime);
-              } else {
-                // Date-only format: "20250726" (all-day events)
-                const year = dateTimeData.end.substring(0, 4);
-                const month = dateTimeData.end.substring(4, 6);
-                const day = dateTimeData.end.substring(6, 8);
-                endTime = new Date(`${year}-${month}-${day}T23:59:59`).toISOString();
-                console.log('Parsed date-only end:', endTime);
-              }
+              endTime = parseZohoDate(dateTimeData.end)?.toISOString() || '';
             }
           }
-          
           // Fallback: try other date fields if dateandtime parsing failed
           if (!startTime) {
             if (event.createdtime) {
-              startTime = new Date(event.createdtime).toISOString();
-              console.log('Using createdtime as fallback:', startTime);
+              startTime = parseZohoDate(event.createdtime)?.toISOString() || '';
             } else if (event.lastmodifiedtime) {
-              startTime = new Date(event.lastmodifiedtime).toISOString();
-              console.log('Using lastmodifiedtime as fallback:', startTime);
+              startTime = parseZohoDate(event.lastmodifiedtime)?.toISOString() || '';
             }
           }
-          
+          if (!endTime && event.lastmodifiedtime) {
+            endTime = parseZohoDate(event.lastmodifiedtime)?.toISOString() || '';
+          }
+          // Log for debugging
+          console.log('Event:', event.title, 'start:', startTime, 'end:', endTime);
           return {
             id: event.uid || event.event_id || event.id || event.eventId || `event-${Math.random()}`,
             title: event.title || event.summary || event.name,
             description: event.description || event.details || event.notes,
-            start_time: startTime || event.start || event.start_time || event.startTime || event.start_date || event.startDate || event.date,
-            end_time: endTime || event.end || event.end_time || event.endTime || event.end_date || event.endDate,
+            start_time: startTime,
+            end_time: endTime,
             location: event.location || event.venue || event.place,
             attachments: event.attach || event.attachments || [],
             all_day: event.isallday === 'true' || event.isallday === true || event.all_day === 'true' || event.allDay === true || event.all_day === true,
@@ -179,6 +170,13 @@ export async function GET(request: NextRequest) {
         }) || [];
         
         console.log('Successfully mapped events:', events.length);
+        console.log('Sample mapped event:', events[0] ? {
+          id: events[0].id,
+          title: events[0].title,
+          start_time: events[0].start_time,
+          end_time: events[0].end_time,
+          all_day: events[0].all_day
+        } : 'No events');
       } else {
         const errorText = await response.text();
         console.log(`Events endpoint failed: ${response.status} - ${errorText}`);
@@ -287,16 +285,32 @@ export async function GET(request: NextRequest) {
     // If no events found, return empty array with success status
     if (events.length === 0) {
       console.log('No events found via events endpoint');
+      console.log('This might be due to date filtering or parsing issues');
       
       return NextResponse.json({
         success: true,
         events: [],
         total: 0,
-        message: 'No events found in the specified date range. Calendar API is working correctly.'
+        message: 'No events found in the specified date range. Calendar API is working correctly.',
+        debug: {
+          dateRange: { zohoStartDate, zohoEndDate },
+          parsedEventCount: events.length
+        }
       });
     }
 
     console.log('Transformed events:', events.length);
+
+    // Filter events to only include those within the calculated date range
+    const startRange = parseZohoDate(zohoStartDate);
+    const endRange = parseZohoDate(zohoEndDate);
+    const filteredEvents = events.filter(ev => {
+      if (!ev.start_time) return false;
+      const evStart = new Date(ev.start_time);
+      return evStart >= startRange && evStart <= endRange;
+    });
+    console.log('Filtered events count:', filteredEvents.length);
+    events = filteredEvents;
 
     return NextResponse.json({
       success: true,
