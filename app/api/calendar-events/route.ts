@@ -65,6 +65,8 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Making API call to Zoho Calendar...');
+    console.log('Access token length:', accessToken.length);
+    console.log('Access token preview:', accessToken.substring(0, 20) + '...');
     
     // Calculate date range for next 3 months
     const now = new Date();
@@ -86,7 +88,7 @@ export async function GET(request: NextRequest) {
     console.log('Using calendar UID:', calendarUid);
     console.log('Using events endpoint:', eventsEndpoint);
     
-    let zohoApiDebug = {};
+    let zohoApiDebug: any = {};
     try {
       console.log(`Making GET request to: ${eventsEndpoint}`);
       const response = await fetch(eventsEndpoint, {
@@ -96,6 +98,26 @@ export async function GET(request: NextRequest) {
           'Content-Type': 'application/json',
         }
       });
+      
+      console.log('Zoho API response status:', response.status);
+      zohoApiDebug = {
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+        endpoint: eventsEndpoint,
+        tokenLength: accessToken.length
+      };
+      
+      if (response.ok) {
+        try {
+          const clone = await response.clone().json();
+          zohoApiDebug.sample = clone.events ? clone.events.slice(0, 2) : clone;
+        } catch (e) {
+          zohoApiDebug.sample = 'Could not parse JSON';
+        }
+      } else {
+        const errorText = await response.text();
+        zohoApiDebug.error = errorText;
+      }
       
       console.log(`Events endpoint response status: ${response.status}`);
       
