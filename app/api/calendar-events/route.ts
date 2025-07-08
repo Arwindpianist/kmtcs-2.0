@@ -111,37 +111,48 @@ export async function GET(request: NextRequest) {
           let endTime = '';
           
           console.log(`Processing event: ${event.title}`);
-          console.log(`dateandtime: ${event.dateandtime}`);
+          console.log(`dateandtime type: ${typeof event.dateandtime}`);
+          console.log(`dateandtime:`, event.dateandtime);
           
           if (event.dateandtime) {
-            try {
-              const dateTimeData = JSON.parse(event.dateandtime);
-              console.log('Parsed dateTimeData:', dateTimeData);
-              
-              if (dateTimeData.start) {
+            // dateandtime is already an object, not a JSON string
+            const dateTimeData = event.dateandtime;
+            console.log('dateTimeData:', dateTimeData);
+            
+            if (dateTimeData.start) {
+              // Handle different date formats
+              if (dateTimeData.start.includes('T')) {
+                // Full datetime format: "20250709T083000+0800"
                 startTime = new Date(dateTimeData.start).toISOString();
-                console.log('Start time:', startTime);
+                console.log('Parsed full datetime start:', startTime);
+              } else {
+                // Date-only format: "20250724" (all-day events)
+                const year = dateTimeData.start.substring(0, 4);
+                const month = dateTimeData.start.substring(4, 6);
+                const day = dateTimeData.start.substring(6, 8);
+                startTime = new Date(`${year}-${month}-${day}T00:00:00`).toISOString();
+                console.log('Parsed date-only start:', startTime);
               }
-              if (dateTimeData.end) {
+            }
+            
+            if (dateTimeData.end) {
+              // Handle different date formats
+              if (dateTimeData.end.includes('T')) {
+                // Full datetime format: "20250711T173000+0800"
                 endTime = new Date(dateTimeData.end).toISOString();
-                console.log('End time:', endTime);
-              }
-            } catch (e) {
-              console.log('Failed to parse dateandtime as JSON:', event.dateandtime);
-              
-              // Try alternative parsing methods
-              if (typeof event.dateandtime === 'string') {
-                // Check if it's a simple date string
-                const dateMatch = event.dateandtime.match(/(\d{4}-\d{2}-\d{2})/);
-                if (dateMatch) {
-                  startTime = new Date(dateMatch[1]).toISOString();
-                  console.log('Parsed as date string:', startTime);
-                }
+                console.log('Parsed full datetime end:', endTime);
+              } else {
+                // Date-only format: "20250726" (all-day events)
+                const year = dateTimeData.end.substring(0, 4);
+                const month = dateTimeData.end.substring(4, 6);
+                const day = dateTimeData.end.substring(6, 8);
+                endTime = new Date(`${year}-${month}-${day}T23:59:59`).toISOString();
+                console.log('Parsed date-only end:', endTime);
               }
             }
           }
           
-          // Fallback: try other date fields
+          // Fallback: try other date fields if dateandtime parsing failed
           if (!startTime) {
             if (event.createdtime) {
               startTime = new Date(event.createdtime).toISOString();
@@ -198,37 +209,48 @@ export async function GET(request: NextRequest) {
             let endTime = '';
             
             console.log(`Processing fallback event: ${event.title}`);
-            console.log(`dateandtime: ${event.dateandtime}`);
+            console.log(`dateandtime type: ${typeof event.dateandtime}`);
+            console.log(`dateandtime:`, event.dateandtime);
             
             if (event.dateandtime) {
-              try {
-                const dateTimeData = JSON.parse(event.dateandtime);
-                console.log('Parsed fallback dateTimeData:', dateTimeData);
-                
-                if (dateTimeData.start) {
+              // dateandtime is already an object, not a JSON string
+              const dateTimeData = event.dateandtime;
+              console.log('Fallback dateTimeData:', dateTimeData);
+              
+              if (dateTimeData.start) {
+                // Handle different date formats
+                if (dateTimeData.start.includes('T')) {
+                  // Full datetime format: "20250709T083000+0800"
                   startTime = new Date(dateTimeData.start).toISOString();
-                  console.log('Fallback start time:', startTime);
+                  console.log('Parsed fallback full datetime start:', startTime);
+                } else {
+                  // Date-only format: "20250724" (all-day events)
+                  const year = dateTimeData.start.substring(0, 4);
+                  const month = dateTimeData.start.substring(4, 6);
+                  const day = dateTimeData.start.substring(6, 8);
+                  startTime = new Date(`${year}-${month}-${day}T00:00:00`).toISOString();
+                  console.log('Parsed fallback date-only start:', startTime);
                 }
-                if (dateTimeData.end) {
+              }
+              
+              if (dateTimeData.end) {
+                // Handle different date formats
+                if (dateTimeData.end.includes('T')) {
+                  // Full datetime format: "20250711T173000+0800"
                   endTime = new Date(dateTimeData.end).toISOString();
-                  console.log('Fallback end time:', endTime);
-                }
-              } catch (e) {
-                console.log('Failed to parse fallback dateandtime as JSON:', event.dateandtime);
-                
-                // Try alternative parsing methods
-                if (typeof event.dateandtime === 'string') {
-                  // Check if it's a simple date string
-                  const dateMatch = event.dateandtime.match(/(\d{4}-\d{2}-\d{2})/);
-                  if (dateMatch) {
-                    startTime = new Date(dateMatch[1]).toISOString();
-                    console.log('Parsed fallback as date string:', startTime);
-                  }
+                  console.log('Parsed fallback full datetime end:', endTime);
+                } else {
+                  // Date-only format: "20250726" (all-day events)
+                  const year = dateTimeData.end.substring(0, 4);
+                  const month = dateTimeData.end.substring(4, 6);
+                  const day = dateTimeData.end.substring(6, 8);
+                  endTime = new Date(`${year}-${month}-${day}T23:59:59`).toISOString();
+                  console.log('Parsed fallback date-only end:', endTime);
                 }
               }
             }
             
-            // Fallback: try other date fields
+            // Fallback: try other date fields if dateandtime parsing failed
             if (!startTime) {
               if (event.createdtime) {
                 startTime = new Date(event.createdtime).toISOString();
