@@ -334,13 +334,42 @@ export async function GET(request: NextRequest) {
       });
       return inRange;
     });
+    const debugEvents = filteredEvents.map(ev => {
+      if (!ev.start_time) {
+        return {
+          title: ev.title,
+          originalStart: ev.start_time,
+          originalEnd: ev.end_time,
+          parsedStart: null,
+          parsedEnd: null,
+          inRange: false,
+          reason: 'No start_time'
+        };
+      }
+      const evStart = new Date(ev.start_time);
+      const inRange = evStart >= startRange && evStart <= endRange;
+      return {
+        title: ev.title,
+        originalStart: ev.start_time,
+        originalEnd: ev.end_time,
+        parsedStart: evStart.toISOString(),
+        parsedEnd: ev.end_time ? new Date(ev.end_time).toISOString() : null,
+        inRange,
+        reason: inRange ? 'In range' : 'Out of range'
+      };
+    });
     console.log('Filtered events count:', filteredEvents.length);
     events = filteredEvents;
 
     return NextResponse.json({
       success: true,
       events,
-      total: events.length
+      total: events.length,
+      debug: {
+        dateRange: { zohoStartDate, zohoEndDate },
+        parsedEventCount: events.length,
+        debugEvents
+      }
     });
 
   } catch (error) {
