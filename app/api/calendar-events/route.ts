@@ -182,7 +182,11 @@ export async function GET(request: NextRequest) {
             start_time: startTime,
             end_time: endTime,
             location: event.location || event.venue || event.place,
-            attachments: event.attach || event.attachments || [],
+            attachments: (event.attach || event.attachments || []).map((att: any) => ({
+              name: att.fileName || att.name || 'Attachment',
+              url: `/api/zoho-file-download?fileId=${att.fileId}&fileName=${encodeURIComponent(att.fileName || att.name || 'download')}`,
+              size: att.size || 0
+            })),
             all_day: event.isallday === 'true' || event.isallday === true || event.all_day === 'true' || event.allDay === true || event.all_day === true,
             recurrence: event.recurrence || event.recurring,
             created_time: event.createdtime || event.created_time || event.createdTime || event.created,
