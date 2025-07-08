@@ -96,19 +96,39 @@ export async function GET(request: NextRequest) {
           console.log('Raw Zoho event structure:', JSON.stringify(data.events[0], null, 2));
         }
         
-        events = data.events?.map((event: any) => ({
-          id: event.event_id || event.id || event.eventId || `event-${Math.random()}`,
-          title: event.title || event.summary || event.name,
-          description: event.description || event.details || event.notes,
-          start_time: event.start || event.start_time || event.startTime || event.start_date || event.startDate || event.date,
-          end_time: event.end || event.end_time || event.endTime || event.end_date || event.endDate,
-          location: event.location || event.venue || event.place,
-          attachments: event.attachments || [],
-          all_day: event.all_day === 'true' || event.allDay === true || event.all_day === true,
-          recurrence: event.recurrence || event.recurring,
-          created_time: event.created_time || event.createdTime || event.created,
-          modified_time: event.modified_time || event.modifiedTime || event.modified,
-        })) || [];
+        events = data.events?.map((event: any) => {
+          // Parse the dateandtime field which contains both start and end times
+          let startTime = '';
+          let endTime = '';
+          
+          if (event.dateandtime) {
+            try {
+              const dateTimeData = JSON.parse(event.dateandtime);
+              if (dateTimeData.start) {
+                startTime = new Date(dateTimeData.start).toISOString();
+              }
+              if (dateTimeData.end) {
+                endTime = new Date(dateTimeData.end).toISOString();
+              }
+            } catch (e) {
+              console.log('Failed to parse dateandtime:', event.dateandtime);
+            }
+          }
+          
+          return {
+            id: event.uid || event.event_id || event.id || event.eventId || `event-${Math.random()}`,
+            title: event.title || event.summary || event.name,
+            description: event.description || event.details || event.notes,
+            start_time: startTime || event.start || event.start_time || event.startTime || event.start_date || event.startDate || event.date,
+            end_time: endTime || event.end || event.end_time || event.endTime || event.end_date || event.endDate,
+            location: event.location || event.venue || event.place,
+            attachments: event.attach || event.attachments || [],
+            all_day: event.isallday === 'true' || event.isallday === true || event.all_day === 'true' || event.allDay === true || event.all_day === true,
+            recurrence: event.recurrence || event.recurring,
+            created_time: event.createdtime || event.created_time || event.createdTime || event.created,
+            modified_time: event.lastmodifiedtime || event.modified_time || event.modifiedTime || event.modified,
+          };
+        }) || [];
         
         console.log('Successfully mapped events:', events.length);
       } else {
@@ -135,19 +155,39 @@ export async function GET(request: NextRequest) {
             console.log('Raw fallback event structure:', JSON.stringify(fallbackData.events[0], null, 2));
           }
           
-          events = fallbackData.events?.map((event: any) => ({
-            id: event.event_id || event.id || event.eventId || `event-${Math.random()}`,
-            title: event.title || event.summary || event.name,
-            description: event.description || event.details || event.notes,
-            start_time: event.start || event.start_time || event.startTime || event.start_date || event.startDate || event.date,
-            end_time: event.end || event.end_time || event.endTime || event.end_date || event.endDate,
-            location: event.location || event.venue || event.place,
-            attachments: event.attachments || [],
-            all_day: event.all_day === 'true' || event.allDay === true || event.all_day === true,
-            recurrence: event.recurrence || event.recurring,
-            created_time: event.created_time || event.createdTime || event.created,
-            modified_time: event.modified_time || event.modifiedTime || event.modified,
-          })) || [];
+          events = fallbackData.events?.map((event: any) => {
+            // Parse the dateandtime field which contains both start and end times
+            let startTime = '';
+            let endTime = '';
+            
+            if (event.dateandtime) {
+              try {
+                const dateTimeData = JSON.parse(event.dateandtime);
+                if (dateTimeData.start) {
+                  startTime = new Date(dateTimeData.start).toISOString();
+                }
+                if (dateTimeData.end) {
+                  endTime = new Date(dateTimeData.end).toISOString();
+                }
+              } catch (e) {
+                console.log('Failed to parse dateandtime:', event.dateandtime);
+              }
+            }
+            
+            return {
+              id: event.uid || event.event_id || event.id || event.eventId || `event-${Math.random()}`,
+              title: event.title || event.summary || event.name,
+              description: event.description || event.details || event.notes,
+              start_time: startTime || event.start || event.start_time || event.startTime || event.start_date || event.startDate || event.date,
+              end_time: endTime || event.end || event.end_time || event.endTime || event.end_date || event.endDate,
+              location: event.location || event.venue || event.place,
+              attachments: event.attach || event.attachments || [],
+              all_day: event.isallday === 'true' || event.isallday === true || event.all_day === 'true' || event.allDay === true || event.all_day === true,
+              recurrence: event.recurrence || event.recurring,
+              created_time: event.createdtime || event.created_time || event.createdTime || event.created,
+              modified_time: event.lastmodifiedtime || event.modified_time || event.modifiedTime || event.modified,
+            };
+          }) || [];
         } else {
           const fallbackErrorText = await fallbackResponse.text();
           console.log(`Fallback request failed: ${fallbackResponse.status} - ${fallbackErrorText}`);
