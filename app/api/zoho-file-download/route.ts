@@ -5,6 +5,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const fileId = searchParams.get('fileId');
     const fileName = searchParams.get('fileName');
+    const eventId = searchParams.get('eventId');
     
     if (!fileId) {
       return NextResponse.json({ error: 'File ID is required' }, { status: 400 });
@@ -16,8 +17,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
     }
 
-    // Zoho Calendar file download endpoint
-    const downloadUrl = `https://calendar.zoho.com/api/v1/calendars/f4c3dda451a2448fb8f12e629a46f533/events/attachments/${fileId}`;
+    // Zoho Calendar file download endpoint - try different formats
+    let downloadUrl;
+    if (eventId) {
+      downloadUrl = `https://calendar.zoho.com/api/v1/calendars/f4c3dda451a2448fb8f12e629a46f533/events/${eventId}/attachments/${fileId}`;
+    } else {
+      downloadUrl = `https://calendar.zoho.com/api/v1/calendars/f4c3dda451a2448fb8f12e629a46f533/attachments/${fileId}`;
+    }
     
     const response = await fetch(downloadUrl, {
       headers: {
@@ -27,8 +33,15 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      console.error('Zoho file download failed:', response.status, await response.text());
-      return NextResponse.json({ error: 'File download failed' }, { status: response.status });
+      const errorText = await response.text();
+      console.error('Zoho file download failed:', response.status, errorText);
+      console.error('Download URL used:', downloadUrl);
+      return NextResponse.json({ 
+        error: 'File download failed', 
+        details: errorText,
+        url: downloadUrl,
+        status: response.status
+      }, { status: response.status });
     }
 
     // Get the file content
