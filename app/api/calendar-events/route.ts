@@ -94,6 +94,15 @@ export async function GET(request: NextRequest) {
         // Debug: Log the raw first event to see actual field names
         if (data.events && data.events.length > 0) {
           console.log('Raw Zoho event structure:', JSON.stringify(data.events[0], null, 2));
+          console.log('dateandtime field:', data.events[0].dateandtime);
+          if (data.events[0].dateandtime) {
+            try {
+              const parsed = JSON.parse(data.events[0].dateandtime);
+              console.log('Parsed dateandtime:', parsed);
+            } catch (e) {
+              console.log('dateandtime is not JSON:', data.events[0].dateandtime);
+            }
+          }
         }
         
         events = data.events?.map((event: any) => {
@@ -101,17 +110,45 @@ export async function GET(request: NextRequest) {
           let startTime = '';
           let endTime = '';
           
+          console.log(`Processing event: ${event.title}`);
+          console.log(`dateandtime: ${event.dateandtime}`);
+          
           if (event.dateandtime) {
             try {
               const dateTimeData = JSON.parse(event.dateandtime);
+              console.log('Parsed dateTimeData:', dateTimeData);
+              
               if (dateTimeData.start) {
                 startTime = new Date(dateTimeData.start).toISOString();
+                console.log('Start time:', startTime);
               }
               if (dateTimeData.end) {
                 endTime = new Date(dateTimeData.end).toISOString();
+                console.log('End time:', endTime);
               }
             } catch (e) {
-              console.log('Failed to parse dateandtime:', event.dateandtime);
+              console.log('Failed to parse dateandtime as JSON:', event.dateandtime);
+              
+              // Try alternative parsing methods
+              if (typeof event.dateandtime === 'string') {
+                // Check if it's a simple date string
+                const dateMatch = event.dateandtime.match(/(\d{4}-\d{2}-\d{2})/);
+                if (dateMatch) {
+                  startTime = new Date(dateMatch[1]).toISOString();
+                  console.log('Parsed as date string:', startTime);
+                }
+              }
+            }
+          }
+          
+          // Fallback: try other date fields
+          if (!startTime) {
+            if (event.createdtime) {
+              startTime = new Date(event.createdtime).toISOString();
+              console.log('Using createdtime as fallback:', startTime);
+            } else if (event.lastmodifiedtime) {
+              startTime = new Date(event.lastmodifiedtime).toISOString();
+              console.log('Using lastmodifiedtime as fallback:', startTime);
             }
           }
           
@@ -160,17 +197,45 @@ export async function GET(request: NextRequest) {
             let startTime = '';
             let endTime = '';
             
+            console.log(`Processing fallback event: ${event.title}`);
+            console.log(`dateandtime: ${event.dateandtime}`);
+            
             if (event.dateandtime) {
               try {
                 const dateTimeData = JSON.parse(event.dateandtime);
+                console.log('Parsed fallback dateTimeData:', dateTimeData);
+                
                 if (dateTimeData.start) {
                   startTime = new Date(dateTimeData.start).toISOString();
+                  console.log('Fallback start time:', startTime);
                 }
                 if (dateTimeData.end) {
                   endTime = new Date(dateTimeData.end).toISOString();
+                  console.log('Fallback end time:', endTime);
                 }
               } catch (e) {
-                console.log('Failed to parse dateandtime:', event.dateandtime);
+                console.log('Failed to parse fallback dateandtime as JSON:', event.dateandtime);
+                
+                // Try alternative parsing methods
+                if (typeof event.dateandtime === 'string') {
+                  // Check if it's a simple date string
+                  const dateMatch = event.dateandtime.match(/(\d{4}-\d{2}-\d{2})/);
+                  if (dateMatch) {
+                    startTime = new Date(dateMatch[1]).toISOString();
+                    console.log('Parsed fallback as date string:', startTime);
+                  }
+                }
+              }
+            }
+            
+            // Fallback: try other date fields
+            if (!startTime) {
+              if (event.createdtime) {
+                startTime = new Date(event.createdtime).toISOString();
+                console.log('Using fallback createdtime:', startTime);
+              } else if (event.lastmodifiedtime) {
+                startTime = new Date(event.lastmodifiedtime).toISOString();
+                console.log('Using fallback lastmodifiedtime:', startTime);
               }
             }
             
