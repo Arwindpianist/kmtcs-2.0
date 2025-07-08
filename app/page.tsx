@@ -99,9 +99,9 @@ async function fetchServices() {
     const nonTechnicalData = await nonTechnicalResponse.json();
     const consultingData = await consultingResponse.json();
 
-    console.log('Technical trainings:', technicalData.data?.length || 0);
-    console.log('Non-technical trainings:', nonTechnicalData.data?.length || 0);
-    console.log('Consulting services:', consultingData.data?.length || 0);
+    //console.log('Technical trainings:', technicalData.data?.length || 0);
+    //console.log('Non-technical trainings:', nonTechnicalData.data?.length || 0);
+    //console.log('Consulting services:', consultingData.data?.length || 0);
 
     // Log any errors from the API responses
     if (technicalData.error) console.error('Technical trainings error:', technicalData.error);
@@ -152,13 +152,13 @@ export default async function Home() {
   const allServices = await fetchServices();
 
   // Log the raw data for debugging
-  console.log('Raw services data:', JSON.stringify(allServices, null, 2));
+  //console.log('Raw services data:', JSON.stringify(allServices, null, 2));
 
   // Shuffle and select a subset to display
   const shuffledServices = allServices.sort(() => 0.5 - Math.random()).slice(0, 6)
 
-  console.log('Services being passed to component:', shuffledServices.length);
-  console.log('Sample service:', shuffledServices[0]);
+  //console.log('Services being passed to component:', shuffledServices.length);
+  //console.log('Sample service:', shuffledServices[0]);
 
   return (
     <main>
