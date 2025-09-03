@@ -206,6 +206,14 @@ export async function GET(request: NextRequest) {
             continue;
           }
           
+          // Check if we're getting HTML content instead of the actual file
+          const textDecoder = new TextDecoder();
+          const textContent = textDecoder.decode(fileBuffer.slice(0, 100)); // Check first 100 bytes
+          if (textContent.toLowerCase().includes('<html') || textContent.toLowerCase().includes('<!doctype')) {
+            console.log(`${approach.name} returned HTML content instead of file`);
+            continue;
+          }
+          
           return new NextResponse(fileBuffer, {
             status: 200,
             headers: {
@@ -223,28 +231,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // If all approaches fail, redirect to Zoho Calendar web interface
-    console.error('All download approaches failed, redirecting to web interface');
-    const viewEventUrl = `https://calendar.zoho.com/zc/viewevent/${calendarUid}_EID${eventId}`;
+    // If all approaches fail, redirect to the working Zoho Mail URL
+    console.error('All download approaches failed, redirecting to Zoho Mail URL');
+    const zohoMailUrl = `https://mail.zoho.com/_zcl/zcal/attachment?mode=download&fileId=${fileId}&caluid=${calendarUid}&euid=${eventId}`;
     
-    return NextResponse.json(
-      { 
-        error: 'Direct download not available',
-        errorcode: 'REDIRECT_TO_WEB',
-        status: 'redirect',
-        details: 'Please download the file from the Zoho Calendar web interface',
-        viewEventUrl,
-        message: 'The file can be downloaded from the Zoho Calendar web interface. Please visit the event page to download the attachment.',
-        debug: {
-          fileId,
-          eventId,
-          calendarUid,
-          accessTokenLength: accessToken.length,
-          approachesTried: approaches.length
-        }
-      },
-      { status: 302 }
-    );
+    // Redirect to the Zoho Mail URL that works in browsers
+    return NextResponse.redirect(zohoMailUrl, 302);
 
   } catch (error) {
     console.error('Error downloading file:', error);
