@@ -3,27 +3,36 @@ import { NextRequest, NextResponse } from 'next/server';
 // Helper function to get a valid access token
 async function getValidAccessToken(): Promise<string | null> {
   try {
-    // First, try to use existing access token if it's still valid
-    const existingToken = process.env.ZOHO_ACCESS_TOKEN;
-    if (existingToken) {
-      return existingToken;
+    console.log('Getting valid access token...');
+    
+    const refreshToken = process.env.ZOHO_REFRESH_TOKEN;
+    if (!refreshToken) {
+      console.log('No refresh token available');
+      return null;
     }
 
-    // If no existing token or it's expired, use refresh token
-    const response = await fetch('/api/zoho-auth', {
+    console.log('Refreshing access token...');
+    const tokenResponse = await fetch('https://accounts.zoho.com/oauth/v2/token', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: JSON.stringify({ grant_type: 'refresh_token' }),
+      body: new URLSearchParams({
+        refresh_token: refreshToken,
+        client_id: process.env.ZOHO_CLIENT_ID || '',
+        client_secret: process.env.ZOHO_CLIENT_SECRET || '',
+        grant_type: 'refresh_token',
+      }),
     });
 
-    if (!response.ok) {
-      throw new Error('Failed to refresh token');
+    if (!tokenResponse.ok) {
+      console.log('Token refresh failed:', tokenResponse.status);
+      return null;
     }
 
-    const data = await response.json();
-    return data.access_token;
+    const tokenData = await tokenResponse.json();
+    console.log('Token refresh successful, new token length:', tokenData.access_token?.length || 0);
+    return tokenData.access_token;
 
   } catch (error) {
     console.error('Error getting access token:', error);

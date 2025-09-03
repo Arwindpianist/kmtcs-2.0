@@ -3,27 +3,36 @@ import { NextRequest, NextResponse } from 'next/server';
 // Helper function to get a valid access token
 async function getValidAccessToken(): Promise<string | null> {
   try {
-    // First, try to use existing access token if it's still valid
-    const existingToken = process.env.ZOHO_ACCESS_TOKEN;
-    if (existingToken) {
-      return existingToken;
+    console.log('Getting valid access token...');
+    
+    const refreshToken = process.env.ZOHO_REFRESH_TOKEN;
+    if (!refreshToken) {
+      console.log('No refresh token available');
+      return null;
     }
 
-    // If no existing token or it's expired, use refresh token
-    const response = await fetch('/api/zoho-auth', {
+    console.log('Refreshing access token...');
+    const tokenResponse = await fetch('https://accounts.zoho.com/oauth/v2/token', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: JSON.stringify({ grant_type: 'refresh_token' }),
+      body: new URLSearchParams({
+        refresh_token: refreshToken,
+        client_id: process.env.ZOHO_CLIENT_ID || '',
+        client_secret: process.env.ZOHO_CLIENT_SECRET || '',
+        grant_type: 'refresh_token',
+      }),
     });
 
-    if (!response.ok) {
-      throw new Error('Failed to refresh token');
+    if (!tokenResponse.ok) {
+      console.log('Token refresh failed:', tokenResponse.status);
+      return null;
     }
 
-    const data = await response.json();
-    return data.access_token;
+    const tokenData = await tokenResponse.json();
+    console.log('Token refresh successful, new token length:', tokenData.access_token?.length || 0);
+    return tokenData.access_token;
 
   } catch (error) {
     console.error('Error getting access token:', error);
@@ -104,6 +113,70 @@ export async function GET(request: NextRequest) {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         }
+      },
+      // Approach 6: Try the viewEventURL format from the debug output
+      {
+        name: 'View Event URL format',
+        url: `https://calendar.zoho.com/zc/viewevent/${calendarUid}_EID${eventId}/attachments/${fileId}`,
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        }
+      },
+      // Approach 7: Try with different API domain
+      {
+        name: 'Different API domain',
+        url: `https://www.zohoapis.com/calendar/v1/calendars/${calendarUid}/events/${eventId}/attachments/${fileId}`,
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        }
+      },
+      // Approach 8: Try the attachment download endpoint from the viewEventURL
+      {
+        name: 'Attachment download from viewEventURL',
+        url: `https://calendar.zoho.com/zc/viewevent/${calendarUid}_EID${eventId}/attachment/${fileId}`,
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        }
+      },
+      // Approach 9: Try direct file download with different format
+      {
+        name: 'Direct file download with different format',
+        url: `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events/${eventId}/attachments/${fileId}/download`,
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        }
+      },
+      // Approach 10: Try the original Zoho Mail URL but with different parameters
+      {
+        name: 'Zoho Mail URL with different parameters',
+        url: `https://mail.zoho.com/_zcl/zcal/attachment?mode=download&fileId=${fileId}&caluid=${calendarUid}&euid=${eventId}&token=${accessToken}`,
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Cookie': `ZohoAccessToken=${accessToken}`,
+        }
+      },
+      // Approach 11: Try the original Zoho Mail URL with session-based auth
+      {
+        name: 'Zoho Mail URL with session auth',
+        url: `https://mail.zoho.com/_zcl/zcal/attachment?mode=download&fileId=${fileId}&caluid=${calendarUid}&euid=${eventId}`,
+        headers: {
+          'Cookie': `ZohoAccessToken=${accessToken}; ZohoCalendarToken=${accessToken}`,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Referer': `https://calendar.zoho.com/zc/viewevent/${calendarUid}_EID${eventId}`,
+        }
+      },
+      // Approach 12: Try with different authentication header format
+      {
+        name: 'Zoho Mail URL with different auth format',
+        url: `https://mail.zoho.com/_zcl/zcal/attachment?mode=download&fileId=${fileId}&caluid=${calendarUid}&euid=${eventId}`,
+        headers: {
+          'Authorization': `Zoho-oauthtoken ${accessToken}`,
+          'Cookie': `ZohoAccessToken=${accessToken}`,
+        }
       }
     ];
 
@@ -115,11 +188,23 @@ export async function GET(request: NextRequest) {
           headers: approach.headers,
         });
 
+        console.log(`${approach.name} response status:`, response.status);
+        console.log(`${approach.name} response headers:`, Object.fromEntries(response.headers.entries()));
+
         if (response.ok) {
           console.log(`${approach.name} successful`);
           const fileBuffer = await response.arrayBuffer();
           const contentType = response.headers.get('content-type') || 'application/octet-stream';
           const contentDisposition = response.headers.get('content-disposition') || 'attachment';
+          
+          console.log(`${approach.name} file size:`, fileBuffer.byteLength);
+          console.log(`${approach.name} content type:`, contentType);
+          console.log(`${approach.name} content disposition:`, contentDisposition);
+          
+          if (fileBuffer.byteLength === 0) {
+            console.log(`${approach.name} returned empty file`);
+            continue;
+          }
           
           return new NextResponse(fileBuffer, {
             status: 200,
@@ -130,23 +215,35 @@ export async function GET(request: NextRequest) {
             },
           });
         } else {
-          console.log(`${approach.name} failed:`, response.status, response.statusText);
+          const errorText = await response.text();
+          console.log(`${approach.name} failed:`, response.status, response.statusText, errorText);
         }
       } catch (error) {
         console.log(`${approach.name} error:`, error);
       }
     }
 
-    // If all approaches fail, return error
-    console.error('All download approaches failed');
+    // If all approaches fail, redirect to Zoho Calendar web interface
+    console.error('All download approaches failed, redirecting to web interface');
+    const viewEventUrl = `https://calendar.zoho.com/zc/viewevent/${calendarUid}_EID${eventId}`;
+    
     return NextResponse.json(
       { 
-        error: 'Calendar not found',
-        errorcode: 'CALENDAR_NOTFOUND',
-        status: 'failure',
-        details: 'Unable to download attachment from Zoho Calendar'
+        error: 'Direct download not available',
+        errorcode: 'REDIRECT_TO_WEB',
+        status: 'redirect',
+        details: 'Please download the file from the Zoho Calendar web interface',
+        viewEventUrl,
+        message: 'The file can be downloaded from the Zoho Calendar web interface. Please visit the event page to download the attachment.',
+        debug: {
+          fileId,
+          eventId,
+          calendarUid,
+          accessTokenLength: accessToken.length,
+          approachesTried: approaches.length
+        }
       },
-      { status: 404 }
+      { status: 302 }
     );
 
   } catch (error) {
