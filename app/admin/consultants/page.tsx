@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { motion } from 'framer-motion';
+import DataTable from '@/app/components/admin/DataTable';
+import { logger } from '@/app/lib/logger';
 
 interface Consultant {
   id: string;
@@ -54,7 +57,7 @@ export default function ConsultantsManagement() {
       setConsultants(result.data || []);
       setError(null);
     } catch (err) {
-      console.error('Error loading consultants:', err);
+      logger.error('Error loading consultants:', err);
       setError('Failed to load consultants. Please try again later.');
     } finally {
       setLoading(false);
@@ -158,7 +161,7 @@ export default function ConsultantsManagement() {
 
       await loadConsultants();
     } catch (err) {
-      console.error('Error deleting consultant:', err);
+      logger.error('Error deleting consultant:', err);
       setError('Failed to delete consultant. Please try again later.');
     }
   };
@@ -205,32 +208,52 @@ export default function ConsultantsManagement() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-4 lg:p-8 max-w-7xl mx-auto">
       {/* Page Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Consultants</h1>
-          <p className="text-gray-600">Manage expert consultants and trainers for your services</p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-yellow-600 text-white px-6 py-3 rounded-lg hover:bg-yellow-700 transition-colors font-medium"
+      <div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          Add New Consultant
-        </button>
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 lg:mb-8">
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Manage Consultants</h1>
+              <p className="text-gray-600">Manage expert consultants and trainers for your services</p>
+            </div>
+            <button
+              onClick={() => setShowForm(true)}
+              className="mt-4 lg:mt-0 bg-yellow-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg hover:bg-yellow-700 transition-colors font-medium text-sm lg:text-base"
+            >
+              Add New Consultant
+            </button>
+          </div>
+        </motion.div>
       </div>
 
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg relative mb-8" role="alert">
-          <strong className="font-bold">Error:</strong>
-          <span className="block sm:inline ml-2"> {error}</span>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <strong className="font-bold">Error:</strong>
+            <span className="block sm:inline ml-2"> {error}</span>
+          </motion.div>
         </div>
       )}
 
       {showForm ? (
         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-8">
-          <h2 className="text-2xl font-semibold mb-6">{editingConsultant ? 'Edit Consultant' : 'Add New Consultant'}</h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <h2 className="text-2xl font-semibold mb-6">{editingConsultant ? 'Edit Consultant' : 'Add New Consultant'}</h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Name *
@@ -392,10 +415,16 @@ export default function ConsultantsManagement() {
                 {saving ? 'Saving...' : (editingConsultant ? 'Update Consultant' : 'Add Consultant')}
               </button>
             </div>
-          </form>
+            </form>
+          </motion.div>
         </div>
       ) : (
-        <div className="grid gap-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <div className="grid gap-8">
           {consultants.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="max-w-md mx-auto">
@@ -417,64 +446,112 @@ export default function ConsultantsManagement() {
               </div>
             </div>
           ) : (
-            consultants.map((consultant) => (
-              <div key={consultant.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                <div className="flex items-start space-x-6">
-                  <div className="flex-shrink-0">
-                    <img
-                      src={consultant.image_url || '/default-avatar.svg'}
-                      alt={consultant.name}
-                      className="h-24 w-24 rounded-full object-cover border-2 border-gray-200"
-                      onError={(e) => {
-                        e.currentTarget.src = '/default-avatar.svg';
-                      }}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start mb-4">
+            <DataTable
+              data={consultants}
+              columns={[
+                {
+                  key: 'name',
+                  label: 'Consultant',
+                  sortable: true,
+                  render: (consultant: Consultant) => (
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={consultant.image_url || '/default-avatar.svg'}
+                        alt={consultant.name}
+                        className="h-10 w-10 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
+                        onError={(e) => {
+                          e.currentTarget.src = '/default-avatar.svg';
+                        }}
+                      />
                       <div>
-                        <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                          {consultant.name}
-                        </h3>
-                        <p className="text-lg text-gray-600 mb-3">{consultant.role}</p>
-                        <p className="text-gray-600 mb-4 leading-relaxed">{consultant.short_bio}</p>
-                        <div className="flex flex-wrap gap-6 text-sm text-gray-500 mb-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            consultant.status 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {consultant.status ? 'Active' : 'Inactive'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex space-x-3">
-                        <button
-                          onClick={() => handleEdit(consultant)}
-                          className="text-yellow-600 hover:text-yellow-800 px-4 py-2 rounded-lg border border-yellow-600 hover:bg-yellow-50 transition-colors font-medium"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(consultant.id)}
-                          className="text-red-600 hover:text-red-800 px-4 py-2 rounded-lg border border-red-600 hover:bg-red-50 transition-colors font-medium"
-                        >
-                          Delete
-                        </button>
+                        <div className="font-medium text-gray-900">{consultant.name}</div>
+                        <div className="text-sm text-gray-500">{consultant.role}</div>
+                        <div className="text-xs text-gray-400 line-clamp-1 mt-1 max-w-md">{consultant.short_bio}</div>
                       </div>
                     </div>
-                    {consultant.full_bio && (
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-3">Full Bio:</h4>
-                        <p className="text-gray-600 leading-relaxed">{consultant.full_bio}</p>
-                      </div>
-                    )}
-                  </div>
+                  )
+                },
+                {
+                  key: 'role',
+                  label: 'Role',
+                  sortable: true,
+                  render: (consultant: Consultant) => (
+                    <span className="text-sm text-gray-700">{consultant.role}</span>
+                  )
+                },
+                {
+                  key: 'status',
+                  label: 'Status',
+                  sortable: true,
+                  render: (consultant: Consultant) => (
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      consultant.status 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {consultant.status ? 'Active' : 'Inactive'}
+                    </span>
+                  )
+                },
+                {
+                  key: 'created_at',
+                  label: 'Created',
+                  sortable: true,
+                  render: (consultant: Consultant) => (
+                    <span className="text-sm text-gray-500">
+                      {consultant.created_at ? new Date(consultant.created_at).toLocaleDateString() : '-'}
+                    </span>
+                  )
+                }
+              ]}
+              filters={[
+                {
+                  key: 'status',
+                  label: 'Status',
+                  type: 'select',
+                  options: [
+                    { value: 'true', label: 'Active' },
+                    { value: 'false', label: 'Inactive' }
+                  ]
+                },
+                {
+                  key: 'role',
+                  label: 'Role',
+                  type: 'text'
+                }
+              ]}
+              searchable={true}
+              searchPlaceholder="Search by name, role, or bio..."
+              pageSize={25}
+              loading={loading}
+              emptyMessage="No consultants found. Click 'Add New Consultant' to get started."
+              actions={(consultant) => (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(consultant);
+                    }}
+                    className="text-yellow-600 hover:text-yellow-800 px-3 py-1 rounded border border-yellow-600 hover:bg-yellow-50 transition-colors text-xs"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(consultant.id);
+                    }}
+                    className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50 transition-colors text-xs"
+                  >
+                    Delete
+                  </button>
                 </div>
-              </div>
-            ))
+              )}
+              onRowClick={(consultant) => handleEdit(consultant)}
+            />
           )}
         </div>
+        </motion.div>
       )}
     </div>
   );

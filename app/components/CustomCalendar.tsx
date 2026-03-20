@@ -49,66 +49,6 @@ export default function CustomCalendar() {
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  // Sample events for testing when no real events are available
-  const sampleEvents: CalendarEvent[] = [
-    {
-      id: '1',
-      title: 'Technical Training: React Development',
-      description: 'Comprehensive React.js training covering hooks, context, and modern patterns.',
-      start_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
-      end_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(), // 4 hours later
-      location: 'KMTCS Training Center, Kuala Lumpur',
-      all_day: false,
-      attachments: [
-        { name: 'Course Outline.pdf', url: '#', size: 1024 },
-        { name: 'Prerequisites.docx', url: '#', size: 512 }
-      ],
-      created_time: new Date().toISOString(),
-      modified_time: new Date().toISOString()
-    },
-    {
-      id: '2',
-      title: 'Non-Technical: Leadership Skills',
-      description: 'Develop essential leadership and management skills for the modern workplace.',
-      start_time: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
-      end_time: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000).toISOString(), // 6 hours later
-      location: 'Virtual Training Session',
-      all_day: false,
-      attachments: [
-        { name: 'Leadership Workbook.pdf', url: '#', size: 2048 }
-      ],
-      created_time: new Date().toISOString(),
-      modified_time: new Date().toISOString()
-    },
-    {
-      id: '3',
-      title: 'Consulting: Digital Transformation',
-      description: 'Expert consultation on digital transformation strategies for your organization.',
-      start_time: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(), // 8 days from now
-      end_time: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000).toISOString(), // 3 hours later
-      location: 'Client Office',
-      all_day: false,
-      attachments: [],
-      created_time: new Date().toISOString(),
-      modified_time: new Date().toISOString()
-    },
-    {
-      id: '4',
-      title: 'All-Day Workshop: Project Management',
-      description: 'Full-day intensive workshop on project management methodologies and tools.',
-      start_time: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000).toISOString(), // 12 days from now
-      end_time: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000).toISOString(), // 8 hours later
-      location: 'KMTCS Training Center, Kuala Lumpur',
-      all_day: true,
-      attachments: [
-        { name: 'PMBOK Guide.pdf', url: '#', size: 3072 },
-        { name: 'Project Templates.zip', url: '#', size: 1536 }
-      ],
-      created_time: new Date().toISOString(),
-      modified_time: new Date().toISOString()
-    }
-  ];
-
   useEffect(() => {
     fetchEvents();
   }, [currentDate]);
@@ -116,7 +56,6 @@ export default function CustomCalendar() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      console.log('Fetching calendar events...');
       
       // Fetch all events since Zoho API doesn't support date filtering
       const response = await fetch('/api/calendar-events');
@@ -126,26 +65,21 @@ export default function CustomCalendar() {
       }
       
       const data = await response.json();
-      console.log('Calendar events response:', data);
       
-      // Use sample events if no real events are available
+      // Only use real events from API, never show sample/demo events
       if (data.events && data.events.length > 0) {
-        console.log('Using real events:', data.events.length);
         setEvents(data.events);
       } else {
-        console.log('Using sample events - no real events found');
-        setEvents(sampleEvents);
+        // Empty calendar - show empty state
+        setEvents([]);
       }
       
       setError(null);
     } catch (err) {
-      console.error('Error fetching events:', err);
+      // On error, show empty state instead of sample events
       setError('Failed to load calendar events');
-      // Use sample events as fallback
-      console.log('Using sample events as fallback due to error');
-      setEvents(sampleEvents);
+      setEvents([]);
     } finally {
-      console.log('Setting loading to false, total events:', events.length);
       setLoading(false);
     }
   };
@@ -203,19 +137,6 @@ export default function CustomCalendar() {
         const span = endGridDay !== -1 ? endGridDay - startGridDay + 1 : 1;
         eventSpans[event.id] = { startDay: startGridDay, endDay: endGridDay !== -1 ? endGridDay : startGridDay, span: actualDays };
         
-        console.log(`Event "${event.title}" span calculation:`, {
-          start: start.toDateString(),
-          end: end.toDateString(),
-          startGridDay,
-          endGridDay,
-          gridSpan: span,
-          actualDays: actualDays,
-          daysList: Array.from({length: actualDays}, (_, i) => {
-            const d = new Date(start);
-            d.setDate(start.getDate() + i);
-            return d.toDateString();
-          })
-        });
         
         // Only assign event to the start day
         if (!dayEventMap[startGridDay]) {
@@ -225,8 +146,6 @@ export default function CustomCalendar() {
       }
     });
 
-    console.log('Events being processed:', events.length);
-    console.log('Days with events:', Object.keys(dayEventMap).length);
 
     for (let i = 0; i < 42; i++) {
       const currentDate = new Date(startDate);
@@ -235,13 +154,6 @@ export default function CustomCalendar() {
       const dayEvents = dayEventMap[i] || [];
       const isToday = currentDate.toDateString() === today.toDateString();
       
-      if (dayEvents.length > 0) {
-        console.log(`Day ${i} (${currentDate.toDateString()}) has ${dayEvents.length} events:`, dayEvents.map(e => e.title));
-      }
-      
-      if (isToday) {
-        console.log(`Today is day ${i} (${currentDate.toDateString()}) with ${dayEvents.length} events`);
-      }
       
       days.push({
         date: currentDate,
@@ -478,14 +390,23 @@ export default function CustomCalendar() {
       </div>
 
 
-      {/* Sample Events Notice */}
-      {events.length > 0 && events[0]?.id === '1' && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200 p-3 md:p-4">
-          <div className="flex items-center text-blue-800">
-            <FiInfo className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
-            <span className="text-xs md:text-sm font-medium">
-              Showing sample events for demonstration. Connect your Zoho Calendar to see real events.
-            </span>
+      {/* Empty State */}
+      {!loading && !error && events.length === 0 && (
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200 p-6 md:p-8 text-center">
+          <div className="flex flex-col items-center text-gray-700">
+            <FiCalendar className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mb-4" />
+            <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
+              No Upcoming Public Training Sessions
+            </h3>
+            <p className="text-sm md:text-base text-gray-600 max-w-2xl mb-4">
+              There are currently no upcoming public training sessions scheduled. Please contact us for private or on-demand training programs tailored to your organization's needs.
+            </p>
+            <a
+              href="/contact"
+              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Contact Us
+            </a>
           </div>
         </div>
       )}
@@ -493,10 +414,7 @@ export default function CustomCalendar() {
       {/* Day Events Modal */}
       <AnimatePresence>
         {dayModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
             onClick={() => setDayModal(null)}
           >
@@ -504,9 +422,11 @@ export default function CustomCalendar() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
             >
+              <div
+                className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
               <div className="p-4 md:p-6">
                 <div className="flex items-center justify-between mb-4 md:mb-6">
                   <div>
@@ -595,18 +515,16 @@ export default function CustomCalendar() {
                   ))}
                 </div>
               </div>
+              </div>
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
       {/* Event Detail Modal */}
       <AnimatePresence>
         {selectedEvent && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
             onClick={() => setSelectedEvent(null)}
           >
@@ -614,9 +532,11 @@ export default function CustomCalendar() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
             >
+              <div
+                className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
               <div className="p-4 md:p-6">
                 <div className="flex items-center justify-between mb-2 md:mb-4">
                   <h3 className="text-lg md:text-xl font-bold text-gray-900">{selectedEvent.title}</h3>
@@ -700,8 +620,9 @@ export default function CustomCalendar() {
                   )}
                 </div>
               </div>
+              </div>
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

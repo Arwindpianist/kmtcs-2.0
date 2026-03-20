@@ -2,6 +2,9 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/app/components/ui/card'
+import { Badge } from '@/app/components/ui/badge'
+import { Button } from '@/app/components/ui/button'
 
 interface ServiceItem {
   id: string
@@ -43,19 +46,20 @@ export default function ServicesOverview({ services }: { services: ServiceItem[]
   return (
     <section className="py-20 bg-background-secondary">
       <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
           <h2 className="text-4xl md:text-5xl font-bold text-primary mb-6">
             Our Services
           </h2>
           <p className="text-xl text-secondary max-w-3xl mx-auto">
             Discover our comprehensive range of training and consulting services designed to elevate your organization's capabilities.
           </p>
-        </motion.div>
+          </motion.div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
@@ -67,62 +71,64 @@ export default function ServicesOverview({ services }: { services: ServiceItem[]
               whileHover={{ y: -5 }}
             >
               <Link href={getServiceUrl(service)}>
-                <div className="bg-card rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group h-full flex flex-col border border-theme">
-                  <div className="p-6 flex-grow">
+                <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 hover:-translate-y-1 h-full flex flex-col">
+                  <CardHeader className="pb-4">
                     <div className="flex items-center justify-between mb-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(service.category)}`}>
+                      <Badge variant="secondary" className={getCategoryColor(service.category)}>
                         {service.category}
-                      </span>
+                      </Badge>
                       {service.price && (
-                        <span className="text-lg font-bold text-blue-600">
+                        <span className="text-lg font-bold text-primary">
                           RM {service.price.toFixed(2)}
                         </span>
                       )}
                     </div>
-                    <h3 className="text-xl font-bold text-primary mb-3 group-hover:text-blue-600 transition-colors">
+                    <CardTitle className="text-xl mb-3 group-hover:text-primary transition-colors break-words">
                       {service.title}
-                    </h3>
-                    <p className="text-secondary mb-4 line-clamp-3">
+                    </CardTitle>
+                    <CardDescription className="line-clamp-3 break-words">
                       {service.description}
-                    </p>
-                  </div>
-                  <div className="p-6 bg-background-secondary">
-                    <div className="flex items-center justify-between">
+                    </CardDescription>
+                  </CardHeader>
+                  <CardFooter className="mt-auto pt-0">
+                    <div className="flex items-center justify-between w-full">
                       {service.duration && (
-                        <span className="text-sm text-secondary flex items-center">
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span className="text-sm text-muted-foreground flex items-center break-words">
+                          <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           {service.duration}
                         </span>
                       )}
-                      <span className="text-blue-600 font-semibold group-hover:text-blue-700 transition-colors">
-                        Learn More →
+                      <span className="text-primary font-semibold group-hover:text-primary/80 transition-colors flex items-center">
+                        Learn More <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
                       </span>
                     </div>
-                  </div>
-                </div>
+                  </CardFooter>
+                </Card>
               </Link>
             </motion.div>
           ))}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-center mt-12"
-        >
-          <Link
-            href="/services"
-            className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-300 shadow-lg hover:shadow-xl"
+        <div className="text-center mt-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
           >
-            View All Services
-            <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </Link>
-        </motion.div>
+          <Button asChild size="lg" className="shadow-lg hover:shadow-xl">
+            <Link href="/services">
+              View All Services
+              <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </Button>
+          </motion.div>
+        </div>
       </div>
     </section>
   )

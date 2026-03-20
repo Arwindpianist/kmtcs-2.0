@@ -71,12 +71,12 @@ export default function NonTechnicalTrainingsPage() {
       <div className="relative bg-gradient-to-r from-green-600 to-green-700 text-white overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-10"></div>
         <div className="relative max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
+          <div className="text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
             <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl mb-6">
               Non-Technical Training Programs
             </h1>
@@ -88,19 +88,20 @@ export default function NonTechnicalTrainingsPage() {
                 <span className="text-green-100 font-medium">{filteredTrainings.length} Programs Available</span>
               </div>
             </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </div>
 
       {/* Search Bar */}
       <div className="py-8 bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-md mx-auto"
-          >
+            <div className="max-w-md mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
             <div className="relative">
               <input
                 type="text"
@@ -113,7 +114,8 @@ export default function NonTechnicalTrainingsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-          </motion.div>
+              </motion.div>
+            </div>
         </div>
       </div>
 
@@ -123,14 +125,14 @@ export default function NonTechnicalTrainingsPage() {
           {filteredTrainings.length > 0 ? (
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {filteredTrainings.map((training, index) => (
-                <motion.div
-                  key={training.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -5 }}
-                  className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
-                >
+                <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                  <motion.div
+                    key={training.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    whileHover={{ y: -5 }}
+                  >
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
@@ -162,15 +164,16 @@ export default function NonTechnicalTrainingsPage() {
                       </svg>
                     </Link>
                   </div>
-                </motion.div>
+                  </motion.div>
+                </div>
               ))}
             </div>
           ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-16"
-            >
+            <div className="text-center py-16">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
               <div className="max-w-md mx-auto">
                 <div className="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
                   <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,7 +196,8 @@ export default function NonTechnicalTrainingsPage() {
                   </svg>
                 </Link>
               </div>
-            </motion.div>
+              </motion.div>
+            </div>
           )}
         </div>
       </div>

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/app/lib/supabase';
 import { AdminAuthService } from '@/app/lib/adminAuth';
+import { logger } from '@/app/lib/logger';
 import { 
   HomeIcon,
   AcademicCapIcon, 
@@ -40,13 +41,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log('AdminLayout: Checking authentication...');
+        logger.log('AdminLayout: Checking authentication...');
         
         // Get current session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
-          console.log('AdminLayout: Session found for user:', session.user.email);
+          logger.log('AdminLayout: Session found for user:', session.user.email);
           
           // Set basic user info from session first
           setCurrentAdmin({
@@ -56,7 +57,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           
           // If this is one of the pages that should skip admin check, just authorize
           if (shouldSkipAdminCheck) {
-            console.log('AdminLayout: Skipping admin check for this route');
+            logger.log('AdminLayout: Skipping admin check for this route');
             setIsAuthorized(true);
             return;
           }
@@ -70,7 +71,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               )
             ]);
             
-            console.log('AdminLayout: Is admin check result:', isAdmin);
+            logger.log('AdminLayout: Is admin check result:', isAdmin);
             
             if (isAdmin) {
               // Try to get detailed admin user data, but don't block if it fails
@@ -89,32 +90,32 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   }));
                 }
               } catch (adminDataError) {
-                console.log('AdminLayout: Could not get detailed admin data, using session data');
+                logger.log('AdminLayout: Could not get detailed admin data, using session data');
               }
               
               setIsAuthorized(true);
             } else {
-              console.log('AdminLayout: User is not an admin, signing out...');
+              logger.log('AdminLayout: User is not an admin, signing out...');
               await supabase.auth.signOut();
               setIsAuthorized(false);
               setCurrentAdmin(null);
               router.push('/login');
             }
           } catch (adminCheckError) {
-            console.error('AdminLayout: Admin check failed:', adminCheckError);
+            logger.error('AdminLayout: Admin check failed:', adminCheckError);
             // If admin check fails, allow access temporarily and log the error
             // This prevents getting stuck on authorization check
-            console.log('AdminLayout: Allowing access despite admin check failure');
+            logger.log('AdminLayout: Allowing access despite admin check failure');
             setIsAuthorized(true);
           }
         } else {
-          console.log('AdminLayout: No session found, redirecting to login...');
+          logger.log('AdminLayout: No session found, redirecting to login...');
           setIsAuthorized(false);
           setCurrentAdmin(null);
           router.push('/login');
         }
       } catch (error) {
-        console.error('AdminLayout: Auth check error:', error);
+        logger.error('AdminLayout: Auth check error:', error);
         setIsAuthorized(false);
         setCurrentAdmin(null);
         router.push('/login');
@@ -128,7 +129,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('AdminLayout: Auth state change:', event, session?.user?.email);
+        logger.log('AdminLayout: Auth state change:', event, session?.user?.email);
         
         if (event === 'SIGNED_OUT') {
           setIsAuthorized(false);
@@ -143,7 +144,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                            currentPath.includes('/admin/consultants');
           
           if (shouldSkip) {
-            console.log('AdminLayout: Skipping admin check for auth state change');
+            logger.log('AdminLayout: Skipping admin check for auth state change');
             setIsAuthorized(true);
             setCurrentAdmin({
               email: session.user.email || '',
@@ -164,7 +165,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 router.push('/login');
               }
             } catch (error) {
-              console.error('AdminLayout: Auth state change error:', error);
+              logger.error('AdminLayout: Auth state change error:', error);
               // If admin check fails during auth state change, redirect to login
               await supabase.auth.signOut();
               router.push('/login');
@@ -184,7 +185,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       setCurrentAdmin(null);
       router.push('/login');
     } catch (error) {
-      console.error('Sign out error:', error);
+      logger.error('Sign out error:', error);
     }
   };
 
@@ -334,17 +335,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 >
                   <UsersIcon className="w-5 h-5 mr-3" />
                   Users
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/test-auth"
-                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
-                >
-                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Test Auth
                 </Link>
               </li>
             </ul>

@@ -19,6 +19,7 @@ import {
 import Link from 'next/link'
 import Image from 'next/image'
 import { signOut } from 'next-auth/react'
+import { Button } from '@/app/components/ui/button'
 
 const solutions = [
   { name: 'About Us', description: 'Learn more about our company', href: '/about', icon: ChartPieIcon },
@@ -206,12 +207,13 @@ function HeaderContent() {
               <span className="text-sm font-semibold text-primary">
                 Welcome, {session.user.name || session.user.email}
               </span>
-              <button
+              <Button
                 onClick={() => signOut()}
-                className="rounded-md bg-blue-600 hover:bg-blue-700 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors duration-200"
+                variant="default"
+                size="sm"
               >
                 Sign Out
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -301,15 +303,16 @@ function HeaderContent() {
                     <p className="text-sm text-gray-600">
                       Welcome, {session.user.name || session.user.email}
                     </p>
-                    <button
+                    <Button
                       onClick={() => {
                         signOut()
                         setMobileMenuOpen(false)
                       }}
-                      className="w-full rounded-md bg-blue-600 hover:bg-blue-700 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-200"
+                      variant="default"
+                      className="w-full"
                     >
                       Sign Out
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>

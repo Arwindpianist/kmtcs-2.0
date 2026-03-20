@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import DataTable from '@/app/components/admin/DataTable';
+import { logger } from '@/app/lib/logger';
 
 interface ConsultingService {
   id: string;
@@ -49,7 +52,7 @@ export default function ConsultingServicesAdmin() {
       const result = await response.json();
       setServices(result.data || []);
     } catch (error) {
-      console.error('Error loading services:', error);
+      logger.error('Error loading services:', error);
     } finally {
       setLoading(false);
     }
@@ -98,7 +101,7 @@ export default function ConsultingServicesAdmin() {
       setEditingService(null);
       setFormData({ title: '', description: '', status: true, objectives: [''], service_contents: '', methodology: '', duration: '', target_audience: '', deliverables: '', price: null });
     } catch (error) {
-      console.error('Error saving service:', error);
+      logger.error('Error saving service:', error);
       alert('Error saving service');
     } finally {
       setSaving(false);
@@ -135,7 +138,7 @@ export default function ConsultingServicesAdmin() {
       }
       await loadServices();
     } catch (error) {
-      console.error('Error deleting service:', error);
+      logger.error('Error deleting service:', error);
       alert('Error deleting service');
     }
   };
@@ -176,26 +179,40 @@ export default function ConsultingServicesAdmin() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-4 lg:p-8 max-w-7xl mx-auto">
       {/* Page Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Consulting Services</h1>
-          <p className="text-gray-600">Manage professional consulting and advisory services</p>
-        </div>
-        <button
+      <div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 lg:mb-8">
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Consulting Services</h1>
+              <p className="text-gray-600">Manage professional consulting and advisory services</p>
+            </div>
+            <button
           onClick={() => setShowForm(true)}
-          className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium"
+          className="mt-4 lg:mt-0 bg-purple-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm lg:text-base"
         >
           Add New Service
         </button>
+          </div>
+        </motion.div>
       </div>
 
       {showForm ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <h2 className="text-2xl font-semibold mb-6">
-            {editingService ? 'Edit Service' : 'Add New Service'}
-          </h2>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-8 mb-6 lg:mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <h2 className="text-2xl font-semibold mb-6">
+              {editingService ? 'Edit Service' : 'Add New Service'}
+            </h2>
           <form onSubmit={handleSave} className="space-y-6">
             {/* Basic Information */}
             <div className="bg-white p-6 rounded-lg shadow">
@@ -354,116 +371,112 @@ export default function ConsultingServicesAdmin() {
               </button>
             </div>
           </form>
+          </motion.div>
         </div>
       ) : (
-        <div className="grid gap-8">
-          {services.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="max-w-md mx-auto">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <DataTable
+          data={services}
+          columns={[
+            {
+              key: 'title',
+              label: 'Service',
+              sortable: true,
+              render: (service: ConsultingService) => (
+                <div>
+                  <div className="font-medium text-gray-900">{service.title}</div>
+                  <div className="text-sm text-gray-500 line-clamp-1 mt-1 max-w-md">{service.description}</div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">No Consulting Services</h3>
-                <p className="text-gray-600 mb-8 leading-relaxed">
-                  Get started by adding your first consulting service. This will help showcase your professional advisory capabilities.
-                </p>
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium"
-                >
-                  Add Your First Service
-                </button>
-              </div>
+              )
+            },
+            {
+              key: 'duration',
+              label: 'Duration',
+              sortable: true,
+              render: (service: ConsultingService) => (
+                <span className="text-sm text-gray-700">{service.duration || 'Not specified'}</span>
+              )
+            },
+            {
+              key: 'price',
+              label: 'Price',
+              sortable: true,
+              render: (service: ConsultingService) => (
+                <span className="text-sm text-gray-700">
+                  {service.price ? `RM ${service.price}` : 'Not set'}
+                </span>
+              )
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              sortable: true,
+              render: (service: ConsultingService) => (
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  service.status 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {service.status ? 'Active' : 'Inactive'}
+                </span>
+              )
+            },
+            {
+              key: 'created_at',
+              label: 'Created',
+              sortable: true,
+              render: (service: ConsultingService) => (
+                <span className="text-sm text-gray-500">
+                  {service.created_at ? new Date(service.created_at).toLocaleDateString() : '-'}
+                </span>
+              )
+            }
+          ]}
+          filters={[
+            {
+              key: 'status',
+              label: 'Status',
+              type: 'select',
+              options: [
+                { value: 'true', label: 'Active' },
+                { value: 'false', label: 'Inactive' }
+              ]
+            }
+          ]}
+          searchable={true}
+          searchPlaceholder="Search by title or description..."
+          pageSize={25}
+          loading={loading}
+          emptyMessage="No consulting services found. Click 'Add New Service' to get started."
+          actions={(service) => (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(service);
+                }}
+                className="text-purple-600 hover:text-purple-800 px-3 py-1 rounded border border-purple-600 hover:bg-purple-50 transition-colors text-xs"
+              >
+                Edit
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(service.id);
+                }}
+                className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50 transition-colors text-xs"
+              >
+                Delete
+              </button>
             </div>
-          ) : (
-            services.map((service) => (
-              <div key={service.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                <div className="flex justify-between items-start mb-6">
-                  <div className="flex-1">
-                    <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-                      {service.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4 leading-relaxed">{service.description}</p>
-                    <div className="flex flex-wrap gap-6 text-sm text-gray-500 mb-4">
-                      <span className="flex items-center">
-                        <span className="font-medium">Duration:</span>
-                        <span className="ml-2">{service.duration || 'Not specified'}</span>
-                      </span>
-                      {service.price && (
-                        <span className="flex items-center">
-                          <span className="font-medium">Price:</span>
-                          <span className="ml-2">RM {service.price}</span>
-                        </span>
-                      )}
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        service.status 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {service.status ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex space-x-3 ml-6">
-                    <button
-                      onClick={() => handleEdit(service)}
-                      className="text-purple-600 hover:text-purple-800 px-4 py-2 rounded-lg border border-purple-600 hover:bg-purple-50 transition-colors font-medium"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(service.id)}
-                      className="text-red-600 hover:text-red-800 px-4 py-2 rounded-lg border border-red-600 hover:bg-red-50 transition-colors font-medium"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-
-                {service.objectives && service.objectives.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="font-semibold text-gray-900 mb-3">Objectives:</h4>
-                    <ul className="list-disc list-inside text-gray-600 space-y-2">
-                      {service.objectives.map((objective, index) => (
-                        <li key={index} className="leading-relaxed">{objective}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {service.target_audience && (
-                  <div className="mb-6">
-                    <h4 className="font-semibold text-gray-900 mb-3">Target Audience:</h4>
-                    <p className="text-gray-600 leading-relaxed">{service.target_audience}</p>
-                  </div>
-                )}
-
-                {service.methodology && (
-                  <div className="mb-6">
-                    <h4 className="font-semibold text-gray-900 mb-3">Methodology:</h4>
-                    <p className="text-gray-600 leading-relaxed">{service.methodology}</p>
-                  </div>
-                )}
-
-                {service.deliverables && (
-                  <div className="mb-6">
-                    <h4 className="font-semibold text-gray-900 mb-3">Deliverables:</h4>
-                    <p className="text-gray-600 leading-relaxed">{service.deliverables}</p>
-                  </div>
-                )}
-
-                {service.service_contents && (
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-3">Service Contents:</h4>
-                    <div className="text-gray-600 leading-relaxed whitespace-pre-wrap">{service.service_contents}</div>
-                  </div>
-                )}
-              </div>
-            ))
           )}
-        </div>
+          onRowClick={(service) => handleEdit(service)}
+        />
+        </motion.div>
       )}
     </div>
   );

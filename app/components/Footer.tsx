@@ -3,13 +3,13 @@ import { FiPhone, FiMapPin } from 'react-icons/fi';
 
 export default function Footer() {
   return (
-    <footer className="bg-background-secondary text-primary border-t border-theme">
+    <footer className="bg-muted text-foreground border-t border-border">
       <div className="container mx-auto px-6 py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-2">
             <h3 className="text-xl font-bold mb-4">KM Training & Consulting Services</h3>
-            <p className="text-secondary">MYCO ID: 202103259999</p>
-            <p className="text-secondary">Business Registration No: 202103259999 (SA0571127-K)</p>
+            <p className="text-muted-foreground">MYCO ID: 202103259999</p>
+            <p className="text-muted-foreground">Business Registration No: 202103259999 (SA0571127-K)</p>
           </div>
 
           <div>
@@ -28,7 +28,7 @@ export default function Footer() {
 
           <div>
             <h3 className="text-lg font-bold mb-4">Location</h3>
-            <address className="not-italic text-secondary">
+            <address className="not-italic text-muted-foreground">
               D5-10-3A Evergreen Park Scot Pine, <br />
               Persiaran SL 1, Bandar Sungai Long, <br />
               43000 Kajang, Selangor.
@@ -36,15 +36,15 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-theme pt-6 flex flex-col sm:flex-row justify-between items-center">
-          <p className="text-secondary text-sm">
+        <div className="mt-10 border-t border-border pt-6 flex flex-col sm:flex-row justify-between items-center">
+          <p className="text-muted-foreground text-sm">
             &copy; {new Date().getFullYear()} KMTCS. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 sm:mt-0">
-            <Link href="/privacy-policy" className="text-sm text-secondary hover:text-primary">
+            <Link href="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Privacy Policy
             </Link>
-            <Link href="/terms-of-service" className="text-sm text-secondary hover:text-primary">
+            <Link href="/terms-of-service" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Terms of Service
             </Link>
           </div>

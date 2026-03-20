@@ -1,21 +1,46 @@
+'use client';
+
+import { motion } from 'framer-motion';
 import { FiTarget, FiZap, FiHeart, FiUsers, FiAward } from 'react-icons/fi';
 import ContactCTA from '../components/ContactCTA';
+import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 
 // Section for the main "About Us" content
 function AboutSection() {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7 }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">
             Pioneering Growth Through Knowledge and Innovation
           </h2>
-          <p className="text-lg text-gray-600 mb-6">
-            KM Training and Consulting Services (KMTCS) is a leading provider of engineering, management, and IT consulting and training services. We serve a diverse range of private and public enterprises, helping them achieve significant and lasting improvements in their operations performance.
-          </p>
-          <p className="text-lg text-gray-600">
-            Our approach is rooted in scientific thinking and data-driven decision-making. We guide, coach, and train our clients to leverage modern tools and application software to optimize their processes and drive sustainable growth.
-          </p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+              KM Training and Consulting Services (KMTCS) is a leading provider of engineering, management, and IT consulting and training services. We serve a diverse range of private and public enterprises, helping them achieve significant and lasting improvements in their operations performance.
+            </p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Our approach is rooted in scientific thinking and data-driven decision-making. We guide, coach, and train our clients to leverage modern tools and application software to optimize their processes and drive sustainable growth.
+            </p>
+          </motion.div>
+        </motion.div>
         </div>
       </div>
     </section>
@@ -32,31 +57,60 @@ function MissionAndValues() {
   ];
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-muted/50">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-16 items-center">
-          <div className="prose lg:prose-lg">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-              <FiTarget className="mr-3 text-blue-600" /> Our Mission
-            </h3>
-            <p>
-              To empower organizations with the knowledge, skills, and tools they need to excel in today's competitive business environment. We are committed to delivering high-quality consulting and training services that drive measurable results and long-term success for our clients.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-8">Our Core Values</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {values.map(value => (
-                <div key={value.title} className="flex items-start space-x-4">
-                  <div className="text-blue-600 text-3xl mt-1">{value.icon}</div>
-                  <div>
-                    <h4 className="font-semibold text-lg text-gray-800">{value.title}</h4>
-                    <p className="text-gray-600">{value.description}</p>
-                  </div>
-                </div>
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7 }}
+          >
+            <Card className="border-2 hover:shadow-lg transition-all">
+              <CardHeader>
+                <CardTitle className="text-2xl flex items-center gap-3">
+                  <FiTarget className="text-primary" size={28} />
+                  Our Mission
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground leading-relaxed break-words">
+                  To empower organizations with the knowledge, skills, and tools they need to excel in today's competitive business environment. We are committed to delivering high-quality consulting and training services that drive measurable results and long-term success for our clients.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7 }}
+          >
+            <h3 className="text-2xl font-bold text-foreground mb-8">Our Core Values</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {values.map((value, index) => (
+                <motion.div
+                  key={value.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Card className="border-2 hover:border-primary/20 hover:shadow-md transition-all">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="text-primary text-3xl mt-1 flex-shrink-0">{value.icon}</div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-lg text-foreground mb-2">{value.title}</h4>
+                          <p className="text-muted-foreground text-sm leading-relaxed break-words">{value.description}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
@@ -66,27 +120,46 @@ function MissionAndValues() {
 // Section for "Why Choose Us"
 function WhyChooseUs() {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Choose KMTCS?</h2>
-          <p className="text-lg text-gray-600">
+        <div className="max-w-4xl mx-auto text-center mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7 }}
+        >
+          <h2 className="text-3xl font-bold text-foreground mb-6">Why Choose KMTCS?</h2>
+          <p className="text-lg text-muted-foreground leading-relaxed">
             With over 30 years of experience, we've formed a firm distinctively equipped to support our training and consulting projects. This holistic focus of the KMTCS produces excellent services for our customers and clients. Our associates and consultants have assisted various companies and enterprises to complete their projects and achieve/exceed targeted improvements.
           </p>
+        </motion.div>
         </div>
-        <div className="mt-16 grid md:grid-cols-3 gap-8 text-center">
-          <div className="p-8 bg-gray-50 rounded-lg">
-            <h3 className="text-2xl font-semibold text-blue-600 mb-3">Innovate</h3>
-            <p>We innovate our training programs to suit your needs, incorporating the latest knowledge in the respective field.</p>
-          </div>
-          <div className="p-8 bg-gray-50 rounded-lg">
-            <h3 className="text-2xl font-semibold text-blue-600 mb-3">Grow</h3>
-            <p>We help you develop a passion for learning. As you use new skills and knowledge, your purpose and career will grow.</p>
-          </div>
-          <div className="p-8 bg-gray-50 rounded-lg">
-            <h3 className="text-2xl font-semibold text-blue-600 mb-3">Transform</h3>
-            <p>We transform your people to grow with the organization through well-crafted, innovative training programs.</p>
-          </div>
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            { title: 'Innovate', desc: 'We innovate our training programs to suit your needs, incorporating the latest knowledge in the respective field.' },
+            { title: 'Grow', desc: 'We help you develop a passion for learning. As you use new skills and knowledge, your purpose and career will grow.' },
+            { title: 'Transform', desc: 'We transform your people to grow with the organization through well-crafted, innovative training programs.' }
+          ].map((item, index) => (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: index * 0.2 }}
+            >
+              <Card className="text-center border-2 hover:border-primary/20 transition-all hover:shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-semibold text-primary mb-3">{item.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground leading-relaxed break-words">
+                    {item.desc}
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
@@ -98,8 +171,22 @@ export default function AboutPage() {
     <div>
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-blue-50 to-blue-100 py-24 text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900">About KMTCS</h1>
-        <p className="mt-4 text-lg text-gray-600">Your Trusted Partner in Professional Growth</p>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h1 className="text-4xl md:text-5xl font-extrabold text-foreground">About KMTCS</h1>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            <p className="mt-4 text-lg text-muted-foreground">
+              Your Trusted Partner in Professional Growth
+            </p>
+          </motion.div>
+        </motion.div>
       </section>
 
       <AboutSection />

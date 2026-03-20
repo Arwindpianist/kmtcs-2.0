@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { serverLogger } from '@/app/lib/logger';
 // import mammoth from 'mammoth'; // Temporarily disabled
 
 // Initialize Supabase client
@@ -7,7 +8,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing Supabase environment variables');
+  serverLogger.error('Missing Supabase environment variables');
 }
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import { serverLogger } from '@/app/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = result;
 
     if (error) {
-      console.error('Supabase error:', error);
+      serverLogger.error('Supabase error:', error);
       return NextResponse.json(
         { error: 'Failed to fetch non-technical trainings' },
         { status: 500 }
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data });
   } catch (error) {
-    console.error('API error:', error);
+    serverLogger.error('API error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -60,7 +61,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log('POST /api/non-technical-trainings - Request body:', body);
     
     const supabase = createSupabaseServerClient();
     
@@ -71,8 +71,8 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Supabase error:', error);
-      console.error('Error details:', {
+      serverLogger.error('Supabase error:', error);
+      serverLogger.error('Error details:', {
         message: error.message,
         details: error.details,
         hint: error.hint,
@@ -84,10 +84,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('POST /api/non-technical-trainings - Success:', data);
     return NextResponse.json({ data });
   } catch (error) {
-    console.error('API error:', error);
+    serverLogger.error('API error:', error);
     return NextResponse.json(
       { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
@@ -117,7 +116,7 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Supabase error:', error);
+      serverLogger.error('Supabase error:', error);
       return NextResponse.json(
         { error: 'Failed to update non-technical training' },
         { status: 500 }
@@ -126,7 +125,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ data });
   } catch (error) {
-    console.error('API error:', error);
+    serverLogger.error('API error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -154,7 +153,7 @@ export async function DELETE(request: NextRequest) {
       .eq('id', id);
 
     if (error) {
-      console.error('Supabase error:', error);
+      serverLogger.error('Supabase error:', error);
       return NextResponse.json(
         { error: 'Failed to delete non-technical training' },
         { status: 500 }
@@ -163,7 +162,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('API error:', error);
+    serverLogger.error('API error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

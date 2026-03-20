@@ -1,7 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { supabase } from '@/app/lib/supabase';
+import DataTable from '@/app/components/admin/DataTable';
+import { logger } from '@/app/lib/logger';
 
 interface User {
   id: string;
@@ -123,30 +126,49 @@ export default function UsersManagement() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-4 lg:p-8 max-w-7xl mx-auto">
       {/* Page Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Users Management</h1>
-          <p className="text-gray-600">Manage admin users and their permissions</p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+      <div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          Add New User
-        </button>
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 lg:mb-8">
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Users Management</h1>
+              <p className="text-gray-600">Manage admin users and their permissions</p>
+            </div>
+            <button
+              onClick={() => setShowForm(true)}
+              className="mt-4 lg:mt-0 bg-indigo-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm lg:text-base"
+            >
+              Add New User
+            </button>
+          </div>
+        </motion.div>
       </div>
 
       {error && (
-        <div className="mb-8 p-6 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-8 p-6 bg-red-100 border border-red-400 text-red-700 rounded-lg"
+        >
           <strong className="font-bold">Error:</strong>
           <span className="ml-2">{error}</span>
-        </div>
+        </motion.div>
       )}
 
       {showForm ? (
-        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-8"
+        >
           <h2 className="text-2xl font-semibold mb-6">{editingUser ? 'Edit User' : 'Add New User'}</h2>
           <form onSubmit={handleSave} className="space-y-6">
             <div>
@@ -211,77 +233,110 @@ export default function UsersManagement() {
               </button>
             </div>
           </form>
-        </div>
+        </motion.div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sign In</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center">
-                      <div className="max-w-md mx-auto">
-                        <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                          </svg>
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Users</h3>
-                        <p className="text-gray-600">Get started by adding your first admin user.</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{user.email}</div>
-                        {user.full_name && (
-                          <div className="text-sm text-gray-500">{user.full_name}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                          ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(user.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.last_sign_in ? new Date(user.last_sign_in).toLocaleDateString() : 'Never'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => handleEdit(user)}
-                          className="text-indigo-600 hover:text-indigo-800 px-3 py-1 rounded border border-indigo-600 hover:bg-indigo-50 transition-colors mr-3"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50 transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <DataTable
+          data={users}
+          columns={[
+            {
+              key: 'email',
+              label: 'User',
+              sortable: true,
+              render: (user: User) => (
+                <div>
+                  <div className="font-medium text-gray-900">{user.email}</div>
+                  {user.full_name && (
+                    <div className="text-sm text-gray-500">{user.full_name}</div>
+                  )}
+                </div>
+              )
+            },
+            {
+              key: 'role',
+              label: 'Role',
+              sortable: true,
+              render: (user: User) => (
+                <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                  ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                  {user.role}
+                </span>
+              )
+            },
+            {
+              key: 'created_at',
+              label: 'Created',
+              sortable: true,
+              render: (user: User) => (
+                <div className="text-sm text-gray-500">
+                  {new Date(user.created_at).toLocaleDateString()}
+                  <div className="text-xs text-gray-400">
+                    {new Date(user.created_at).toLocaleTimeString()}
+                  </div>
+                </div>
+              )
+            },
+            {
+              key: 'last_sign_in',
+              label: 'Last Sign In',
+              sortable: true,
+              render: (user: User) => (
+                <div className="text-sm text-gray-500">
+                  {user.last_sign_in ? new Date(user.last_sign_in).toLocaleDateString() : 'Never'}
+                  {user.last_sign_in && (
+                    <div className="text-xs text-gray-400">
+                      {new Date(user.last_sign_in).toLocaleTimeString()}
+                    </div>
+                  )}
+                </div>
+              )
+            }
+          ]}
+          filters={[
+            {
+              key: 'role',
+              label: 'Role',
+              type: 'select',
+              options: [
+                { value: 'admin', label: 'Admin' },
+                { value: 'editor', label: 'Editor' }
+              ]
+            }
+          ]}
+          searchable={true}
+          searchPlaceholder="Search by email or name..."
+          pageSize={25}
+          loading={loading}
+          emptyMessage="No users found. Click 'Add New User' to get started."
+          actions={(user) => (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(user);
+                }}
+                className="text-indigo-600 hover:text-indigo-800 px-3 py-1 rounded border border-indigo-600 hover:bg-indigo-50 transition-colors text-xs"
+              >
+                Edit
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteUser(user.id);
+                }}
+                className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50 transition-colors text-xs"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+          onRowClick={(user) => handleEdit(user)}
+        />
+        </motion.div>
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { serverLogger } from '@/app/lib/logger';
 
 interface CalendarEvent {
   id: string;
@@ -48,7 +49,6 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('start') || new Date().toISOString().split('T')[0];
     const endDate = searchParams.get('end') || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-    console.log('Calendar events request:', { startDate, endDate });
 
     // Zoho Calendar API endpoint - use environment variable or fallback
     const calendarUid = process.env.ZOHO_CALENDAR_UID || 'f4c3dda451a2448fb8f12e629a46f533';
@@ -57,17 +57,13 @@ export async function GET(request: NextRequest) {
     const accessToken = await getValidAccessToken();
     
     if (!accessToken) {
-      console.error('Failed to obtain Zoho access token');
+      serverLogger.error('Failed to obtain Zoho access token');
       return NextResponse.json(
         { error: 'Calendar API authentication failed - no access token available' },
         { status: 500 }
       );
     }
 
-    console.log('Making API call to Zoho Calendar...');
-    console.log('Access token length:', accessToken.length);
-    console.log('Access token preview:', accessToken.substring(0, 20) + '...');
-    
     // Calculate date range for next 3 months
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -77,20 +73,14 @@ export async function GET(request: NextRequest) {
     const zohoStartDate = startOfMonth.toISOString().slice(0, 10).replace(/-/g, '');
     const zohoEndDate = endOfThreeMonths.toISOString().slice(0, 10).replace(/-/g, '');
     
-    console.log('Zoho date range:', { zohoStartDate, zohoEndDate });
-    
     // Try different approaches to get events
     let events: CalendarEvent[] = [];
     
     // Use the same approach as debug endpoint - simple GET request
     const eventsEndpoint = `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events`;
     
-    console.log('Using calendar UID:', calendarUid);
-    console.log('Using events endpoint:', eventsEndpoint);
-    
     let zohoApiDebug: any = {};
     try {
-      console.log(`Making GET request to: ${eventsEndpoint}`);
       const response = await fetch(eventsEndpoint, {
         method: 'GET',
         headers: {
@@ -99,7 +89,6 @@ export async function GET(request: NextRequest) {
         }
       });
       
-      console.log('Zoho API response status:', response.status);
       zohoApiDebug = {
         status: response.status,
         headers: Object.fromEntries(response.headers.entries()),
@@ -119,37 +108,9 @@ export async function GET(request: NextRequest) {
         zohoApiDebug.error = errorText;
       }
       
-      console.log(`Events endpoint response status: ${response.status}`);
-      
       if (response.ok) {
         const data = await response.json();
-        console.log('Events API response data:', { 
-          hasEvents: !!data.events, 
-          eventCount: data.events?.length || 0 
-        });
         
-        if (data.events && data.events.length > 0) {
-          console.log('Raw events from Zoho:', data.events.map(ev => ({
-            title: ev.title,
-            dateandtime: ev.dateandtime
-          })));
-        }
-        
-        // Debug: Log the raw first event to see actual field names
-        if (data.events && data.events.length > 0) {
-          console.log('Raw Zoho event structure:', JSON.stringify(data.events[0], null, 2));
-          console.log('dateandtime field:', data.events[0].dateandtime);
-          if (data.events[0].dateandtime) {
-            try {
-              const parsed = JSON.parse(data.events[0].dateandtime);
-              console.log('Parsed dateandtime:', parsed);
-            } catch (e) {
-              console.log('dateandtime is not JSON:', data.events[0].dateandtime);
-            }
-          }
-        }
-        
-        console.log('Starting to map events, count:', data.events?.length || 0);
         events = data.events?.map((event: any) => {
           let startTime = '';
           let endTime = '';
@@ -173,8 +134,6 @@ export async function GET(request: NextRequest) {
           if (!endTime && event.lastmodifiedtime) {
             endTime = parseZohoDate(event.lastmodifiedtime)?.toISOString() || '';
           }
-          // Log for debugging
-          console.log('Event:', event.title, 'start:', startTime, 'end:', endTime);
           return {
             id: event.uid || event.event_id || event.id || event.eventId || `event-${Math.random()}`,
             title: event.title || event.summary || event.name,
@@ -193,28 +152,13 @@ export async function GET(request: NextRequest) {
             modified_time: event.lastmodifiedtime || event.modified_time || event.modifiedTime || event.modified,
           };
         }) || [];
-        
-        console.log('Successfully mapped events:', events.length);
-        console.log('Sample mapped event:', events[0] ? {
-          id: events[0].id,
-          title: events[0].title,
-          start_time: events[0].start_time,
-          end_time: events[0].end_time,
-          all_day: events[0].all_day
-        } : 'No events');
-      } else {
-        const errorText = await response.text();
-        console.log(`Events endpoint failed: ${response.status} - ${errorText}`);
       }
     } catch (error) {
-      console.log(`Events endpoint error: ${error}`);
+      serverLogger.error('Error fetching events from Zoho:', error);
     }
 
     // If no events found, return empty array with success status
     if (events.length === 0) {
-      console.log('No events found via events endpoint');
-      console.log('This might be due to date filtering or parsing issues');
-      
       return NextResponse.json({
         success: true,
         events: [],
@@ -230,31 +174,16 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    console.log('Transformed events:', events.length);
-
     // Filter events to only include those within the calculated date range
     const startRange = parseZohoDate(zohoStartDate);
     const endRange = parseZohoDate(zohoEndDate);
-    console.log('Date range for filtering:', {
-      startRange: startRange?.toISOString(),
-      endRange: endRange?.toISOString(),
-      zohoStartDate,
-      zohoEndDate
-    });
     
     const filteredEvents = events.filter(ev => {
       if (!ev.start_time) {
-        console.log('Event filtered out - no start_time:', ev.title);
         return false;
       }
       const evStart = new Date(ev.start_time);
       const inRange = evStart >= startRange && evStart <= endRange;
-      console.log('Event filtering:', {
-        title: ev.title,
-        start_time: ev.start_time,
-        evStart: evStart.toISOString(),
-        inRange
-      });
       return inRange;
     });
     const debugEvents = filteredEvents.map(ev => {
@@ -281,7 +210,6 @@ export async function GET(request: NextRequest) {
         reason: inRange ? 'In range' : 'Out of range'
       };
     });
-    console.log('Filtered events count:', filteredEvents.length);
     events = filteredEvents;
 
     return NextResponse.json({
@@ -296,7 +224,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error fetching calendar events:', error);
+    serverLogger.error('Error fetching calendar events:', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch calendar events',
@@ -310,15 +238,11 @@ export async function GET(request: NextRequest) {
 // Helper function to get a valid access token
 async function getValidAccessToken(): Promise<string | null> {
   try {
-    console.log('Getting valid access token...');
-    
     const refreshToken = process.env.ZOHO_REFRESH_TOKEN;
     if (!refreshToken) {
-      console.log('No refresh token available');
       return null;
     }
 
-    console.log('Refreshing access token...');
     const tokenResponse = await fetch('https://accounts.zoho.com/oauth/v2/token', {
       method: 'POST',
       headers: {
@@ -333,16 +257,15 @@ async function getValidAccessToken(): Promise<string | null> {
     });
 
     if (!tokenResponse.ok) {
-      console.log('Token refresh failed:', tokenResponse.status);
+      serverLogger.error('Token refresh failed:', tokenResponse.status);
       return null;
     }
 
     const tokenData = await tokenResponse.json();
-    console.log('Token refresh successful, new token length:', tokenData.access_token?.length || 0);
     return tokenData.access_token;
 
   } catch (error) {
-    console.error('Error getting access token:', error);
+    serverLogger.error('Error getting access token:', error);
     return null;
   }
 } 

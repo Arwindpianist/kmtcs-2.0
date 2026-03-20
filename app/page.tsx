@@ -7,6 +7,7 @@ import ClientCarousel from './components/ClientCarousel'
 import Testimonials from './components/Testimonials'
 import TrainingCalendar from './components/TrainingCalendar'
 import ContactCTA from './components/ContactCTA'
+import { serverLogger } from './lib/logger'
 
 export const metadata: Metadata = {
   title: 'KMTCS - Leading Training & Consulting Services in Malaysia',
@@ -72,7 +73,7 @@ export interface ServiceItem {
 
 async function fetchServices() {
   try {
-    console.log('Fetching services for home page...');
+    serverLogger.log('Fetching services for home page...');
     
     // Get the base URL for API calls
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -86,27 +87,23 @@ async function fetchServices() {
 
     // Check if responses are ok
     if (!technicalResponse.ok) {
-      console.error('Technical trainings API error:', technicalResponse.status, technicalResponse.statusText);
+      serverLogger.error('Technical trainings API error:', technicalResponse.status, technicalResponse.statusText);
     }
     if (!nonTechnicalResponse.ok) {
-      console.error('Non-technical trainings API error:', nonTechnicalResponse.status, nonTechnicalResponse.statusText);
+      serverLogger.error('Non-technical trainings API error:', nonTechnicalResponse.status, nonTechnicalResponse.statusText);
     }
     if (!consultingResponse.ok) {
-      console.error('Consulting services API error:', consultingResponse.status, consultingResponse.statusText);
+      serverLogger.error('Consulting services API error:', consultingResponse.status, consultingResponse.statusText);
     }
 
     const technicalData = await technicalResponse.json();
     const nonTechnicalData = await nonTechnicalResponse.json();
     const consultingData = await consultingResponse.json();
 
-    //console.log('Technical trainings:', technicalData.data?.length || 0);
-    //console.log('Non-technical trainings:', nonTechnicalData.data?.length || 0);
-    //console.log('Consulting services:', consultingData.data?.length || 0);
-
     // Log any errors from the API responses
-    if (technicalData.error) console.error('Technical trainings error:', technicalData.error);
-    if (nonTechnicalData.error) console.error('Non-technical trainings error:', nonTechnicalData.error);
-    if (consultingData.error) console.error('Consulting services error:', consultingData.error);
+    if (technicalData.error) serverLogger.error('Technical trainings error:', technicalData.error);
+    if (nonTechnicalData.error) serverLogger.error('Non-technical trainings error:', nonTechnicalData.error);
+    if (consultingData.error) serverLogger.error('Consulting services error:', consultingData.error);
 
     // Combine and format the services
     const allServices: ServiceItem[] = [
@@ -139,10 +136,10 @@ async function fetchServices() {
       }))
     ];
 
-    console.log('Total services found:', allServices.length);
+    serverLogger.log('Total services found:', allServices.length);
     return allServices;
   } catch (error) {
-    console.error('Error fetching services:', error);
+    serverLogger.error('Error fetching services:', error);
     return [];
   }
 }
@@ -151,14 +148,8 @@ export default async function Home() {
   // Fetch services using API routes
   const allServices = await fetchServices();
 
-  // Log the raw data for debugging
-  //console.log('Raw services data:', JSON.stringify(allServices, null, 2));
-
   // Shuffle and select a subset to display
   const shuffledServices = allServices.sort(() => 0.5 - Math.random()).slice(0, 6)
-
-  //console.log('Services being passed to component:', shuffledServices.length);
-  //console.log('Sample service:', shuffledServices[0]);
 
   return (
     <main>

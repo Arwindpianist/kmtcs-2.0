@@ -6,6 +6,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiMail, FiPhone, FiX, FiAward, FiBookOpen, FiBriefcase, FiUser } from 'react-icons/fi';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Card, CardContent } from '@/app/components/ui/card';
+import { Button } from '@/app/components/ui/button';
+import { logger } from '@/app/lib/logger';
 
 export interface Consultant {
   id: string;
@@ -36,7 +39,7 @@ export default function ConsultantsPage() {
         .order('name');
       
       if (error) {
-        console.error('Error fetching consultants:', error);
+        logger.error('Error fetching consultants:', error);
       } else {
         setConsultants(data);
       }
@@ -99,53 +102,66 @@ export default function ConsultantsPage() {
 // Card component for a single consultant
 function ConsultantCard({ consultant, onSelect }: { consultant: Consultant; onSelect: () => void; }) {
   return (
-    <motion.div
-      className="bg-white rounded-xl shadow-lg p-6 text-center cursor-pointer hover:shadow-xl transition-all duration-300 border border-gray-100"
+    <Card
+      className="text-center cursor-pointer hover:shadow-xl transition-all duration-300 h-full flex flex-col"
       onClick={onSelect}
-      whileHover={{ y: -5 }}
     >
-      <div className="relative w-32 h-32 mx-auto mb-6">
-        <Image
-          src={consultant.image_url || '/default-avatar.svg'}
-          alt={consultant.name}
-          fill
-          className="rounded-full object-cover border-4 border-blue-100 shadow-md"
-          onError={(e) => {
-            e.currentTarget.src = '/default-avatar.svg';
-          }}
-        />
-      </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-2">{consultant.name}</h3>
-      <p className="text-blue-600 font-semibold text-lg mb-3">{consultant.role}</p>
-      <p className="text-gray-600 text-sm leading-relaxed">{consultant.short_bio}</p>
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <button className="text-blue-600 hover:text-blue-800 font-medium text-sm">
-          View Full Profile →
-        </button>
-      </div>
-    </motion.div>
+      <CardContent className="p-6 flex-grow flex flex-col">
+        <div className="flex-grow flex flex-col">
+          <motion.div
+            whileHover={{ y: -5 }}
+          >
+            <div className="relative w-32 h-32 mx-auto mb-6">
+              <Image
+                src={consultant.image_url || '/default-avatar.svg'}
+                alt={consultant.name}
+                fill
+                className="rounded-full object-cover border-4 border-primary/20 shadow-md"
+                onError={(e) => {
+                  e.currentTarget.src = '/default-avatar.svg';
+                }}
+              />
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-2">{consultant.name}</h3>
+            <p className="text-primary font-semibold text-lg mb-3">{consultant.role}</p>
+            <p className="text-muted-foreground text-sm leading-relaxed">{consultant.short_bio}</p>
+          </motion.div>
+          <div className="mt-4 pt-4 border-t border-border">
+            <Button variant="link" className="text-primary font-medium text-sm p-0">
+              View Full Profile →
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
 // Modal component for detailed view
 function ConsultantModal({ consultant, onClose }: { consultant: Consultant; onClose: () => void; }) {
   return (
-    <motion.div
+    <div
       className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
       onClick={onClose}
     >
       <motion.div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
       >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+        >
+          <Card
+            className="w-full max-w-4xl max-h-[90vh] overflow-y-auto border-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-xl">
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-6 lg:p-8 rounded-t-lg relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative z-10">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-6">
               <div className="relative w-24 h-24 flex-shrink-0">
@@ -164,76 +180,113 @@ function ConsultantModal({ consultant, onClose }: { consultant: Consultant; onCl
                 <p className="text-blue-100 text-xl font-semibold">{consultant.role}</p>
               </div>
             </div>
-            <button 
-              onClick={onClose} 
-              className="text-blue-100 hover:text-white transition-colors p-2"
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              size="icon"
+              className="text-white hover:text-white hover:bg-white/20"
             >
               <FiX size={24} />
-            </button>
+            </Button>
+            </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-8">
+        <CardContent className="p-6 lg:p-8 bg-gradient-to-br from-gray-50 to-white">
           {/* Academic Qualifications */}
           {consultant.academic_qualifications && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
             <div className="mb-8">
-              <div className="flex items-center mb-4">
-                <FiBookOpen className="text-blue-600 mr-3 text-xl" />
-                <h3 className="text-xl font-bold text-gray-900">ACADEMIC QUALIFICATION:</h3>
+              <div className="flex items-center mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-l-4 border-blue-500">
+                <div className="p-2 bg-blue-100 rounded-lg mr-4">
+                  <FiBookOpen className="text-blue-600 text-xl" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">ACADEMIC QUALIFICATION</h3>
               </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+              <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line break-words">
                   {consultant.academic_qualifications}
                 </p>
               </div>
             </div>
+            </motion.div>
           )}
 
           {/* Professional Certifications */}
           {consultant.professional_certifications && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
             <div className="mb-8">
-              <div className="flex items-center mb-4">
-                <FiAward className="text-blue-600 mr-3 text-xl" />
-                <h3 className="text-xl font-bold text-gray-900">PROFESSIONAL CERTIFICATION:</h3>
+              <div className="flex items-center mb-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-l-4 border-purple-500">
+                <div className="p-2 bg-purple-100 rounded-lg mr-4">
+                  <FiAward className="text-purple-600 text-xl" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">PROFESSIONAL CERTIFICATION</h3>
               </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+              <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line break-words">
                   {consultant.professional_certifications}
                 </p>
               </div>
             </div>
+            </motion.div>
           )}
 
           {/* Brief Biodata */}
-          <div className="mb-8">
-            <div className="flex items-center mb-4">
-              <FiUser className="text-blue-600 mr-3 text-xl" />
-              <h3 className="text-xl font-bold text-gray-900">BRIEF BIODATA:</h3>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
+            <div className="mb-8">
+            <div className="flex items-center mb-4 p-3 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border-l-4 border-indigo-500">
+              <div className="p-2 bg-indigo-100 rounded-lg mr-4">
+                <FiUser className="text-indigo-600 text-xl" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground">BRIEF BIODATA</h3>
             </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+            <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-line break-words">
                 {consultant.full_bio}
               </p>
             </div>
-          </div>
+            </div>
+          </motion.div>
 
           {/* Career Experiences */}
           {consultant.career_experiences && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
             <div className="mb-8">
-              <div className="flex items-center mb-4">
-                <FiBriefcase className="text-blue-600 mr-3 text-xl" />
-                <h3 className="text-xl font-bold text-gray-900">CAREER EXPERIENCES:</h3>
+              <div className="flex items-center mb-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-l-4 border-green-500">
+                <div className="p-2 bg-green-100 rounded-lg mr-4">
+                  <FiBriefcase className="text-green-600 text-xl" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">CAREER EXPERIENCES</h3>
               </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+              <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line break-words">
                   {consultant.career_experiences}
                 </p>
               </div>
             </div>
+            </motion.div>
           )}
-        </div>
+        </CardContent>
+          </Card>
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 }
