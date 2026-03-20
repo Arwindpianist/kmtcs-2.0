@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { supabase } from '@/app/lib/supabase';
 import DataTable from '@/app/components/admin/DataTable';
 import { logger } from '@/app/lib/logger';
@@ -129,11 +128,7 @@ export default function UsersManagement() {
     <div className="p-4 lg:p-8 max-w-7xl mx-auto">
       {/* Page Header */}
       <div>
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div>
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 lg:mb-8">
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Users Management</h1>
@@ -146,29 +141,18 @@ export default function UsersManagement() {
               Add New User
             </button>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {error && (
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
-          className="mb-8 p-6 bg-red-100 border border-red-400 text-red-700 rounded-lg"
-        >
+        <div className="mb-8 p-6 bg-red-100 border border-red-400 text-red-700 rounded-lg">
           <strong className="font-bold">Error:</strong>
           <span className="ml-2">{error}</span>
-        </motion.div>
+        </div>
       )}
 
       {showForm ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-          className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-8"
-        >
+        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-8">
           <h2 className="text-2xl font-semibold mb-6">{editingUser ? 'Edit User' : 'Add New User'}</h2>
           <form onSubmit={handleSave} className="space-y-6">
             <div>
@@ -233,13 +217,9 @@ export default function UsersManagement() {
               </button>
             </div>
           </form>
-        </motion.div>
+        </div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
+        <div>
           <DataTable
           data={users}
           columns={[
@@ -336,7 +316,7 @@ export default function UsersManagement() {
           )}
           onRowClick={(user) => handleEdit(user)}
         />
-        </motion.div>
+        </div>
       )}
     </div>
   );
