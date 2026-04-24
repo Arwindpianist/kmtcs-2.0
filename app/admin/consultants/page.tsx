@@ -496,7 +496,7 @@ export default function ConsultantsManagement() {
                   sortable: true,
                   render: (consultant: Consultant) => (
                     <span className="text-sm text-gray-500">
-                      {consultant.created_at ? new Date(consultant.created_at).toLocaleDateString() : '-'}
+                      {consultant.created_at ? new Date(consultant.created_at).toLocaleDateString('en-GB') : '-'}
                     </span>
                   )
                 }

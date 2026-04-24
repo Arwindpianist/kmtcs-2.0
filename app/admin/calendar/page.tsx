@@ -97,12 +97,7 @@ const PERIODS = ['AM', 'PM'] as const;
 
 function formatDateLabel(date?: Date) {
   if (!date) return '';
-  return date.toLocaleDateString('en-MY', {
-    weekday: 'short',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+  return date.toLocaleDateString('en-GB');
 }
 
 function formatRangeLabel(range?: DateRange) {
@@ -1564,7 +1559,13 @@ export default function AdminCalendarPage() {
                 ),
               },
               { key: 'duration', label: 'Duration', sortable: true, width: '10%', render: (event) => event.duration || '-' },
-              { key: 'start_time', label: 'Start', sortable: true, width: '14%', render: (event) => new Date(event.start_time).toLocaleString() },
+              {
+                key: 'start_time',
+                label: 'Start',
+                sortable: true,
+                width: '14%',
+                render: (event) => new Date(event.start_time).toLocaleString('en-GB'),
+              },
               { key: 'location', label: 'Location', sortable: true, width: '12%', render: (event) => event.location || '-' },
               {
                 key: 'linked_trainings_count',

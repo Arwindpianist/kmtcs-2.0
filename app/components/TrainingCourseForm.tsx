@@ -418,7 +418,7 @@ export default function TrainingCourseForm({
                 <span>
                   <span className="font-medium text-gray-900">{event.title}</span>
                   <span className="block text-gray-500">
-                    {new Date(event.start_time).toLocaleString()}
+                    {new Date(event.start_time).toLocaleString('en-GB')}
                   </span>
                 </span>
               </label>

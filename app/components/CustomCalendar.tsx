@@ -44,6 +44,45 @@ interface DayData {
   events: CalendarEvent[];
 }
 
+const EVENT_TONES = [
+  {
+    dot: 'bg-blue-500',
+    chip: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
+    text: 'text-blue-900',
+    subtle: 'text-blue-700',
+  },
+  {
+    dot: 'bg-indigo-500',
+    chip: 'bg-indigo-50 border-indigo-200 hover:bg-indigo-100',
+    text: 'text-indigo-900',
+    subtle: 'text-indigo-700',
+  },
+  {
+    dot: 'bg-violet-500',
+    chip: 'bg-violet-50 border-violet-200 hover:bg-violet-100',
+    text: 'text-violet-900',
+    subtle: 'text-violet-700',
+  },
+  {
+    dot: 'bg-slate-500',
+    chip: 'bg-slate-100 border-slate-300 hover:bg-slate-200',
+    text: 'text-slate-900',
+    subtle: 'text-slate-700',
+  },
+];
+
+function toDateParam(value: Date) {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getEventTone(eventId: string) {
+  const sum = eventId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return EVENT_TONES[sum % EVENT_TONES.length];
+}
+
 export default function CustomCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -72,8 +111,8 @@ export default function CustomCalendar() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      
-      const response = await fetch('/api/calendar-events', { cache: 'no-store' });
+
+      const response = await fetch('/api/calendar-events?all=true', { cache: 'no-store' });
       
       if (!response.ok) {
         throw new Error('Failed to fetch events');
@@ -169,12 +208,7 @@ export default function CustomCalendar() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long',
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+    return date.toLocaleDateString('en-GB');
   };
 
   // Helper function to compare dates without time components
@@ -205,6 +239,51 @@ export default function CustomCalendar() {
         .slice(0, 6),
     [events]
   );
+  const groupedTrainings = useMemo(() => {
+    const grouped = new Map<
+      string,
+      {
+        title: string;
+        dates: Array<{ id: string; start_time: string; end_time: string }>;
+        location?: string;
+      }
+    >();
+
+    const sorted = [...events].sort(
+      (firstEvent, secondEvent) =>
+        new Date(firstEvent.start_time).getTime() - new Date(secondEvent.start_time).getTime()
+    );
+
+    for (const event of sorted) {
+      const key =
+        event.training_snapshot?.training_id ||
+        `${event.title}::${event.location || ''}`.toLowerCase();
+      const existing = grouped.get(key);
+
+      if (existing) {
+        existing.dates.push({
+          id: event.id,
+          start_time: event.start_time,
+          end_time: event.end_time,
+        });
+        continue;
+      }
+
+      grouped.set(key, {
+        title: event.title,
+        dates: [
+          {
+            id: event.id,
+            start_time: event.start_time,
+            end_time: event.end_time,
+          },
+        ],
+        location: event.location,
+      });
+    }
+
+    return Array.from(grouped.values());
+  }, [events]);
 
   if (error) {
     return (
@@ -227,31 +306,44 @@ export default function CustomCalendar() {
   return (
     <div className="w-full max-w-7xl mx-auto bg-white rounded-xl border border-slate-200 overflow-hidden relative">
       <div className="border-b border-slate-200 bg-slate-50 p-4 md:p-5">
-        <h3 className="text-base md:text-lg font-semibold text-slate-900 mb-2">Upcoming Sessions</h3>
-        {upcomingEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {upcomingEvents.map((event) => (
-              <button
-                key={`upcoming-${event.id}`}
-                type="button"
-                onClick={() => setSelectedEvent(event)}
-                className="text-left rounded-xl border border-slate-200 bg-white p-3 hover:border-slate-300 hover:bg-slate-50 transition-colors"
-              >
-                <p className="text-sm font-semibold text-gray-900 line-clamp-2">{event.title}</p>
-                <p className="text-xs text-gray-600 mt-1">
-                  {formatDate(event.start_time)}
-                </p>
-                {event.location ? <p className="text-xs text-gray-500 line-clamp-1">{event.location}</p> : null}
-                {(event.duration || event.training_snapshot?.duration) ? (
-                  <span className="inline-flex mt-2 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-700">
-                    {event.duration || event.training_snapshot?.duration}
-                  </span>
-                ) : null}
-              </button>
-            ))}
+        <h3 className="text-base md:text-lg font-semibold text-slate-900 mb-2">Training Schedules</h3>
+        <p className="text-xs text-slate-600 mb-3">
+          Consolidated by training. Click any date to jump the calendar to that month.
+        </p>
+        {groupedTrainings.length > 0 ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-3">
+            <div className="max-h-56 overflow-y-auto space-y-2 pr-1">
+              {groupedTrainings.map((group) => (
+                <div
+                  key={`group-${group.title}`}
+                  className="rounded-lg border border-slate-200 bg-slate-50 p-2.5"
+                >
+                  <p className="text-sm font-semibold text-slate-900 line-clamp-1">{group.title}</p>
+                  <p className="text-[11px] text-slate-600 mt-0.5">
+                    {group.dates.length} session{group.dates.length > 1 ? 's' : ''}
+                    {group.location ? ` · ${group.location}` : ''}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {group.dates.map((dateItem) => (
+                      <button
+                        key={dateItem.id}
+                        type="button"
+                        onClick={() => {
+                          const eventDate = new Date(dateItem.start_time);
+                          setCurrentDate(new Date(eventDate.getFullYear(), eventDate.getMonth(), 1));
+                        }}
+                        className="rounded-full border border-slate-300 bg-white px-2 py-0.5 text-[11px] text-slate-700 hover:bg-slate-100"
+                      >
+                        {new Date(dateItem.start_time).toLocaleDateString('en-GB')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
-          <p className="text-sm text-gray-500">No upcoming sessions published yet.</p>
+          <p className="text-sm text-gray-500">No training schedules published yet.</p>
         )}
       </div>
 
@@ -315,7 +407,7 @@ export default function CustomCalendar() {
               {day.day}
               {day.events.length > 0 && (
                 <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full mt-0.5 mx-auto ${
-                  day.isToday ? 'bg-slate-700' : 'bg-slate-500'
+                  day.isToday ? 'bg-indigo-600' : 'bg-indigo-400'
                 }`}></div>
               )}
             </div>
@@ -328,14 +420,11 @@ export default function CustomCalendar() {
                 const isTodayEvent = day.isToday;
                 const isEventStartDay = isSameDate(day.date, eventStart);
                 const isEventEndDay = isSameDate(day.date, eventEnd);
+                const tone = getEventTone(event.id);
                 return (
                   <div
                     key={event.id + '-' + idx}
-                    className={`border rounded px-1.5 py-0.5 md:px-2 md:py-1 cursor-pointer transition-colors text-[10px] md:text-xs ${
-                      isTodayEvent || (isMultiDay && day.date >= eventStart && day.date <= eventEnd)
-                        ? 'bg-slate-200 border-slate-400 hover:bg-slate-300 shadow-sm'
-                        : 'bg-slate-100 border-slate-300 hover:bg-slate-200'
-                    }`}
+                    className={`border rounded px-1.5 py-0.5 md:px-2 md:py-1 cursor-pointer transition-colors text-[10px] md:text-xs shadow-sm ${tone.chip}`}
                     style={{
                       borderRadius: isMultiDay ? 
                         (isEventStartDay ? '8px 0 0 8px' : isEventEndDay ? '0 8px 8px 0' : '0') : 
@@ -350,18 +439,14 @@ export default function CustomCalendar() {
                       setSelectedEvent(event);
                     }}
                   >
-                    <div className={`font-medium leading-tight ${
-                      isTodayEvent || (isMultiDay && day.date >= eventStart && day.date <= eventEnd) ? 'text-slate-900' : 'text-slate-800'
-                    }`}>
+                    <div className={`font-medium leading-tight ${tone.text}`}>
                       {isEventStartDay ? (
                         <div>
                           <div className="font-semibold text-[10px] md:text-xs">
                             {event.title.split(':')[0]}
                           </div>
                           {isMultiDay && (
-                            <div className={`text-[10px] md:text-xs mt-0.5 ${
-                              isTodayEvent || (isMultiDay && day.date >= eventStart && day.date <= eventEnd) ? 'text-slate-700' : 'text-slate-600'
-                            }`}>
+                            <div className={`text-[10px] md:text-xs mt-0.5 ${tone.subtle}`}>
                               {Math.max(1, Math.ceil((eventEnd.getTime() - eventStart.getTime()) / (1000 * 60 * 60 * 24)) + 1)} day{Math.max(1, Math.ceil((eventEnd.getTime() - eventStart.getTime()) / (1000 * 60 * 60 * 24)) + 1) !== 1 ? 's' : ''}
                             </div>
                           )}
@@ -455,12 +540,7 @@ export default function CustomCalendar() {
                 <div className="flex items-center justify-between mb-4 md:mb-6">
                   <div>
                     <h3 className="text-lg md:text-xl font-bold text-gray-900">
-                      Events for {dayModal.date.toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}
+                      Events for {dayModal.date.toLocaleDateString('en-GB')}
                     </h3>
                     <p className="text-gray-600 mt-0.5 md:mt-1 text-xs md:text-sm">
                       {dayModal.events.length} event{dayModal.events.length !== 1 ? 's' : ''}

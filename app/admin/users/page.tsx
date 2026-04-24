@@ -277,9 +277,9 @@ export default function UsersManagement() {
               sortable: true,
               render: (user: User) => (
                 <div className="text-sm text-gray-500">
-                  {new Date(user.created_at).toLocaleDateString()}
+                  {new Date(user.created_at).toLocaleDateString('en-GB')}
                   <div className="text-xs text-gray-400">
-                    {new Date(user.created_at).toLocaleTimeString()}
+                    {new Date(user.created_at).toLocaleTimeString('en-GB')}
                   </div>
                 </div>
               )
@@ -290,10 +290,10 @@ export default function UsersManagement() {
               sortable: true,
               render: (user: User) => (
                 <div className="text-sm text-gray-500">
-                  {user.last_sign_in ? new Date(user.last_sign_in).toLocaleDateString() : 'Never'}
+                  {user.last_sign_in ? new Date(user.last_sign_in).toLocaleDateString('en-GB') : 'Never'}
                   {user.last_sign_in && (
                     <div className="text-xs text-gray-400">
-                      {new Date(user.last_sign_in).toLocaleTimeString()}
+                      {new Date(user.last_sign_in).toLocaleTimeString('en-GB')}
                     </div>
                   )}
                 </div>

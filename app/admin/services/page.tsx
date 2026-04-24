@@ -456,9 +456,9 @@ export default function ConsultingServicesAdmin() {
               cellClassName: 'whitespace-nowrap',
               render: (service: ConsultingService) => (
                 <div className="text-sm text-gray-500">
-                  <div>{service.created_at ? new Date(service.created_at).toLocaleDateString() : '-'}</div>
+                  <div>{service.created_at ? new Date(service.created_at).toLocaleDateString('en-GB') : '-'}</div>
                   <div className="text-xs text-gray-400">
-                    {service.created_at ? new Date(service.created_at).toLocaleTimeString() : ''}
+                    {service.created_at ? new Date(service.created_at).toLocaleTimeString('en-GB') : ''}
                   </div>
                 </div>
               )

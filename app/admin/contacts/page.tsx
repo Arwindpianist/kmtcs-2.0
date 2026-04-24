@@ -135,9 +135,9 @@ export default function ContactsManagement() {
       sortable: true,
       render: (item: ContactSubmission) => (
         <div className="text-sm text-gray-500">
-          {new Date(item.created_at).toLocaleDateString()}
+          {new Date(item.created_at).toLocaleDateString('en-GB')}
           <div className="text-xs text-gray-400">
-            {new Date(item.created_at).toLocaleTimeString()}
+            {new Date(item.created_at).toLocaleTimeString('en-GB')}
           </div>
         </div>
       )
@@ -300,11 +300,11 @@ export default function ContactsManagement() {
               </div>
                <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-2">Submission Date</h3>
-                <p className="text-sm text-gray-900">{new Date(selectedSubmission.created_at).toLocaleString()}</p>
+                <p className="text-sm text-gray-900">{new Date(selectedSubmission.created_at).toLocaleString('en-GB')}</p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-2">Last Updated</h3>
-                <p className="text-sm text-gray-900">{new Date(selectedSubmission.updated_at).toLocaleString()}</p>
+                <p className="text-sm text-gray-900">{new Date(selectedSubmission.updated_at).toLocaleString('en-GB')}</p>
               </div>
             </motion.div>
           </div>

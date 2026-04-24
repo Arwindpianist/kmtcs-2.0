@@ -429,7 +429,7 @@ export default function AdminPaymentLinksPage() {
               label: 'Created',
               sortable: true,
               width: '12%',
-              render: (item) => new Date(item.created_at).toLocaleDateString(),
+              render: (item) => new Date(item.created_at).toLocaleDateString('en-GB'),
             },
           ]}
           filters={[

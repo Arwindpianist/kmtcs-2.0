@@ -102,7 +102,7 @@ ${data.company ? `- Company: ${data.company}` : ''}
 Message:
 ${data.message}
 
-Submitted at: ${new Date().toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' })}
+Submitted at: ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' })}
   `.trim();
 
   const mailOptions = {
@@ -138,7 +138,7 @@ Submitted at: ${new Date().toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpu
         
         <div style="background-color: #e0e7ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0; color: #3730a3; font-size: 14px;">
-            <strong>Submitted at:</strong> ${new Date().toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' })}
+            <strong>Submitted at:</strong> ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' })}
           </p>
         </div>
         

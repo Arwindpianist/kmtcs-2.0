@@ -32,48 +32,16 @@ interface CalendarEvent {
   modified_time: string;
 }
 
-const attachmentHealthCache = new Map<string, { ok: boolean; checkedAt: number }>();
-const ATTACHMENT_HEALTH_TTL_MS = 5 * 60 * 1000;
-
-function isBlobUrl(url: string) {
-  return url.includes('.public.blob.vercel-storage.com/');
-}
-
-async function isAttachmentReachable(url: string) {
-  if (!url) return false;
-
-  // Only preflight-check Blob URLs we control; keep other attachments unchanged.
-  if (!isBlobUrl(url)) return true;
-
-  const cached = attachmentHealthCache.get(url);
-  const now = Date.now();
-  if (cached && now - cached.checkedAt < ATTACHMENT_HEALTH_TTL_MS) {
-    return cached.ok;
-  }
-
-  try {
-    const response = await fetch(url, {
-      method: 'HEAD',
-      redirect: 'follow',
-      signal: AbortSignal.timeout(3500),
-    });
-    const ok = response.ok;
-    attachmentHealthCache.set(url, { ok, checkedAt: now });
-    return ok;
-  } catch {
-    attachmentHealthCache.set(url, { ok: false, checkedAt: now });
-    return false;
-  }
-}
-
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const fetchAll = searchParams.get('all') === 'true';
     const startDate = searchParams.get('start') || new Date().toISOString().split('T')[0];
-    const endDate = searchParams.get('end') || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const endDate =
+      searchParams.get('end') || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const eventsRaw = await listCalendarEvents({
-      start: `${startDate}T00:00:00.000Z`,
-      end: `${endDate}T23:59:59.999Z`,
+      start: fetchAll ? null : `${startDate}T00:00:00.000Z`,
+      end: fetchAll ? null : `${endDate}T23:59:59.999Z`,
       status: 'true',
     });
     const attachmentMap = await getEventBrochureAttachments(eventsRaw.map((event) => event.id));
@@ -87,18 +55,6 @@ export async function GET(request: NextRequest) {
       return { event, mergedAttachments };
     });
 
-    const validatedAttachmentBatches = await Promise.all(
-      eventsWithAttachments.map(async ({ mergedAttachments }) => {
-        const reachability = await Promise.all(
-          mergedAttachments.map(async (attachment) => ({
-            attachment,
-            ok: await isAttachmentReachable(attachment.url),
-          }))
-        );
-        return reachability.filter((item) => item.ok).map((item) => item.attachment);
-      })
-    );
-
     const events: CalendarEvent[] = eventsWithAttachments.map(({ event }, index) => {
       return {
         id: event.id,
@@ -108,7 +64,7 @@ export async function GET(request: NextRequest) {
         start_time: event.start_time,
         end_time: event.end_time,
         location: event.location || undefined,
-        attachments: validatedAttachmentBatches[index] || [],
+        attachments: eventsWithAttachments[index]?.mergedAttachments || [],
         all_day: event.all_day,
         recurrence: undefined,
         training_snapshot: event.training_snapshot || undefined,

@@ -129,7 +129,7 @@ export default function AdminDashboard() {
               <p className="text-muted-foreground">Monitor and manage your KMTCS services and content</p>
               {stats.lastUpdated && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Last updated: {stats.lastUpdated.toLocaleTimeString()}
+                  Last updated: {stats.lastUpdated.toLocaleTimeString('en-GB')}
                 </p>
               )}
             </div>
@@ -375,7 +375,7 @@ export default function AdminDashboard() {
                       <div>
                         <p className="font-semibold text-foreground">{event.title}</p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(event.start_time).toLocaleString()}
+                          {new Date(event.start_time).toLocaleString('en-GB')}
                           {event.location ? ` • ${event.location}` : ''}
                         </p>
                       </div>

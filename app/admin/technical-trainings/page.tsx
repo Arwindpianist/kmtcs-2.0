@@ -291,7 +291,7 @@ export default function TechnicalTrainingsAdmin() {
               render: (course: TrainingCourse) => (
                 course.next_event_start ? (
                   <div className="text-xs text-gray-700">
-                    <div>{new Date(course.next_event_start).toLocaleDateString()}</div>
+                    <div>{new Date(course.next_event_start).toLocaleDateString('en-GB')}</div>
                     {course.next_event_title ? (
                       <div className="text-gray-500 line-clamp-1">{course.next_event_title}</div>
                     ) : null}
@@ -310,9 +310,9 @@ export default function TechnicalTrainingsAdmin() {
               cellClassName: 'whitespace-nowrap',
               render: (course: TrainingCourse) => (
                 <div className="text-sm text-gray-500">
-                  <div>{course.created_at ? new Date(course.created_at).toLocaleDateString() : '-'}</div>
+                  <div>{course.created_at ? new Date(course.created_at).toLocaleDateString('en-GB') : '-'}</div>
                   <div className="text-xs text-gray-400">
-                    {course.created_at ? new Date(course.created_at).toLocaleTimeString() : ''}
+                    {course.created_at ? new Date(course.created_at).toLocaleTimeString('en-GB') : ''}
                   </div>
                 </div>
               )
