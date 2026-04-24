@@ -20,6 +20,8 @@ interface CalendarEvent {
   all_day: boolean;
   recurrence?: string;
   training_snapshot?: {
+    training_id?: string;
+    training_table?: 'technical_trainings' | 'non_technical_trainings';
     title?: string;
     description?: string;
     duration?: string;
