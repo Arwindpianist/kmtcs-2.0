@@ -115,6 +115,21 @@ function combineDateAndTime(date: Date, hour: string, minute: string, period: 'A
   return normalized.toISOString();
 }
 
+function getMalaysiaTodayDate() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kuala_Lumpur',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+
+  const year = Number(parts.find((part) => part.type === 'year')?.value || '1970');
+  const month = Number(parts.find((part) => part.type === 'month')?.value || '01');
+  const day = Number(parts.find((part) => part.type === 'day')?.value || '01');
+
+  return new Date(year, month - 1, day);
+}
+
 function buildCompositeDescription(snapshot: TrainingSnapshot) {
   const sections: string[] = [];
   if (snapshot.description) sections.push(`Overview:\n${snapshot.description}`);
@@ -174,6 +189,7 @@ export default function AdminCalendarPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingBrochure, setUploadingBrochure] = useState(false);
+  const [migratingLegacyBrochures, setMigratingLegacyBrochures] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEventRow | null>(null);
 
@@ -308,18 +324,15 @@ export default function AdminCalendarPage() {
   }, []);
 
   const resetForm = () => {
-    const now = new Date();
-    const later = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-    const defaultRange: DateRange = { from: now, to: now };
+    const malaysiaToday = getMalaysiaTodayDate();
+    const defaultRange: DateRange = { from: malaysiaToday, to: malaysiaToday };
     setDateRange(defaultRange);
-    const start = parseIsoToTimeParts(now.toISOString());
-    const end = parseIsoToTimeParts(later.toISOString());
-    setStartHour(start.hour);
-    setStartMinute(start.minute);
-    setStartPeriod(start.period);
-    setEndHour(end.hour);
-    setEndMinute(end.minute);
-    setEndPeriod(end.period);
+    setStartHour('08');
+    setStartMinute('30');
+    setStartPeriod('AM');
+    setEndHour('05');
+    setEndMinute('00');
+    setEndPeriod('PM');
 
     setFormData({
       title: '',
@@ -358,20 +371,52 @@ export default function AdminCalendarPage() {
     };
     setSelectedTraining(training);
     setTrainingSearch(`${training.title} (${training.training_label})`);
-    setFormData((prev) => ({
-      ...prev,
-      title: training.title,
-      description: training.description || '',
-      duration: training.duration || '',
-      training_snapshot: snapshot,
-      attachments:
+    setFormData((prev) => {
+      const existingAttachments = prev.attachments || [];
+      const trainingBrochure =
         training.brochure_url && training.brochure_file_name
-          ? [
-              ...(prev.attachments || []),
-              { name: training.brochure_file_name, url: training.brochure_url, size: 0 },
-            ]
-          : prev.attachments,
-    }));
+          ? [{ name: training.brochure_file_name, url: training.brochure_url, size: 0 }]
+          : [];
+      const deduped = [...existingAttachments, ...trainingBrochure].filter(
+        (attachment, index, array) =>
+          index === array.findIndex((candidate) => candidate.url === attachment.url)
+      );
+
+      return {
+        ...prev,
+        title: training.title,
+        description: training.description || '',
+        duration: training.duration || '',
+        training_snapshot: snapshot,
+        attachments: deduped,
+      };
+    });
+  };
+
+  const handleLegacyBrochureMigration = async () => {
+    setMigratingLegacyBrochures(true);
+    try {
+      const response = await fetch('/api/admin/migrate-legacy-brochures', { method: 'POST' });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Legacy migration failed');
+      }
+
+      await loadTrainings();
+      const totalMigrated = Number(payload?.data?.totalMigrated || 0);
+      const totalFound = Number(payload?.data?.totalFound || 0);
+
+      if (totalFound === 0) {
+        toast.info('No Supabase brochure URLs were found in training records.');
+      } else {
+        toast.success(`Migrated ${totalMigrated} brochure file(s) to Vercel Blob.`);
+      }
+    } catch (error) {
+      logger.error('Legacy brochure migration failed:', error);
+      toast.error(error instanceof Error ? error.message : 'Legacy migration failed.');
+    } finally {
+      setMigratingLegacyBrochures(false);
+    }
   };
 
   const handleEdit = async (event: CalendarEventRow) => {
@@ -594,7 +639,20 @@ export default function AdminCalendarPage() {
           <h2 className="text-xl lg:text-2xl font-semibold mb-4 lg:mb-6">{editingEvent ? 'Edit Event' : 'Add Event'}</h2>
           <form onSubmit={handleSave} className="space-y-6">
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-              <h3 className="font-semibold text-slate-900">Training Lookup and Auto-Fill</h3>
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <h3 className="font-semibold text-slate-900">Training Lookup and Auto-Fill</h3>
+                <button
+                  type="button"
+                  onClick={handleLegacyBrochureMigration}
+                  disabled={migratingLegacyBrochures}
+                  className="inline-flex items-center justify-center rounded-lg border border-indigo-300 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-50 disabled:opacity-60"
+                >
+                  {migratingLegacyBrochures ? 'Importing Legacy Brochures...' : 'Import Legacy Supabase Brochures'}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500">
+                Brochures found for selected training are auto-attached below. You can add more PDFs or remove any before saving.
+              </p>
               <input
                 value={trainingSearch}
                 onChange={(e) => setTrainingSearch(e.target.value)}

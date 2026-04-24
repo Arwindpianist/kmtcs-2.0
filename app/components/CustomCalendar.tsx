@@ -549,29 +549,36 @@ export default function CustomCalendar() {
       <AnimatePresence>
         {selectedEvent && (
           <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-2 md:p-6"
             onClick={() => setSelectedEvent(null)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.96, opacity: 0, y: 16 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 16 }}
+              transition={{ duration: 0.2 }}
             >
               <div
-                className="bg-white rounded-xl border border-slate-200 shadow-lg max-w-lg w-full max-h-[80vh] overflow-y-auto"
+                className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-5xl w-full max-h-[92vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
               >
               <div className="p-4 md:p-6">
-                <div className="flex items-center justify-between mb-2 md:mb-4">
-                  <h3 className="text-lg md:text-xl font-bold text-gray-900">{selectedEvent.title}</h3>
+                <div className="rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 px-4 py-4 md:px-5 md:py-5 mb-4 md:mb-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.18em] text-blue-200 font-semibold">Training Event</p>
+                      <h3 className="mt-1 text-lg md:text-2xl font-bold text-white">{selectedEvent.title}</h3>
+                    </div>
                   <button
                     onClick={() => setSelectedEvent(null)}
-                    className="p-1 md:p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-1.5 md:p-2 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
                   >
                     <FiX className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
+                  </div>
                 </div>
-                <div className="space-y-2 md:space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                  <div className="space-y-2 md:space-y-4 lg:col-span-1 rounded-xl border border-slate-200 bg-slate-50 p-3 md:p-4 h-fit">
                   {/* Date Range */}
                   <div className="flex items-center text-gray-600 text-xs md:text-sm">
                     <FiCalendar className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
@@ -619,13 +626,17 @@ export default function CustomCalendar() {
                       <span>{selectedEvent.duration || selectedEvent.training_snapshot?.duration}</span>
                     </div>
                   )}
+                  </div>
+                  <div className="space-y-3 md:space-y-4 lg:col-span-2">
                   {selectedEvent.description && (
-                    <div className="text-gray-700 text-xs md:text-sm">
+                    <div className="rounded-xl border border-slate-200 p-3 md:p-4 text-gray-700 text-xs md:text-sm bg-white">
+                      <h4 className="font-semibold text-slate-900 mb-2">Overview</h4>
                       <p className="whitespace-pre-wrap">{selectedEvent.description}</p>
                     </div>
                   )}
                   {selectedEvent.training_snapshot && (
-                    <div className="space-y-2 md:space-y-3 border-t border-gray-200 pt-3">
+                    <div className="space-y-2 md:space-y-3 rounded-xl border border-slate-200 p-3 md:p-4 bg-white">
+                      <h4 className="font-semibold text-slate-900">Training Details</h4>
                       {selectedEvent.training_snapshot.objectives && selectedEvent.training_snapshot.objectives.length > 0 ? (
                         <div className="text-xs md:text-sm">
                           <h5 className="font-semibold text-gray-900 mb-1">Learning Objectives</h5>
@@ -677,10 +688,10 @@ export default function CustomCalendar() {
                     </div>
                   )}
                   {selectedEvent.attachments && selectedEvent.attachments.length > 0 && (
-                    <div>
+                    <div className="rounded-xl border border-slate-200 p-3 md:p-4 bg-white">
                       <h4 className="font-semibold text-gray-900 mb-1 md:mb-2 flex items-center text-xs md:text-sm">
                         <FiPaperclip className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                        Attachments
+                        Brochures & Attachments
                       </h4>
                       <div className="space-y-1 md:space-y-2">
                         {selectedEvent.attachments.map((attachment, index) => (
@@ -714,6 +725,21 @@ export default function CustomCalendar() {
                       </div>
                     </div>
                   )}
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-200 flex flex-col-reverse sm:flex-row sm:justify-between gap-2">
+                  <button
+                    onClick={() => setSelectedEvent(null)}
+                    className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                  >
+                    Close
+                  </button>
+                  <a
+                    href="/contact"
+                    className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+                  >
+                    Enquire About This Training
+                  </a>
                 </div>
               </div>
               </div>
