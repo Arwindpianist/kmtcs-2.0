@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createEnquiry } from '@/app/services/supabaseService';
+import { createEnquiry } from '@/app/services/enquiryService';
 
 interface ConsultingService {
   id: string;
@@ -13,7 +13,7 @@ interface ConsultingService {
   service_contents: string;
   target_audience: string;
   methodology: string;
-  deliverables: string;
+  deliverables: string[];
   status: boolean;
   created_at: string;
 }

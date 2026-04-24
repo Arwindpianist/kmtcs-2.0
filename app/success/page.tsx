@@ -1,21 +1,19 @@
 import { Suspense } from 'react';
 import SuccessClientPage from './SuccessClientPage';
+import { PaymentVerificationSkeleton } from '@/app/components/skeletons/PageSkeletons';
 
 function Loading() {
-  return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      <p className="ml-4 text-lg">Verifying your payment...</p>
-    </div>
-  );
+  return <PaymentVerificationSkeleton />;
 }
 
 export default function SuccessPageContainer() {
   return (
-    <div className="container mx-auto px-4 py-16 text-center">
+    <main className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-16 text-center">
       <Suspense fallback={<Loading />}>
         <SuccessClientPage />
       </Suspense>
-    </div>
+      </div>
+    </main>
   );
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import { runNeonQuery } from '@/app/lib/db/neon';
+import { hashPassword } from '@/app/lib/auth/password';
 
 export async function GET() {
   return await setupAdminUsers();
@@ -11,7 +12,10 @@ export async function POST() {
 
 async function setupAdminUsers() {
   try {
-    const supabase = createSupabaseServerClient();
+    await runNeonQuery('CREATE EXTENSION IF NOT EXISTS pgcrypto');
+    await runNeonQuery('ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT');
+    const defaultPassword = process.env.DEFAULT_ADMIN_PASSWORD || 'ChangeMeNow123!';
+    const passwordHash = await hashPassword(defaultPassword);
     
     // Define the admin users based on your Supabase Auth users
     const adminUsers = [
@@ -32,77 +36,43 @@ async function setupAdminUsers() {
     for (const adminUser of adminUsers) {
       try {
         // Check if user already exists
-        const { data: existingUser, error: checkError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', adminUser.id)
-          .single();
-        
-        if (checkError && checkError.code !== 'PGRST116') {
-          results.push({
-            email: adminUser.email,
-            success: false,
-            error: 'Error checking existing user: ' + checkError.message
-          });
-          continue;
-        }
+        const existingResult = await runNeonQuery<Record<string, unknown>>(
+          'SELECT * FROM users WHERE id = $1 LIMIT 1',
+          [adminUser.id]
+        );
+        const existingUser = existingResult.rows[0];
         
         if (existingUser) {
-          // Update existing user to admin role
-          const { data: updatedUser, error: updateError } = await supabase
-            .from('users')
-            .update({
-              role: 'admin',
-              full_name: adminUser.full_name,
-              last_sign_in: new Date().toISOString()
-            })
-            .eq('id', adminUser.id)
-            .select()
-            .single();
-          
-          if (updateError) {
-            results.push({
-              email: adminUser.email,
-              success: false,
-              error: 'Error updating user: ' + updateError.message
-            });
-          } else {
-            results.push({
-              email: adminUser.email,
-              success: true,
-              action: 'updated',
-              user: updatedUser
-            });
-          }
+          const updatedResult = await runNeonQuery<Record<string, unknown>>(
+            `
+            UPDATE users
+            SET role = 'admin', full_name = $1, last_sign_in = NOW(), password_hash = $2
+            WHERE id = $3
+            RETURNING *
+            `,
+            [adminUser.full_name, passwordHash, adminUser.id]
+          );
+          results.push({
+            email: adminUser.email,
+            success: true,
+            action: 'updated',
+            user: updatedResult.rows[0] ?? null
+          });
         } else {
-          // Create new admin user
-          const { data: newUser, error: createError } = await supabase
-            .from('users')
-            .insert({
-              id: adminUser.id,
-              email: adminUser.email,
-              role: 'admin',
-              full_name: adminUser.full_name,
-              created_at: new Date().toISOString(),
-              last_sign_in: new Date().toISOString()
-            })
-            .select()
-            .single();
-          
-          if (createError) {
-            results.push({
-              email: adminUser.email,
-              success: false,
-              error: 'Error creating user: ' + createError.message
-            });
-          } else {
-            results.push({
-              email: adminUser.email,
-              success: true,
-              action: 'created',
-              user: newUser
-            });
-          }
+          const createdResult = await runNeonQuery<Record<string, unknown>>(
+            `
+            INSERT INTO users (id, email, role, full_name, password_hash, created_at, last_sign_in)
+            VALUES ($1, $2, 'admin', $3, $4, NOW(), NOW())
+            RETURNING *
+            `,
+            [adminUser.id, adminUser.email, adminUser.full_name, passwordHash]
+          );
+          results.push({
+            email: adminUser.email,
+            success: true,
+            action: 'created',
+            user: createdResult.rows[0] ?? null
+          });
         }
       } catch (error) {
         results.push({

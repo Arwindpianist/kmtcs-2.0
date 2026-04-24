@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/app/lib/supabase';
+import { getSession, signIn, signOut } from 'next-auth/react';
 import { AdminAuthService } from '@/app/lib/adminAuth';
 
 export default function LoginPage() {
@@ -18,7 +18,7 @@ export default function LoginPage() {
     
     // Check if user is already logged in
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const session = await getSession();
       if (session?.user) {
         // Check if the logged-in user is an admin
         const isAdmin = await AdminAuthService.isAdmin();
@@ -26,7 +26,7 @@ export default function LoginPage() {
           router.push('/admin');
         } else {
           // Not an admin, sign them out
-          await supabase.auth.signOut();
+          await signOut({ redirect: false });
         }
       }
     };
@@ -40,27 +40,28 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Sign in with Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const result = await signIn('credentials', {
         email,
         password,
+        redirect: false,
       });
 
-      if (error) {
-        setError(error.message);
+      if (!result || result.error) {
+        setError(result?.error || 'Invalid email or password');
         return;
       }
 
-      if (data.user) {
+      const session = await getSession();
+      if (session?.user?.id) {
         // Check if the user is an admin using AdminAuthService
         const isAdmin = await AdminAuthService.isAdmin();
         if (isAdmin) {
           // Update last sign in
-          await AdminAuthService.updateLastSignIn(data.user.id);
+          await AdminAuthService.updateLastSignIn(session.user.id);
           router.push('/admin');
         } else {
           // Not an admin, sign them out and show error
-          await supabase.auth.signOut();
+          await signOut({ redirect: false });
           setError('Access denied. Only administrators can access this area.');
         }
       }
@@ -140,6 +141,11 @@ export default function LoginPage() {
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
+            </div>
+            <div className="text-center">
+              <a href="/reset-password" className="text-sm text-blue-600 hover:text-blue-700 hover:underline">
+                Forgot password?
+              </a>
             </div>
           </form>
         </div>

@@ -6,6 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
 import type { Metadata } from 'next'
 import LayoutWrapper from './components/LayoutWrapper'
+import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -349,6 +350,14 @@ export default function RootLayout({
         <LayoutWrapper>
           {children}
         </LayoutWrapper>
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          toastOptions={{
+            className: 'text-sm',
+          }}
+        />
         <SpeedInsights />
         <Analytics />
       </body>

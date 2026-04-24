@@ -5,10 +5,10 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiMail, FiPhone, FiX, FiAward, FiBookOpen, FiBriefcase, FiUser } from 'react-icons/fi';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { logger } from '@/app/lib/logger';
+import { PublicListingPageSkeleton } from '@/app/components/skeletons/PageSkeletons';
 
 export interface Consultant {
   id: string;
@@ -28,52 +28,46 @@ export default function ConsultantsPage() {
   const [consultants, setConsultants] = useState<Consultant[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null);
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
     const fetchConsultants = async () => {
-      const { data, error } = await supabase
-        .from('consultants')
-        .select('*')
-        .eq('status', true)
-        .order('name');
-      
-      if (error) {
+      try {
+        const response = await fetch('/api/consultants');
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || 'Failed to load consultants');
+        }
+        const active = (payload.data || []).filter((consultant: Consultant) => consultant.status);
+        active.sort((a: Consultant, b: Consultant) => a.name.localeCompare(b.name));
+        setConsultants(active);
+      } catch (error) {
         logger.error('Error fetching consultants:', error);
-      } else {
-        setConsultants(data);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchConsultants();
-  }, [supabase]);
+  }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading consultants...</p>
-        </div>
-      </div>
-    );
+    return <PublicListingPageSkeleton />;
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white overflow-hidden">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <main className="bg-background min-h-screen">
+      <div className="border-b border-border/60 bg-muted/30">
+        <div className="max-w-7xl mx-auto py-14 px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">Our Expert Consultants</h1>
-            <p className="mt-4 text-xl text-slate-200">
-              Meet our team of highly qualified professionals dedicated to your success.
+            <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">Our Expert Consultants</h1>
+            <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
+              Meet our highly qualified professionals dedicated to helping your organization perform at its best.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="py-20 bg-white">
+      <div className="py-14">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {consultants.map(consultant => (
@@ -95,7 +89,7 @@ export default function ConsultantsPage() {
           />
         )}
       </AnimatePresence>
-    </div>
+    </main>
   );
 }
 
@@ -103,7 +97,7 @@ export default function ConsultantsPage() {
 function ConsultantCard({ consultant, onSelect }: { consultant: Consultant; onSelect: () => void; }) {
   return (
     <Card
-      className="text-center cursor-pointer hover:shadow-xl transition-all duration-300 h-full flex flex-col"
+      className="text-center cursor-pointer hover:shadow-md transition-all duration-300 h-full flex flex-col border-border/70"
       onClick={onSelect}
     >
       <CardContent className="p-6 flex-grow flex flex-col">
@@ -123,7 +117,7 @@ function ConsultantCard({ consultant, onSelect }: { consultant: Consultant; onSe
               />
             </div>
             <h3 className="text-xl font-bold text-foreground mb-2">{consultant.name}</h3>
-            <p className="text-primary font-semibold text-lg mb-3">{consultant.role}</p>
+            <p className="text-primary font-semibold text-base mb-3">{consultant.role}</p>
             <p className="text-muted-foreground text-sm leading-relaxed">{consultant.short_bio}</p>
           </motion.div>
           <div className="mt-4 pt-4 border-t border-border">
@@ -141,7 +135,7 @@ function ConsultantCard({ consultant, onSelect }: { consultant: Consultant; onSe
 function ConsultantModal({ consultant, onClose }: { consultant: Consultant; onClose: () => void; }) {
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/55 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <motion.div
@@ -155,11 +149,11 @@ function ConsultantModal({ consultant, onClose }: { consultant: Consultant; onCl
           exit={{ scale: 0.9, opacity: 0 }}
         >
           <Card
-            className="w-full max-w-4xl max-h-[90vh] overflow-y-auto border-4 shadow-2xl"
+            className="w-full max-w-4xl max-h-[90vh] overflow-y-auto border shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-6 lg:p-8 rounded-t-lg relative overflow-hidden">
+        <div className="bg-primary text-primary-foreground p-6 lg:p-8 rounded-t-lg relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">
           <div className="flex justify-between items-start">
@@ -177,7 +171,7 @@ function ConsultantModal({ consultant, onClose }: { consultant: Consultant; onCl
               </div>
               <div>
                 <h2 className="text-3xl font-bold">{consultant.name}</h2>
-                <p className="text-blue-100 text-xl font-semibold">{consultant.role}</p>
+                <p className="text-primary-foreground/90 text-xl font-semibold">{consultant.role}</p>
               </div>
             </div>
             <Button
@@ -193,7 +187,7 @@ function ConsultantModal({ consultant, onClose }: { consultant: Consultant; onCl
         </div>
 
         {/* Content */}
-        <CardContent className="p-6 lg:p-8 bg-gradient-to-br from-gray-50 to-white">
+        <CardContent className="p-6 lg:p-8 bg-background">
           {/* Academic Qualifications */}
           {consultant.academic_qualifications && (
             <motion.div

@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiCalendar, FiClock, FiMapPin, FiPaperclip, FiX, FiChevronLeft, FiChevronRight, FiInfo } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiMapPin, FiPaperclip, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 interface CalendarEvent {
   id: string;
   title: string;
   description?: string;
+  duration?: string;
   start_time: string;
   end_time: string;
   location?: string;
@@ -18,6 +19,17 @@ interface CalendarEvent {
   }>;
   all_day: boolean;
   recurrence?: string;
+  training_snapshot?: {
+    title?: string;
+    description?: string;
+    duration?: string;
+    objectives?: string[];
+    course_contents?: string;
+    target_audience?: string;
+    methodology?: string;
+    certification?: string;
+    hrdcorp_approval_no?: string;
+  };
   created_time: string;
   modified_time: string;
 }
@@ -30,7 +42,6 @@ interface DayData {
   isCurrentMonth: boolean;
   isToday: boolean;
   events: CalendarEvent[];
-  eventSpans?: { [eventId: string]: { startDay: number, endDay: number, span: number } };
 }
 
 export default function CustomCalendar() {
@@ -57,7 +68,6 @@ export default function CustomCalendar() {
     try {
       setLoading(true);
       
-      // Fetch all events since Zoho API doesn't support date filtering
       const response = await fetch('/api/calendar-events');
       
       if (!response.ok) {
@@ -75,7 +85,7 @@ export default function CustomCalendar() {
       }
       
       setError(null);
-    } catch (err) {
+    } catch {
       // On error, show empty state instead of sample events
       setError('Failed to load calendar events');
       setEvents([]);
@@ -84,65 +94,39 @@ export default function CustomCalendar() {
     }
   };
 
-  // Utility to get all dates between two dates (inclusive)
-  function getDatesBetween(start: Date, end: Date) {
-    const dates = [];
-    let current = new Date(start);
-    while (current <= end) {
-      dates.push(new Date(current));
-      current.setDate(current.getDate() + 1);
-    }
-    return dates;
-  }
-
   const getDaysInMonth = (date: Date): DayData[] => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
     
     const days: DayData[] = [];
     const today = new Date();
     
-    // Create a map of events for each day - only assign events to their start day
+    // Create a map of events for each day and include full multi-day spans.
     const dayEventMap: { [dayIndex: number]: CalendarEvent[] } = {};
-    const eventSpans: { [eventId: string]: { startDay: number, endDay: number, span: number } } = {};
     
     events.forEach(event => {
       const start = new Date(event.start_time);
       const end = new Date(event.end_time);
-      
-      // Find the grid positions for the start and end dates of this event
-      let startGridDay = -1;
-      let endGridDay = -1;
-      
+
+      const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
       for (let i = 0; i < 42; i++) {
         const gridDate = new Date(startDate);
         gridDate.setDate(startDate.getDate() + i);
-        
-        if (isSameDate(gridDate, start)) {
-          startGridDay = i;
+
+        const gridDay = new Date(gridDate.getFullYear(), gridDate.getMonth(), gridDate.getDate());
+        const inRange = gridDay >= startDay && gridDay <= endDay;
+
+        if (inRange) {
+          if (!dayEventMap[i]) {
+            dayEventMap[i] = [];
+          }
+          dayEventMap[i].push(event);
         }
-        if (isSameDate(gridDate, end)) {
-          endGridDay = i;
-        }
-      }
-      
-      // If we found the start day, assign the event only to the start day
-      if (startGridDay !== -1) {
-        // Calculate the actual number of days the event spans (end exclusive)
-        const actualDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-        const span = endGridDay !== -1 ? endGridDay - startGridDay + 1 : 1;
-        eventSpans[event.id] = { startDay: startGridDay, endDay: endGridDay !== -1 ? endGridDay : startGridDay, span: actualDays };
-        
-        
-        // Only assign event to the start day
-        if (!dayEventMap[startGridDay]) {
-          dayEventMap[startGridDay] = [];
-        }
-        dayEventMap[startGridDay].push(event);
       }
     });
 
@@ -163,7 +147,6 @@ export default function CustomCalendar() {
         isCurrentMonth: currentDate.getMonth() === month,
         isToday,
         events: dayEvents,
-        eventSpans
       });
     }
     
@@ -209,6 +192,14 @@ export default function CustomCalendar() {
   };
 
   const days = getDaysInMonth(currentDate);
+  const upcomingEvents = useMemo(
+    () =>
+      [...events]
+        .filter((event) => new Date(event.end_time) >= new Date())
+        .sort((firstEvent, secondEvent) => new Date(firstEvent.start_time).getTime() - new Date(secondEvent.start_time).getTime())
+        .slice(0, 6),
+    [events]
+  );
 
   if (error) {
     return (
@@ -229,9 +220,38 @@ export default function CustomCalendar() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden relative">
+    <div className="w-full max-w-7xl mx-auto bg-white rounded-xl border border-slate-200 overflow-hidden relative">
+      <div className="border-b border-slate-200 bg-slate-50 p-4 md:p-5">
+        <h3 className="text-base md:text-lg font-semibold text-slate-900 mb-2">Upcoming Sessions</h3>
+        {upcomingEvents.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {upcomingEvents.map((event) => (
+              <button
+                key={`upcoming-${event.id}`}
+                type="button"
+                onClick={() => setSelectedEvent(event)}
+                className="text-left rounded-xl border border-slate-200 bg-white p-3 hover:border-slate-300 hover:bg-slate-50 transition-colors"
+              >
+                <p className="text-sm font-semibold text-gray-900 line-clamp-2">{event.title}</p>
+                <p className="text-xs text-gray-600 mt-1">
+                  {formatDate(event.start_time)}
+                </p>
+                {event.location ? <p className="text-xs text-gray-500 line-clamp-1">{event.location}</p> : null}
+                {(event.duration || event.training_snapshot?.duration) ? (
+                  <span className="inline-flex mt-2 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-700">
+                    {event.duration || event.training_snapshot?.duration}
+                  </span>
+                ) : null}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">No upcoming sessions published yet.</p>
+        )}
+      </div>
+
       {/* Calendar Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-2 md:p-4">
+      <div className="bg-[#0f172a] text-white p-2 md:p-3">
         <div className="flex items-center justify-between">
           <button
             onClick={prevMonth}
@@ -241,12 +261,12 @@ export default function CustomCalendar() {
             <FiChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
           </button>
           <div className="flex flex-col items-center">
-            <h2 className="text-lg md:text-2xl font-bold text-center">
+            <h2 className="text-base md:text-xl font-semibold text-center">
               {months[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
             <button
               onClick={goToToday}
-              className="mt-1 px-2 py-0.5 bg-white/20 hover:bg-white/30 rounded-lg text-xs md:text-sm font-medium transition-colors"
+              className="mt-1 px-2 py-0.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs md:text-sm font-medium transition-colors"
             >
               Today
             </button>
@@ -261,7 +281,7 @@ export default function CustomCalendar() {
         </div>
       </div>
       {/* Days of Week Header */}
-      <div className="grid grid-cols-7 bg-gray-50 border-b">
+      <div className="grid grid-cols-7 bg-slate-50 border-b border-slate-200">
         {daysOfWeek.map(day => (
           <div key={day} className="p-1 md:p-2 text-center text-[10px] md:text-xs font-semibold text-gray-600 uppercase tracking-wide">
             {day}
@@ -269,13 +289,13 @@ export default function CustomCalendar() {
         ))}
       </div>
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-px bg-gray-200">
+      <div className="grid grid-cols-7 gap-px bg-slate-200">
         {days.map((day, index) => (
           <div
             key={index}
-            className={`min-h-[60px] sm:min-h-[80px] md:min-h-[90px] lg:min-h-[100px] p-0.5 sm:p-1 md:p-2 border-r border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${
-              !day.isCurrentMonth ? 'bg-gray-50/50' : 'bg-white'
-            } ${day.isToday ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-200' : ''}`}
+            className={`min-h-[62px] sm:min-h-[82px] md:min-h-[96px] lg:min-h-[106px] p-0.5 sm:p-1 md:p-2 border-r border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer ${
+              !day.isCurrentMonth ? 'bg-slate-50/60' : 'bg-white'
+            } ${day.isToday ? 'bg-slate-100 border-slate-300 ring-1 ring-slate-300' : ''}`}
             style={{ position: 'relative' }}
             onClick={() => {
               if (day.events.length > 0) {
@@ -290,7 +310,7 @@ export default function CustomCalendar() {
               {day.day}
               {day.events.length > 0 && (
                 <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full mt-0.5 mx-auto ${
-                  day.isToday ? 'bg-green-500' : 'bg-blue-500'
+                  day.isToday ? 'bg-slate-700' : 'bg-slate-500'
                 }`}></div>
               )}
             </div>
@@ -303,36 +323,30 @@ export default function CustomCalendar() {
                 const isTodayEvent = day.isToday;
                 const isEventStartDay = isSameDate(day.date, eventStart);
                 const isEventEndDay = isSameDate(day.date, eventEnd);
-                const eventSpan = day.eventSpans?.[event.id];
                 return (
                   <div
                     key={event.id + '-' + idx}
-                    className={`border rounded px-1.5 py-1 md:px-2 md:py-2 cursor-pointer transition-colors text-[11px] md:text-sm ${
+                    className={`border rounded px-1.5 py-0.5 md:px-2 md:py-1 cursor-pointer transition-colors text-[10px] md:text-xs ${
                       isTodayEvent || (isMultiDay && day.date >= eventStart && day.date <= eventEnd)
-                        ? 'bg-gradient-to-r from-green-100 to-emerald-100 border-green-400 hover:from-green-200 hover:to-emerald-200 shadow-sm'
-                        : 'bg-blue-100 border-blue-300 hover:bg-blue-200'
+                        ? 'bg-slate-200 border-slate-400 hover:bg-slate-300 shadow-sm'
+                        : 'bg-slate-100 border-slate-300 hover:bg-slate-200'
                     }`}
                     style={{
                       borderRadius: isMultiDay ? 
                         (isEventStartDay ? '8px 0 0 8px' : isEventEndDay ? '0 8px 8px 0' : '0') : 
                         '8px',
-                      gridColumn: eventSpan && isMultiDay ? `span ${Math.min(eventSpan.span, 7)}` : 'span 1',
-                      width: eventSpan && isMultiDay ? `calc(${Math.min(eventSpan.span, 7)}00%)` : '100%',
-                      position: eventSpan && isMultiDay ? 'absolute' : 'relative',
-                      left: eventSpan && isMultiDay ? '0' : 'auto',
-                      right: eventSpan && isMultiDay ? '0' : 'auto',
-                      zIndex: eventSpan && isMultiDay ? 10 : 1,
-                      height: '2em',
+                      zIndex: isMultiDay ? 10 : 1,
+                      height: '1.7em',
                       overflow: 'hidden',
                     }}
-                    title={`${event.title}${isMultiDay ? ` (${eventSpan?.span || 1} days)` : ''}${isTodayEvent ? ' (Today)' : ''}`}
+                    title={`${event.title}${isMultiDay ? ` (${Math.max(1, Math.ceil((eventEnd.getTime() - eventStart.getTime()) / (1000 * 60 * 60 * 24)) + 1)} days)` : ''}${isTodayEvent ? ' (Today)' : ''}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedEvent(event);
                     }}
                   >
                     <div className={`font-medium leading-tight ${
-                      isTodayEvent || (isMultiDay && day.date >= eventStart && day.date <= eventEnd) ? 'text-green-800' : 'text-blue-800'
+                      isTodayEvent || (isMultiDay && day.date >= eventStart && day.date <= eventEnd) ? 'text-slate-900' : 'text-slate-800'
                     }`}>
                       {isEventStartDay ? (
                         <div>
@@ -341,9 +355,9 @@ export default function CustomCalendar() {
                           </div>
                           {isMultiDay && (
                             <div className={`text-[10px] md:text-xs mt-0.5 ${
-                              isTodayEvent || (isMultiDay && day.date >= eventStart && day.date <= eventEnd) ? 'text-green-600' : 'text-blue-600'
+                              isTodayEvent || (isMultiDay && day.date >= eventStart && day.date <= eventEnd) ? 'text-slate-700' : 'text-slate-600'
                             }`}>
-                              {eventSpan?.span || 1} day{(eventSpan?.span || 1) !== 1 ? 's' : ''}
+                              {Math.max(1, Math.ceil((eventEnd.getTime() - eventStart.getTime()) / (1000 * 60 * 60 * 24)) + 1)} day{Math.max(1, Math.ceil((eventEnd.getTime() - eventStart.getTime()) / (1000 * 60 * 60 * 24)) + 1) !== 1 ? 's' : ''}
                             </div>
                           )}
                           {!event.all_day && (
@@ -351,6 +365,11 @@ export default function CustomCalendar() {
                               {formatTime(event.start_time)}
                             </div>
                           )}
+                          {(event.duration || event.training_snapshot?.duration) ? (
+                            <div className="text-[10px] md:text-xs text-slate-700 mt-0.5">
+                              {event.duration || event.training_snapshot?.duration}
+                            </div>
+                          ) : null}
                         </div>
                       ) : (
                         <div className="text-center text-gray-400">
@@ -364,7 +383,7 @@ export default function CustomCalendar() {
               {/* Show indicator for additional events */}
               {day.events.length > 2 && (
                 <div 
-                  className="bg-blue-100 text-blue-700 text-[10px] md:text-xs px-1.5 py-0.5 rounded-full cursor-pointer hover:bg-blue-200 transition-colors text-center"
+                  className="bg-slate-100 text-slate-700 text-[10px] md:text-xs px-1.5 py-0.5 rounded-full cursor-pointer hover:bg-slate-200 transition-colors text-center"
                   onClick={(e) => {
                     e.stopPropagation();
                     setDayModal({ date: day.date, events: day.events });
@@ -378,13 +397,13 @@ export default function CustomCalendar() {
         ))}
       </div>
       {/* Legend */}
-      <div className="flex flex-wrap justify-center items-center gap-4 mt-4 mb-2 text-xs md:text-sm">
+      <div className="flex flex-wrap justify-center items-center gap-4 mt-4 mb-2 text-xs md:text-sm px-3">
         <div className="flex items-center gap-1.5">
-          <span className="inline-block w-3 h-3 md:w-4 md:h-4 rounded bg-green-200 border border-green-400"></span>
+          <span className="inline-block w-3 h-3 md:w-4 md:h-4 rounded bg-slate-300 border border-slate-500"></span>
           <span className="text-gray-700">Ongoing</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="inline-block w-3 h-3 md:w-4 md:h-4 rounded bg-blue-200 border border-blue-400"></span>
+          <span className="inline-block w-3 h-3 md:w-4 md:h-4 rounded bg-slate-200 border border-slate-400"></span>
           <span className="text-gray-700">Upcoming</span>
         </div>
       </div>
@@ -392,18 +411,18 @@ export default function CustomCalendar() {
 
       {/* Empty State */}
       {!loading && !error && events.length === 0 && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200 p-6 md:p-8 text-center">
+        <div className="bg-slate-50 border-t border-slate-200 p-6 md:p-8 text-center">
           <div className="flex flex-col items-center text-gray-700">
             <FiCalendar className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mb-4" />
             <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
               No Upcoming Public Training Sessions
             </h3>
             <p className="text-sm md:text-base text-gray-600 max-w-2xl mb-4">
-              There are currently no upcoming public training sessions scheduled. Please contact us for private or on-demand training programs tailored to your organization's needs.
+              There are currently no upcoming public training sessions scheduled. Please contact us for private or on-demand training programs tailored to your organization&apos;s needs.
             </p>
             <a
               href="/contact"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-slate-900 text-white font-medium rounded-lg hover:bg-slate-800 transition-colors"
             >
               Contact Us
             </a>
@@ -415,7 +434,7 @@ export default function CustomCalendar() {
       <AnimatePresence>
         {dayModal && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
             onClick={() => setDayModal(null)}
           >
             <motion.div
@@ -424,7 +443,7 @@ export default function CustomCalendar() {
               exit={{ scale: 0.9, opacity: 0 }}
             >
               <div
-                className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+                className="bg-white rounded-xl border border-slate-200 shadow-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
               >
               <div className="p-4 md:p-6">
@@ -450,10 +469,10 @@ export default function CustomCalendar() {
                   </button>
                 </div>
                 <div className="space-y-2 md:space-y-4">
-                  {dayModal.events.map((event, index) => (
+                  {dayModal.events.map((event) => (
                     <div
                       key={event.id}
-                      className="border border-gray-200 rounded-xl p-2 md:p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="border border-slate-200 rounded-xl p-2 md:p-4 hover:bg-slate-50 transition-colors cursor-pointer"
                       onClick={() => {
                         setSelectedEvent(event);
                         setDayModal(null);
@@ -503,6 +522,11 @@ export default function CustomCalendar() {
                             {event.description && (
                               <p className="text-gray-700 overflow-hidden text-ellipsis display-webkit-box -webkit-line-clamp-2 -webkit-box-orient-vertical">{event.description}</p>
                             )}
+                            {(event.duration || event.training_snapshot?.duration) ? (
+                              <p className="text-xs text-slate-700 font-medium">
+                                Duration: {event.duration || event.training_snapshot?.duration}
+                              </p>
+                            ) : null}
                           </div>
                         </div>
                         {event.attachments && event.attachments.length > 0 && (
@@ -525,7 +549,7 @@ export default function CustomCalendar() {
       <AnimatePresence>
         {selectedEvent && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
             onClick={() => setSelectedEvent(null)}
           >
             <motion.div
@@ -534,7 +558,7 @@ export default function CustomCalendar() {
               exit={{ scale: 0.9, opacity: 0 }}
             >
               <div
-                className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto"
+                className="bg-white rounded-xl border border-slate-200 shadow-lg max-w-lg w-full max-h-[80vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
               >
               <div className="p-4 md:p-6">
@@ -589,9 +613,67 @@ export default function CustomCalendar() {
                       <span>{selectedEvent.location}</span>
                     </div>
                   )}
+                  {(selectedEvent.duration || selectedEvent.training_snapshot?.duration) && (
+                    <div className="text-gray-600 text-xs md:text-sm">
+                      <span className="font-medium">Duration: </span>
+                      <span>{selectedEvent.duration || selectedEvent.training_snapshot?.duration}</span>
+                    </div>
+                  )}
                   {selectedEvent.description && (
                     <div className="text-gray-700 text-xs md:text-sm">
                       <p className="whitespace-pre-wrap">{selectedEvent.description}</p>
+                    </div>
+                  )}
+                  {selectedEvent.training_snapshot && (
+                    <div className="space-y-2 md:space-y-3 border-t border-gray-200 pt-3">
+                      {selectedEvent.training_snapshot.objectives && selectedEvent.training_snapshot.objectives.length > 0 ? (
+                        <div className="text-xs md:text-sm">
+                          <h5 className="font-semibold text-gray-900 mb-1">Learning Objectives</h5>
+                          <ul className="list-disc list-inside text-gray-700 space-y-1">
+                            {selectedEvent.training_snapshot.objectives.map((objective, objectiveIndex) => (
+                              <li key={`${selectedEvent.id}-objective-${objectiveIndex}`}>{objective}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+                      {selectedEvent.training_snapshot.course_contents ? (
+                        <div className="text-xs md:text-sm">
+                          <h5 className="font-semibold text-gray-900 mb-1">Course Contents</h5>
+                          <p className="text-gray-700 whitespace-pre-wrap">
+                            {selectedEvent.training_snapshot.course_contents}
+                          </p>
+                        </div>
+                      ) : null}
+                      {selectedEvent.training_snapshot.target_audience ? (
+                        <div className="text-xs md:text-sm">
+                          <h5 className="font-semibold text-gray-900 mb-1">Target Audience</h5>
+                          <p className="text-gray-700 whitespace-pre-wrap">
+                            {selectedEvent.training_snapshot.target_audience}
+                          </p>
+                        </div>
+                      ) : null}
+                      {selectedEvent.training_snapshot.methodology ? (
+                        <div className="text-xs md:text-sm">
+                          <h5 className="font-semibold text-gray-900 mb-1">Methodology</h5>
+                          <p className="text-gray-700 whitespace-pre-wrap">
+                            {selectedEvent.training_snapshot.methodology}
+                          </p>
+                        </div>
+                      ) : null}
+                      {selectedEvent.training_snapshot.certification ? (
+                        <div className="text-xs md:text-sm">
+                          <h5 className="font-semibold text-gray-900 mb-1">Certification</h5>
+                          <p className="text-gray-700 whitespace-pre-wrap">
+                            {selectedEvent.training_snapshot.certification}
+                          </p>
+                        </div>
+                      ) : null}
+                      {selectedEvent.training_snapshot.hrdcorp_approval_no ? (
+                        <div className="text-xs md:text-sm">
+                          <h5 className="font-semibold text-gray-900 mb-1">HRDCorp Approval No</h5>
+                          <p className="text-gray-700">{selectedEvent.training_snapshot.hrdcorp_approval_no}</p>
+                        </div>
+                      ) : null}
                     </div>
                   )}
                   {selectedEvent.attachments && selectedEvent.attachments.length > 0 && (
@@ -602,18 +684,32 @@ export default function CustomCalendar() {
                       </h4>
                       <div className="space-y-1 md:space-y-2">
                         {selectedEvent.attachments.map((attachment, index) => (
-                          <a
+                          <div
                             key={index}
-                            href={attachment.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block p-2 md:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-xs md:text-sm text-blue-600 border border-gray-200"
+                            className="block p-2 md:p-3 bg-gray-50 rounded-lg text-xs md:text-sm border border-gray-200"
                           >
-                            <div className="font-medium">{attachment.name}</div>
-                            <div className="text-gray-500 text-[10px] md:text-xs">
+                            <div className="font-medium text-slate-900">{attachment.name}</div>
+                            <div className="text-gray-500 text-[10px] md:text-xs mb-2">
                               {(attachment.size / 1024).toFixed(1)} KB
                             </div>
-                          </a>
+                            <div className="flex flex-wrap gap-2">
+                              <a
+                                href={attachment.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center rounded-md bg-slate-900 px-2 py-1 text-[11px] text-white hover:bg-slate-800"
+                              >
+                                View
+                              </a>
+                              <a
+                                href={attachment.url}
+                                download={attachment.name}
+                                className="inline-flex items-center rounded-md border border-slate-500 px-2 py-1 text-[11px] text-slate-700 hover:bg-slate-100"
+                              >
+                                Download
+                              </a>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabase } from '@/app/lib/supabase';
+import { getSession } from 'next-auth/react';
 import { AdminAuthService } from '@/app/lib/adminAuth';
 import { logger } from '@/app/lib/logger';
 import { 
@@ -14,11 +14,14 @@ import {
   BriefcaseIcon, 
   EnvelopeIcon, 
   UsersIcon,
+  CalendarDaysIcon,
+  CreditCardIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import type { ReactNode } from 'react';
+import { AdminAuthSkeleton } from '@/app/components/skeletons/PageSkeletons';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -35,6 +38,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Check if current route should skip admin verification
   const shouldSkipAdminCheck = pathname?.includes('/admin/technical-trainings') ||
                               pathname?.includes('/admin/non-technical-trainings') ||
+                              pathname?.includes('/admin/calendar') ||
+                              pathname?.includes('/admin/payment-links') ||
                               pathname?.includes('/admin/services') ||
                               pathname?.includes('/admin/consultants');
 
@@ -44,7 +49,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         logger.log('AdminLayout: Checking authentication...');
         
         // Get current session
-        const { data: { session } } = await supabase.auth.getSession();
+        const session = await getSession();
         
         if (session?.user) {
           logger.log('AdminLayout: Session found for user:', session.user.email);
@@ -52,7 +57,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           // Set basic user info from session first
           setCurrentAdmin({
             email: session.user.email || '',
-            name: session.user.user_metadata?.full_name || session.user.email || ''
+            name: session.user.name || session.user.email || ''
           });
           
           // If this is one of the pages that should skip admin check, just authorize
@@ -89,14 +94,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     name: adminUser.full_name as string
                   }));
                 }
-              } catch (adminDataError) {
+              } catch {
                 logger.log('AdminLayout: Could not get detailed admin data, using session data');
               }
               
               setIsAuthorized(true);
             } else {
               logger.log('AdminLayout: User is not an admin, signing out...');
-              await supabase.auth.signOut();
+              await AdminAuthService.signOut();
               setIsAuthorized(false);
               setCurrentAdmin(null);
               router.push('/login');
@@ -125,58 +130,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     };
 
     checkAuth();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        logger.log('AdminLayout: Auth state change:', event, session?.user?.email);
-        
-        if (event === 'SIGNED_OUT') {
-          setIsAuthorized(false);
-          setCurrentAdmin(null);
-          router.push('/login');
-        } else if (event === 'SIGNED_IN' && session?.user) {
-          // Check if current route should skip admin verification
-          const currentPath = window.location.pathname;
-          const shouldSkip = currentPath.includes('/admin/technical-trainings') ||
-                           currentPath.includes('/admin/non-technical-trainings') ||
-                           currentPath.includes('/admin/services') ||
-                           currentPath.includes('/admin/consultants');
-          
-          if (shouldSkip) {
-            logger.log('AdminLayout: Skipping admin check for auth state change');
-            setIsAuthorized(true);
-            setCurrentAdmin({
-              email: session.user.email || '',
-              name: session.user.user_metadata?.full_name || session.user.email || ''
-            });
-          } else {
-            try {
-              const isAdmin = await AdminAuthService.isAdmin();
-              if (isAdmin) {
-                const adminUser = await AdminAuthService.getCurrentAdmin();
-                setIsAuthorized(true);
-                setCurrentAdmin({
-                  email: session.user.email || '',
-                  name: adminUser?.full_name || session.user.user_metadata?.full_name || session.user.email || ''
-                });
-              } else {
-                await supabase.auth.signOut();
-                router.push('/login');
-              }
-            } catch (error) {
-              logger.error('AdminLayout: Auth state change error:', error);
-              // If admin check fails during auth state change, redirect to login
-              await supabase.auth.signOut();
-              router.push('/login');
-            }
-          }
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, [router]);
+  }, [router, shouldSkipAdminCheck]);
 
   const handleSignOut = async () => {
     try {
@@ -190,14 +144,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking authorization...</p>
-        </div>
-      </div>
-    );
+    return <AdminAuthSkeleton />;
   }
 
   if (!isAuthorized) {
@@ -299,6 +246,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 >
                   <AcademicCapIcon className="w-5 h-5 mr-3" />
                   Non-Technical Trainings
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin/calendar"
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                >
+                  <CalendarDaysIcon className="w-5 h-5 mr-3" />
+                  Calendar Management
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin/payment-links"
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                >
+                  <CreditCardIcon className="w-5 h-5 mr-3" />
+                  Payment Links
                 </Link>
               </li>
               <li>

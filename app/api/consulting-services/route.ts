@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import {
+  createCatalogRecord,
+  deleteCatalogRecord,
+  getCatalogRecordById,
+  listCatalogRecords,
+  updateCatalogRecord,
+} from '@/app/lib/db/catalogRepository';
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,36 +14,9 @@ export async function GET(request: NextRequest) {
     const id = searchParams.get('id');
     const limit = searchParams.get('limit');
 
-    const supabase = createSupabaseServerClient();
-    
-    let result;
-    
-    if (id) {
-      result = await supabase
-        .from('consulting_services')
-        .select('*')
-        .eq('id', id)
-        .single();
-    } else {
-      let query = supabase
-        .from('consulting_services')
-        .select('*');
-      
-      if (status !== null) {
-        query = query.eq('status', status === 'true');
-      }
-
-      if (limit !== null) {
-        const limitNum = parseInt(limit);
-        if (!isNaN(limitNum)) {
-          query = query.limit(limitNum);
-        }
-      }
-      
-      result = await query.order('created_at', { ascending: false });
-    }
-
-    const { data, error } = result;
+    const { data, error } = id
+      ? await getCatalogRecordById('consulting_services', id)
+      : await listCatalogRecords('consulting_services', status, limit);
 
     if (error) {
       console.error('Supabase error:', error);
@@ -60,13 +39,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const supabase = createSupabaseServerClient();
-    
-    const { data, error } = await supabase
-      .from('consulting_services')
-      .insert(body)
-      .select()
-      .single();
+    const { data, error } = await createCatalogRecord('consulting_services', body);
 
     if (error) {
       console.error('Supabase error:', error);
@@ -98,14 +71,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = createSupabaseServerClient();
-    
-    const { data, error } = await supabase
-      .from('consulting_services')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
+    const { data, error } = await updateCatalogRecord('consulting_services', id, updateData);
 
     if (error) {
       console.error('Supabase error:', error);
@@ -137,12 +103,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const supabase = createSupabaseServerClient();
-    
-    const { error } = await supabase
-      .from('consulting_services')
-      .delete()
-      .eq('id', id);
+    const { error } = await deleteCatalogRecord('consulting_services', id);
 
     if (error) {
       console.error('Supabase error:', error);

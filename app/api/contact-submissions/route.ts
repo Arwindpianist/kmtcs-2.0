@@ -1,25 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/app/lib/supabase-server';
 import { sendFormNotification } from '@/app/lib/emailService';
+import { runNeonQuery } from '@/app/lib/db/neon';
+
+type ContactSubmissionRecord = Record<string, unknown>;
+
+const contactColumns = new Set([
+  'name',
+  'email',
+  'phone',
+  'company',
+  'message',
+  'status',
+  'created_at',
+  'updated_at',
+]);
+
+function sanitizeContactPayload(payload: ContactSubmissionRecord) {
+  return Object.fromEntries(Object.entries(payload).filter(([key, value]) => contactColumns.has(key) && value !== undefined));
+}
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient();
-    
-    const { data, error } = await supabase
-      .from('contact_submissions')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch contact submissions' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ data: data || [] });
+    const result = await runNeonQuery<ContactSubmissionRecord>('SELECT * FROM contact_submissions ORDER BY created_at DESC');
+    return NextResponse.json({ data: result.rows || [] });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(
@@ -32,21 +35,20 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const supabase = createSupabaseServerClient();
-    
-    const { data, error } = await supabase
-      .from('contact_submissions')
-      .insert(body)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Failed to create contact submission' },
-        { status: 500 }
-      );
+    const payload = sanitizeContactPayload(body);
+    const entries = Object.entries(payload);
+    if (entries.length === 0) {
+      return NextResponse.json({ error: 'No valid contact submission fields provided' }, { status: 400 });
     }
+
+    const columns = entries.map(([key]) => `"${key}"`).join(', ');
+    const placeholders = entries.map((_, index) => `$${index + 1}`).join(', ');
+    const values = entries.map(([, value]) => value);
+
+    const result = await runNeonQuery<ContactSubmissionRecord>(
+      `INSERT INTO contact_submissions (${columns}) VALUES (${placeholders}) RETURNING *`,
+      values
+    );
 
     // Send email notification
     await sendFormNotification({
@@ -58,7 +60,7 @@ export async function POST(request: NextRequest) {
       formType: 'Contact Form'
     });
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ data: result.rows[0] ?? null });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(
@@ -80,24 +82,22 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = createSupabaseServerClient();
-    
-    const { data, error } = await supabase
-      .from('contact_submissions')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Failed to update contact submission' },
-        { status: 500 }
-      );
+    const payload = sanitizeContactPayload(updateData);
+    const entries = Object.entries(payload);
+    if (entries.length === 0) {
+      return NextResponse.json({ error: 'No valid contact submission fields provided' }, { status: 400 });
     }
 
-    return NextResponse.json({ data });
+    const setClause = entries.map(([key], index) => `"${key}" = $${index + 1}`).join(', ');
+    const values = entries.map(([, value]) => value);
+    values.push(id);
+
+    const result = await runNeonQuery<ContactSubmissionRecord>(
+      `UPDATE contact_submissions SET ${setClause} WHERE id = $${values.length} RETURNING *`,
+      values
+    );
+
+    return NextResponse.json({ data: result.rows[0] ?? null });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(
@@ -119,21 +119,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const supabase = createSupabaseServerClient();
-    
-    const { error } = await supabase
-      .from('contact_submissions')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Failed to delete contact submission' },
-        { status: 500 }
-      );
-    }
-
+    await runNeonQuery('DELETE FROM contact_submissions WHERE id = $1', [id]);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('API error:', error);

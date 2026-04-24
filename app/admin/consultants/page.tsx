@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { AdminTablePageSkeleton } from '@/app/components/skeletons/PageSkeletons';
 import DataTable from '@/app/components/admin/DataTable';
 import { logger } from '@/app/lib/logger';
 
@@ -200,11 +201,7 @@ export default function ConsultantsManagement() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <AdminTablePageSkeleton />;
   }
 
   return (

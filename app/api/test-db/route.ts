@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import { runNeonQuery } from '@/app/lib/db/neon';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient();
-    
-    // Test all tables needed by admin dashboard
     const tables = [
       'technical_trainings',
       'non_technical_trainings', 
@@ -19,23 +16,12 @@ export async function GET(request: NextRequest) {
 
     for (const table of tables) {
       try {
-        const { data, error, count } = await supabase
-          .from(table)
-          .select('*', { count: 'exact', head: true });
-        
-        if (error) {
-          results[table] = {
-            exists: false,
-            error: error.message,
-            code: error.code
-          };
-        } else {
-          results[table] = {
-            exists: true,
-            count: count || 0,
-            accessible: true
-          };
-        }
+        const countResult = await runNeonQuery<{ count: string }>(`SELECT COUNT(*)::text AS count FROM ${table}`);
+        results[table] = {
+          exists: true,
+          count: Number(countResult.rows[0]?.count || 0),
+          accessible: true,
+        };
       } catch (err) {
         results[table] = {
           exists: false,

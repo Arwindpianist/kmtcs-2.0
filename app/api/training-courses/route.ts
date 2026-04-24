@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import {
+  createCatalogRecord,
+  deleteCatalogRecord,
+  listCatalogRecords,
+  updateCatalogRecord,
+  type CatalogTable,
+} from '@/app/lib/db/catalogRepository';
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+function toCatalogTable(serviceType: string): CatalogTable | null {
+  if (serviceType === 'technical_training') return 'technical_trainings';
+  if (serviceType === 'non_technical_training') return 'non_technical_trainings';
+  return null;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,48 +19,30 @@ export async function GET(request: NextRequest) {
     const serviceType = searchParams.get('service_type');
     const status = searchParams.get('status');
 
-    let query;
-    
-    if (serviceType === 'technical_training') {
-      query = supabase
-        .from('technical_trainings')
-        .select('*')
-        .order('created_at', { ascending: false });
-    } else if (serviceType === 'non_technical_training') {
-      query = supabase
-        .from('non_technical_trainings')
-        .select('*')
-        .order('created_at', { ascending: false });
-    } else {
-      // Return both types
-      const [technicalResult, nonTechnicalResult] = await Promise.all([
-        supabase.from('technical_trainings').select('*').order('created_at', { ascending: false }),
-        supabase.from('non_technical_trainings').select('*').order('created_at', { ascending: false })
-      ]);
-      
-      if (technicalResult.error) throw technicalResult.error;
-      if (nonTechnicalResult.error) throw nonTechnicalResult.error;
-      
-      const combinedData = [
-        ...(technicalResult.data || []).map(item => ({ ...item, service_type: 'technical_training' })),
-        ...(nonTechnicalResult.data || []).map(item => ({ ...item, service_type: 'non_technical_training' }))
-      ];
-      
-      return NextResponse.json({ data: combinedData });
+    if (serviceType === 'technical_training' || serviceType === 'non_technical_training') {
+      const table = toCatalogTable(serviceType)!;
+      const { data, error } = await listCatalogRecords(table, status, null);
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      return NextResponse.json({ data: data || [] });
     }
 
-    if (status !== null) {
-      query = query.eq('status', status === 'true');
-    }
+    // Return both types
+    const [technicalResult, nonTechnicalResult] = await Promise.all([
+      listCatalogRecords('technical_trainings', status, null),
+      listCatalogRecords('non_technical_trainings', status, null),
+    ]);
 
-    const { data, error } = await query;
+    if (technicalResult.error) throw technicalResult.error;
+    if (nonTechnicalResult.error) throw nonTechnicalResult.error;
 
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    const combinedData = [
+      ...((technicalResult.data || []).map(item => ({ ...item, service_type: 'technical_training' }))),
+      ...((nonTechnicalResult.data || []).map(item => ({ ...item, service_type: 'non_technical_training' }))),
+    ];
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ data: combinedData });
   } catch (error) {
     console.error('GET error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -87,25 +75,14 @@ export async function POST(request: NextRequest) {
       status: body.status !== undefined ? body.status : true
     };
 
-    let result;
-    
-    if (body.service_type === 'technical_training') {
-      result = await supabase
-        .from('technical_trainings')
-        .insert(courseData)
-        .select()
-        .single();
-    } else if (body.service_type === 'non_technical_training') {
-      result = await supabase
-        .from('non_technical_trainings')
-        .insert(courseData)
-        .select()
-        .single();
-    } else {
+    const table = toCatalogTable(body.service_type);
+    if (!table) {
       return NextResponse.json({ 
         error: 'Invalid service_type. Must be technical_training or non_technical_training' 
       }, { status: 400 });
     }
+
+    const result = await createCatalogRecord(table, courseData);
 
     if (result.error) {
       console.error('Database error:', result.error);
@@ -146,27 +123,14 @@ export async function PUT(request: NextRequest) {
       status: body.status
     };
 
-    let result;
-    
-    if (body.service_type === 'technical_training') {
-      result = await supabase
-        .from('technical_trainings')
-        .update(updateData)
-        .eq('id', body.id)
-        .select()
-        .single();
-    } else if (body.service_type === 'non_technical_training') {
-      result = await supabase
-        .from('non_technical_trainings')
-        .update(updateData)
-        .eq('id', body.id)
-        .select()
-        .single();
-    } else {
+    const table = toCatalogTable(body.service_type);
+    if (!table) {
       return NextResponse.json({ 
         error: 'Invalid service_type. Must be technical_training or non_technical_training' 
       }, { status: 400 });
     }
+
+    const result = await updateCatalogRecord(table, body.id, updateData);
 
     if (result.error) {
       console.error('Database error:', result.error);
@@ -194,23 +158,14 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Course ID and service_type are required' }, { status: 400 });
     }
 
-    let result;
-    
-    if (serviceType === 'technical_training') {
-      result = await supabase
-        .from('technical_trainings')
-        .delete()
-        .eq('id', id);
-    } else if (serviceType === 'non_technical_training') {
-      result = await supabase
-        .from('non_technical_trainings')
-        .delete()
-        .eq('id', id);
-    } else {
+    const table = toCatalogTable(serviceType);
+    if (!table) {
       return NextResponse.json({ 
         error: 'Invalid service_type. Must be technical_training or non_technical_training' 
       }, { status: 400 });
     }
+
+    const result = await deleteCatalogRecord(table, id);
 
     if (result.error) {
       console.error('Database error:', result.error);

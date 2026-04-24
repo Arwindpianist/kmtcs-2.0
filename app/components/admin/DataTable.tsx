@@ -10,6 +10,7 @@ import {
   ArrowDownIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import { Skeleton } from '@/app/components/ui/skeleton';
 
 interface Column<T> {
   key: string;
@@ -17,6 +18,8 @@ interface Column<T> {
   sortable?: boolean;
   render?: (item: T) => React.ReactNode;
   width?: string;
+  cellClassName?: string;
+  headerClassName?: string;
 }
 
 interface Filter {
@@ -172,8 +175,21 @@ export default function DataTable<T extends Record<string, any>>({
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <Skeleton className="h-10 w-full rounded-lg" />
+        </div>
+        <div className="p-4 space-y-4">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div key={index} className="grid grid-cols-12 items-center gap-4">
+              <Skeleton className="col-span-4 h-5" />
+              <Skeleton className="col-span-3 h-5" />
+              <Skeleton className="col-span-2 h-5" />
+              <Skeleton className="col-span-1 h-6 rounded-full" />
+              <Skeleton className="col-span-2 h-8 rounded-lg" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -279,7 +295,7 @@ export default function DataTable<T extends Record<string, any>>({
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="min-w-full table-fixed divide-y divide-gray-200">
           <thead className="bg-gray-50 sticky top-0">
             <tr>
               {columns.map(column => (
@@ -288,7 +304,7 @@ export default function DataTable<T extends Record<string, any>>({
                   scope="col"
                   className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
                     column.sortable ? 'cursor-pointer hover:bg-gray-100' : ''
-                  }`}
+                  } ${column.headerClassName || ''}`}
                   style={{ width: column.width }}
                   onClick={() => column.sortable && handleSort(column.key)}
                 >
@@ -324,7 +340,12 @@ export default function DataTable<T extends Record<string, any>>({
                   onClick={() => onRowClick && onRowClick(item)}
                 >
                   {columns.map(column => (
-                    <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td
+                      key={column.key}
+                      className={`px-6 py-4 text-sm text-gray-900 align-top ${
+                        column.cellClassName || 'whitespace-normal break-words'
+                      }`}
+                    >
                       {column.render ? column.render(item) : String(item[column.key] || '')}
                     </td>
                   ))}

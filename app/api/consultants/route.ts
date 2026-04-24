@@ -1,24 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import { runNeonQuery } from '@/app/lib/db/neon';
+
+type ConsultantRecord = Record<string, unknown>;
+
+const consultantColumns = new Set([
+  'name',
+  'role',
+  'image_url',
+  'short_bio',
+  'full_bio',
+  'academic_qualifications',
+  'professional_certifications',
+  'career_experiences',
+  'status',
+  'created_at',
+  'updated_at',
+]);
+
+function sanitizeConsultantPayload(payload: ConsultantRecord) {
+  return Object.fromEntries(Object.entries(payload).filter(([key, value]) => consultantColumns.has(key) && value !== undefined));
+}
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient();
-    
-    const { data, error } = await supabase
-      .from('consultants')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch consultants' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ data: data || [] });
+    const result = await runNeonQuery<ConsultantRecord>('SELECT * FROM consultants ORDER BY created_at DESC');
+    return NextResponse.json({ data: result.rows || [] });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(
@@ -31,23 +37,22 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const supabase = createSupabaseServerClient();
-    
-    const { data, error } = await supabase
-      .from('consultants')
-      .insert(body)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Failed to create consultant' },
-        { status: 500 }
-      );
+    const payload = sanitizeConsultantPayload(body);
+    const entries = Object.entries(payload);
+    if (entries.length === 0) {
+      return NextResponse.json({ error: 'No valid consultant fields provided' }, { status: 400 });
     }
 
-    return NextResponse.json({ data });
+    const columns = entries.map(([key]) => `"${key}"`).join(', ');
+    const placeholders = entries.map((_, index) => `$${index + 1}`).join(', ');
+    const values = entries.map(([, value]) => value);
+
+    const result = await runNeonQuery<ConsultantRecord>(
+      `INSERT INTO consultants (${columns}) VALUES (${placeholders}) RETURNING *`,
+      values
+    );
+
+    return NextResponse.json({ data: result.rows[0] ?? null });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(
@@ -69,24 +74,22 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = createSupabaseServerClient();
-    
-    const { data, error } = await supabase
-      .from('consultants')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Failed to update consultant' },
-        { status: 500 }
-      );
+    const payload = sanitizeConsultantPayload(updateData);
+    const entries = Object.entries(payload);
+    if (entries.length === 0) {
+      return NextResponse.json({ error: 'No valid consultant fields provided' }, { status: 400 });
     }
 
-    return NextResponse.json({ data });
+    const setClause = entries.map(([key], index) => `"${key}" = $${index + 1}`).join(', ');
+    const values = entries.map(([, value]) => value);
+    values.push(id);
+
+    const result = await runNeonQuery<ConsultantRecord>(
+      `UPDATE consultants SET ${setClause} WHERE id = $${values.length} RETURNING *`,
+      values
+    );
+
+    return NextResponse.json({ data: result.rows[0] ?? null });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(
@@ -108,21 +111,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const supabase = createSupabaseServerClient();
-    
-    const { error } = await supabase
-      .from('consultants')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Failed to delete consultant' },
-        { status: 500 }
-      );
-    }
-
+    await runNeonQuery('DELETE FROM consultants WHERE id = $1', [id]);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('API error:', error);

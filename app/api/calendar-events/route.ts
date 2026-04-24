@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getEventBrochureAttachments, listCalendarEvents } from '@/app/lib/db/calendarRepository';
 import { serverLogger } from '@/app/lib/logger';
 
 interface CalendarEvent {
   id: string;
   title: string;
   description?: string;
+  duration?: string;
   start_time: string;
   end_time: string;
   location?: string;
@@ -15,32 +17,19 @@ interface CalendarEvent {
   }>;
   all_day: boolean;
   recurrence?: string;
+  training_snapshot?: {
+    title?: string;
+    description?: string;
+    duration?: string;
+    objectives?: string[];
+    course_contents?: string;
+    target_audience?: string;
+    methodology?: string;
+    certification?: string;
+    hrdcorp_approval_no?: string;
+  };
   created_time: string;
   modified_time: string;
-}
-
-// Helper to robustly parse Zoho date strings
-function parseZohoDate(str: string) {
-  if (!str) return null;
-  if (typeof str !== 'string') return null;
-  if (str.length === 8) {
-    // All-day event: YYYYMMDD
-    return new Date(`${str.slice(0,4)}-${str.slice(4,6)}-${str.slice(6,8)}T00:00:00Z`);
-  }
-  // Timed event: YYYYMMDDTHHmmss+ZZZZ
-  const match = str.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})([+-]\d{2})(\d{2})$/);
-  if (match) {
-    const [ , y, m, d, h, min, s, tzh, tzm ] = match;
-    const tzIso = `${tzh}:${tzm}`;
-    return new Date(`${y}-${m}-${d}T${h}:${min}:${s}${tzIso}`);
-  }
-  // Timed event: YYYYMMDDTHHmmssZ (UTC)
-  const matchUtc = str.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/);
-  if (matchUtc) {
-    const [ , y, m, d, h, min, s ] = matchUtc;
-    return new Date(`${y}-${m}-${d}T${h}:${min}:${s}Z`);
-  }
-  return new Date(str); // fallback
 }
 
 export async function GET(request: NextRequest) {
@@ -48,181 +37,40 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('start') || new Date().toISOString().split('T')[0];
     const endDate = searchParams.get('end') || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-
-    // Zoho Calendar API endpoint - use environment variable or fallback
-    const calendarUid = process.env.ZOHO_CALENDAR_UID || 'f4c3dda451a2448fb8f12e629a46f533';
-    
-    // Get access token using helper function
-    const accessToken = await getValidAccessToken();
-    
-    if (!accessToken) {
-      serverLogger.error('Failed to obtain Zoho access token');
-      return NextResponse.json(
-        { error: 'Calendar API authentication failed - no access token available' },
-        { status: 500 }
-      );
-    }
-
-    // Calculate date range for next 3 months
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfThreeMonths = new Date(now.getFullYear(), now.getMonth() + 3, 0);
-    
-    // Format dates for Zoho API (yyyyMMdd format)
-    const zohoStartDate = startOfMonth.toISOString().slice(0, 10).replace(/-/g, '');
-    const zohoEndDate = endOfThreeMonths.toISOString().slice(0, 10).replace(/-/g, '');
-    
-    // Try different approaches to get events
-    let events: CalendarEvent[] = [];
-    
-    // Use the same approach as debug endpoint - simple GET request
-    const eventsEndpoint = `https://calendar.zoho.com/api/v1/calendars/${calendarUid}/events`;
-    
-    let zohoApiDebug: any = {};
-    try {
-      const response = await fetch(eventsEndpoint, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      zohoApiDebug = {
-        status: response.status,
-        headers: Object.fromEntries(response.headers.entries()),
-        endpoint: eventsEndpoint,
-        tokenLength: accessToken.length
-      };
-      
-      if (response.ok) {
-        try {
-          const clone = await response.clone().json();
-          zohoApiDebug.sample = clone.events ? clone.events.slice(0, 2) : clone;
-        } catch (e) {
-          zohoApiDebug.sample = 'Could not parse JSON';
-        }
-      } else {
-        const errorText = await response.text();
-        zohoApiDebug.error = errorText;
-      }
-      
-      if (response.ok) {
-        const data = await response.json();
-        
-        events = data.events?.map((event: any) => {
-          let startTime = '';
-          let endTime = '';
-          if (event.dateandtime) {
-            const dateTimeData = event.dateandtime;
-            if (dateTimeData.start) {
-              startTime = parseZohoDate(dateTimeData.start)?.toISOString() || '';
-            }
-            if (dateTimeData.end) {
-              endTime = parseZohoDate(dateTimeData.end)?.toISOString() || '';
-            }
-          }
-          // Fallback: try other date fields if dateandtime parsing failed
-          if (!startTime) {
-            if (event.createdtime) {
-              startTime = parseZohoDate(event.createdtime)?.toISOString() || '';
-            } else if (event.lastmodifiedtime) {
-              startTime = parseZohoDate(event.lastmodifiedtime)?.toISOString() || '';
-            }
-          }
-          if (!endTime && event.lastmodifiedtime) {
-            endTime = parseZohoDate(event.lastmodifiedtime)?.toISOString() || '';
-          }
-          return {
-            id: event.uid || event.event_id || event.id || event.eventId || `event-${Math.random()}`,
-            title: event.title || event.summary || event.name,
-            description: event.description || event.details || event.notes,
-            start_time: startTime,
-            end_time: endTime,
-            location: event.location || event.venue || event.place,
-            attachments: (event.attach || event.attachments || []).map((att: any) => ({
-              name: att.fileName || att.name || 'Attachment',
-              url: `/api/zoho-file-download?fileId=${att.fileId}&eventId=${event.uid || event.event_id || event.id}&calendarUid=${calendarUid}`,
-              size: att.size || 0
-            })),
-            all_day: event.isallday === 'true' || event.isallday === true || event.all_day === 'true' || event.allDay === true || event.all_day === true,
-            recurrence: event.recurrence || event.recurring,
-            created_time: event.createdtime || event.created_time || event.createdTime || event.created,
-            modified_time: event.lastmodifiedtime || event.modified_time || event.modifiedTime || event.modified,
-          };
-        }) || [];
-      }
-    } catch (error) {
-      serverLogger.error('Error fetching events from Zoho:', error);
-    }
-
-    // If no events found, return empty array with success status
-    if (events.length === 0) {
-      return NextResponse.json({
-        success: true,
-        events: [],
-        total: 0,
-        message: 'No events found in the specified date range. Calendar API is working correctly.',
-        debug: {
-          dateRange: { zohoStartDate, zohoEndDate },
-          parsedEventCount: events.length,
-          debugEvents: [],
-          apiStatus: 'No events fetched from Zoho',
-          zohoApiDebug
-        }
-      });
-    }
-
-    // Filter events to only include those within the calculated date range
-    const startRange = parseZohoDate(zohoStartDate);
-    const endRange = parseZohoDate(zohoEndDate);
-    
-    const filteredEvents = events.filter(ev => {
-      if (!ev.start_time) {
-        return false;
-      }
-      const evStart = new Date(ev.start_time);
-      const inRange = evStart >= startRange && evStart <= endRange;
-      return inRange;
+    const eventsRaw = await listCalendarEvents({
+      start: `${startDate}T00:00:00.000Z`,
+      end: `${endDate}T23:59:59.999Z`,
+      status: 'true',
     });
-    const debugEvents = filteredEvents.map(ev => {
-      if (!ev.start_time) {
-        return {
-          title: ev.title,
-          originalStart: ev.start_time,
-          originalEnd: ev.end_time,
-          parsedStart: null,
-          parsedEnd: null,
-          inRange: false,
-          reason: 'No start_time'
-        };
-      }
-      const evStart = new Date(ev.start_time);
-      const inRange = evStart >= startRange && evStart <= endRange;
+    const attachmentMap = await getEventBrochureAttachments(eventsRaw.map((event) => event.id));
+    const events: CalendarEvent[] = eventsRaw.map((event) => {
+      const linkedBrochures = attachmentMap.get(event.id) || [];
       return {
-        title: ev.title,
-        originalStart: ev.start_time,
-        originalEnd: ev.end_time,
-        parsedStart: evStart.toISOString(),
-        parsedEnd: ev.end_time ? new Date(ev.end_time).toISOString() : null,
-        inRange,
-        reason: inRange ? 'In range' : 'Out of range'
+        id: event.id,
+        title: event.title,
+        description: event.description || undefined,
+        duration: event.duration || undefined,
+        start_time: event.start_time,
+        end_time: event.end_time,
+        location: event.location || undefined,
+        attachments: [...(event.attachments || []), ...linkedBrochures],
+        all_day: event.all_day,
+        recurrence: undefined,
+        training_snapshot: event.training_snapshot || undefined,
+        created_time: event.created_at,
+        modified_time: event.updated_at,
       };
     });
-    events = filteredEvents;
 
     return NextResponse.json({
       success: true,
       events,
       total: events.length,
-      debug: {
-        dateRange: { zohoStartDate, zohoEndDate },
-        parsedEventCount: events.length,
-        debugEvents
-      }
+      message:
+        events.length === 0
+          ? 'No events found in the selected date range.'
+          : undefined,
     });
-
   } catch (error) {
     serverLogger.error('Error fetching calendar events:', error);
     return NextResponse.json(
@@ -234,38 +82,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-// Helper function to get a valid access token
-async function getValidAccessToken(): Promise<string | null> {
-  try {
-    const refreshToken = process.env.ZOHO_REFRESH_TOKEN;
-    if (!refreshToken) {
-      return null;
-    }
-
-    const tokenResponse = await fetch('https://accounts.zoho.com/oauth/v2/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        refresh_token: refreshToken,
-        client_id: process.env.ZOHO_CLIENT_ID || '',
-        client_secret: process.env.ZOHO_CLIENT_SECRET || '',
-        grant_type: 'refresh_token',
-      }),
-    });
-
-    if (!tokenResponse.ok) {
-      serverLogger.error('Token refresh failed:', tokenResponse.status);
-      return null;
-    }
-
-    const tokenData = await tokenResponse.json();
-    return tokenData.access_token;
-
-  } catch (error) {
-    serverLogger.error('Error getting access token:', error);
-    return null;
-  }
-} 

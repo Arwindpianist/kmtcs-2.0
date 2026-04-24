@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import DataTable from '@/app/components/admin/DataTable';
+import { AdminTablePageSkeleton } from '@/app/components/skeletons/PageSkeletons';
 import { logger } from '@/app/lib/logger';
 
 interface ConsultingService {
@@ -18,6 +19,11 @@ interface ConsultingService {
   deliverables: string;
   status: boolean;
   created_at: string;
+}
+
+function formatCurrency(price: number | null) {
+  if (price === null) return 'Quote based';
+  return `RM ${price.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export default function ConsultingServicesAdmin() {
@@ -171,11 +177,7 @@ export default function ConsultingServicesAdmin() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <AdminTablePageSkeleton />;
   }
 
   return (
@@ -386,35 +388,55 @@ export default function ConsultingServicesAdmin() {
               key: 'title',
               label: 'Service',
               sortable: true,
+              width: '42%',
+              headerClassName: 'text-left',
+              cellClassName: 'whitespace-normal break-words',
               render: (service: ConsultingService) => (
-                <div>
-                  <div className="font-medium text-gray-900">{service.title}</div>
-                  <div className="text-sm text-gray-500 line-clamp-1 mt-1 max-w-md">{service.description}</div>
+                <div className="space-y-1">
+                  <div className="font-semibold text-gray-900 leading-snug">{service.title}</div>
+                  <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">{service.description}</p>
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <span className="inline-flex items-center rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700">
+                      {service.objectives?.length || 0} objectives
+                    </span>
+                    {service.deliverables && (
+                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+                        Deliverables defined
+                      </span>
+                    )}
+                  </div>
                 </div>
               )
             },
             {
               key: 'duration',
-              label: 'Duration',
+              label: 'Timeline',
               sortable: true,
+              width: '15%',
+              headerClassName: 'text-left',
+              cellClassName: 'whitespace-normal',
               render: (service: ConsultingService) => (
-                <span className="text-sm text-gray-700">{service.duration || 'Not specified'}</span>
+                <span className="text-sm text-gray-700 leading-relaxed">{service.duration || 'Not specified'}</span>
               )
             },
             {
               key: 'price',
               label: 'Price',
               sortable: true,
+              width: '12%',
+              headerClassName: 'text-left',
+              cellClassName: 'whitespace-nowrap',
               render: (service: ConsultingService) => (
-                <span className="text-sm text-gray-700">
-                  {service.price ? `RM ${service.price}` : 'Not set'}
-                </span>
+                <span className="text-sm font-medium text-gray-800">{formatCurrency(service.price)}</span>
               )
             },
             {
               key: 'status',
               label: 'Status',
               sortable: true,
+              width: '10%',
+              headerClassName: 'text-left',
+              cellClassName: 'whitespace-nowrap',
               render: (service: ConsultingService) => (
                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                   service.status 
@@ -429,10 +451,16 @@ export default function ConsultingServicesAdmin() {
               key: 'created_at',
               label: 'Created',
               sortable: true,
+              width: '11%',
+              headerClassName: 'text-left',
+              cellClassName: 'whitespace-nowrap',
               render: (service: ConsultingService) => (
-                <span className="text-sm text-gray-500">
-                  {service.created_at ? new Date(service.created_at).toLocaleDateString() : '-'}
-                </span>
+                <div className="text-sm text-gray-500">
+                  <div>{service.created_at ? new Date(service.created_at).toLocaleDateString() : '-'}</div>
+                  <div className="text-xs text-gray-400">
+                    {service.created_at ? new Date(service.created_at).toLocaleTimeString() : ''}
+                  </div>
+                </div>
               )
             }
           ]}

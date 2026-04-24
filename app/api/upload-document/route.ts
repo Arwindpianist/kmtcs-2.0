@@ -1,17 +1,75 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { serverLogger } from '@/app/lib/logger';
+import { runNeonQuery } from '@/app/lib/db/neon';
+import { uploadPublicFile } from '@/app/lib/storage/object-storage';
 // import mammoth from 'mammoth'; // Temporarily disabled
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+type DocumentUploadRow = Record<string, unknown>;
+let documentUploadsTableReady = false;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  serverLogger.error('Missing Supabase environment variables');
+async function ensureDocumentUploadsTable() {
+  if (documentUploadsTableReady) {
+    return;
+  }
+
+  await runNeonQuery('CREATE EXTENSION IF NOT EXISTS pgcrypto');
+  await runNeonQuery(`
+    CREATE TABLE IF NOT EXISTS document_uploads (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      file_name TEXT NOT NULL,
+      file_path TEXT NOT NULL,
+      file_size BIGINT NOT NULL,
+      file_type TEXT NOT NULL,
+      upload_status TEXT NOT NULL DEFAULT 'processing',
+      extracted_data JSONB,
+      price NUMERIC,
+      error_message TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  documentUploadsTableReady = true;
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+async function createDocumentUploadRecord(payload: {
+  file_name: string;
+  file_path: string;
+  file_size: number;
+  file_type: string;
+  upload_status: string;
+}) {
+  await ensureDocumentUploadsTable();
+  const result = await runNeonQuery<DocumentUploadRow>(
+    `
+    INSERT INTO document_uploads (
+      file_name,
+      file_path,
+      file_size,
+      file_type,
+      upload_status
+    )
+    VALUES ($1, $2, $3, $4, $5)
+    RETURNING *
+    `,
+    [payload.file_name, payload.file_path, payload.file_size, payload.file_type, payload.upload_status]
+  );
+  return { data: result.rows[0] ?? null, error: null };
+}
+
+async function updateDocumentUploadRecord(id: string, payload: Record<string, unknown>) {
+  await ensureDocumentUploadsTable();
+  const entries = Object.entries(payload).filter(([, value]) => value !== undefined);
+  if (entries.length === 0) return;
+
+  const setClause = entries.map(([key], index) => `"${key}" = $${index + 1}`).join(', ');
+  const values = entries.map(([, value]) => value);
+  values.push(id);
+
+  await runNeonQuery(
+    `UPDATE document_uploads SET ${setClause} WHERE id = $${values.length}`,
+    values
+  );
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,15 +85,18 @@ export async function POST(request: NextRequest) {
 
     console.log('File received:', file.name, file.type, file.size);
 
-    // Check file type - temporarily only allow text files
+    // Allow common training document formats.
     const allowedTypes = [
-      'text/plain' // .txt only for now
+      'text/plain',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
 
     if (!allowedTypes.includes(file.type)) {
       console.error('Invalid file type:', file.type);
       return NextResponse.json({ 
-        error: 'Currently only .txt files are supported. Word document support will be added soon.' 
+        error: 'Unsupported file type. Please upload TXT, PDF, DOC, or DOCX files.' 
       }, { status: 400 });
     }
 
@@ -48,18 +109,16 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    const uploaded = await uploadPublicFile(file, 'training-documents');
+
     // Create database record first
-    const { data: dbRecord, error: dbError } = await supabase
-      .from('document_uploads')
-      .insert({
-        file_name: file.name,
-        file_path: 'temporary', // We'll skip storage for now
-        file_size: file.size,
-        file_type: file.type,
-        upload_status: 'processing'
-      })
-      .select()
-      .single();
+    const { data: dbRecord, error: dbError } = await createDocumentUploadRecord({
+      file_name: file.name,
+      file_path: uploaded.pathname,
+      file_size: file.size,
+      file_type: file.type,
+      upload_status: 'processing'
+    });
 
     if (dbError) {
       console.error('Database error:', dbError);
@@ -70,50 +129,44 @@ export async function POST(request: NextRequest) {
 
     console.log('Database record created:', dbRecord.id);
 
-    // Parse document content
-    let extractedData = null;
+    // Parse document content when text parsing is supported.
+    let extractedData: ReturnType<typeof parseTrainingDocument> | null = null;
     let errorMessage = null;
 
     try {
       console.log('Starting document parsing');
-      const arrayBuffer = await file.arrayBuffer();
-      let textContent = '';
-
-      // Only handle text files for now
-      textContent = new TextDecoder().decode(arrayBuffer);
-      console.log('Text file content length:', textContent.length);
-
-      // Parse the extracted text
-      extractedData = parseTrainingDocument(textContent);
-      console.log('Document parsing completed:', extractedData);
+      if (file.type === 'text/plain') {
+        const arrayBuffer = await file.arrayBuffer();
+        const textContent = new TextDecoder().decode(arrayBuffer);
+        console.log('Text file content length:', textContent.length);
+        extractedData = parseTrainingDocument(textContent);
+        console.log('Document parsing completed:', extractedData);
+      } else {
+        console.log('Skipping parser for non-text format:', file.type);
+      }
 
       // Update database with extracted data
-      await supabase
-        .from('document_uploads')
-        .update({
-          upload_status: 'completed',
-          extracted_data: extractedData,
-          price: extractedData.price
-        })
-        .eq('id', dbRecord.id);
+      await updateDocumentUploadRecord(String(dbRecord.id), {
+        upload_status: 'completed',
+        extracted_data: extractedData,
+        price: extractedData?.price ?? null
+      });
 
     } catch (parseError) {
       console.error('Parsing error:', parseError);
       errorMessage = parseError instanceof Error ? parseError.message : 'Unknown parsing error';
       
       // Update database with error
-      await supabase
-        .from('document_uploads')
-        .update({
-          upload_status: 'failed',
-          error_message: errorMessage
-        })
-        .eq('id', dbRecord.id);
+      await updateDocumentUploadRecord(String(dbRecord.id), {
+        upload_status: 'failed',
+        error_message: errorMessage
+      });
     }
 
     return NextResponse.json({
       success: true,
       id: dbRecord.id,
+      fileUrl: uploaded.url,
       extractedData,
       errorMessage
     });

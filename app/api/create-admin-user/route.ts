@@ -1,86 +1,76 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import { runNeonQuery } from '@/app/lib/db/neon';
+import { hashPassword } from '@/app/lib/auth/password';
 
 export async function POST(request: Request) {
   try {
-    const { email, name } = await request.json();
+    const setupKey = process.env.ADMIN_SETUP_KEY;
+    if (setupKey) {
+      const providedKey = request.headers.get('x-setup-key');
+      if (providedKey !== setupKey) {
+        return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+
+    const { email, name, password } = await request.json();
     
-    if (!email) {
+    if (!email || !password) {
       return NextResponse.json({
         success: false,
-        error: 'Email is required'
+        error: 'Email and password are required'
       }, { status: 400 });
     }
-    
-    const supabase = createSupabaseServerClient();
-    
-    // Check if user already exists
-    const { data: existingUser, error: checkError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email)
-      .single();
-    
-    if (checkError && checkError.code !== 'PGRST116') {
+
+    if (password.length < 8) {
       return NextResponse.json({
         success: false,
-        error: 'Error checking existing user: ' + checkError.message
-      }, { status: 500 });
+        error: 'Password must be at least 8 characters',
+      }, { status: 400 });
     }
-    
+
+    await runNeonQuery('CREATE EXTENSION IF NOT EXISTS pgcrypto');
+    await runNeonQuery('ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT');
+
+    const nowIso = new Date().toISOString();
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const passwordHash = await hashPassword(password);
+    const existingResult = await runNeonQuery<Record<string, unknown>>(
+      'SELECT * FROM users WHERE lower(email) = $1 LIMIT 1',
+      [normalizedEmail]
+    );
+    const existingUser = existingResult.rows[0];
+
     if (existingUser) {
-      // Update existing user to admin role
-      const { data: updatedUser, error: updateError } = await supabase
-        .from('users')
-        .update({
-          role: 'admin',
-          full_name: name || existingUser.full_name,
-          last_sign_in: new Date().toISOString()
-        })
-        .eq('email', email)
-        .select()
-        .single();
-      
-      if (updateError) {
-        return NextResponse.json({
-          success: false,
-          error: 'Error updating user: ' + updateError.message
-        }, { status: 500 });
-      }
-      
+      const updated = await runNeonQuery<Record<string, unknown>>(
+        `
+        UPDATE users
+        SET role = 'admin', full_name = $1, password_hash = $2, last_sign_in = $3
+        WHERE lower(email) = $4
+        RETURNING *
+        `,
+        [name || (existingUser.full_name as string | undefined) || 'KMTCS Administrator', passwordHash, nowIso, normalizedEmail]
+      );
       return NextResponse.json({
         success: true,
         message: 'Admin user updated successfully',
-        user: updatedUser
-      });
-    } else {
-      // Create new admin user
-      const { data: newUser, error: createError } = await supabase
-        .from('users')
-        .insert({
-          email,
-          role: 'admin',
-          full_name: name || 'KMTCS Administrator',
-          created_at: new Date().toISOString(),
-          last_sign_in: new Date().toISOString()
-        })
-        .select()
-        .single();
-      
-      if (createError) {
-        return NextResponse.json({
-          success: false,
-          error: 'Error creating user: ' + createError.message
-        }, { status: 500 });
-      }
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Admin user created successfully',
-        user: newUser
+        user: updated.rows[0] ?? null
       });
     }
-    
+
+    const created = await runNeonQuery<Record<string, unknown>>(
+      `
+      INSERT INTO users (id, email, role, full_name, password_hash, created_at, last_sign_in)
+      VALUES (gen_random_uuid(), $1, 'admin', $2, $3, $4, $4)
+      RETURNING *
+      `,
+      [normalizedEmail, name || 'KMTCS Administrator', passwordHash, nowIso]
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: 'Admin user created successfully',
+      user: created.rows[0] ?? null
+    });
   } catch (error) {
     console.error('Create admin user error:', error);
     return NextResponse.json({

@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import { getCatalogRecordById } from '@/app/lib/db/catalogRepository';
 import { notFound } from 'next/navigation';
 import TechnicalTrainingClient from './TechnicalTrainingClient';
 
@@ -18,17 +18,12 @@ interface TrainingCourse {
 }
 
 async function getCourse(id: string): Promise<TrainingCourse | null> {
-  const supabase = createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from('technical_trainings')
-    .select('*')
-    .eq('id', id)
-    .single();
+  const { data, error } = await getCatalogRecordById('technical_trainings', id);
 
   if (error || !data) {
     return null;
   }
-  return data;
+  return data as unknown as TrainingCourse;
 }
 
 export default async function TechnicalTrainingPage({ params }: { params: Promise<{ id: string }> }) {

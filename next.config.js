@@ -16,9 +16,9 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'lfgcrrxytpadcvrvtjfm.supabase.co',
+        hostname: '*.public.blob.vercel-storage.com',
         port: '',
-        pathname: '/storage/v1/object/public/**',
+        pathname: '/**',
       }
     ],
   },

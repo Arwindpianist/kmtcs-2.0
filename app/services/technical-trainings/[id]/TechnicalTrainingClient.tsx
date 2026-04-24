@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createEnquiry } from '@/app/services/supabaseService';
+import { createEnquiry } from '@/app/services/enquiryService';
 import { redirect } from 'next/navigation';
 
 interface TrainingCourse {

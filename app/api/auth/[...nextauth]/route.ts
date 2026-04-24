@@ -1,15 +1,6 @@
-import NextAuth from 'next-auth'
+import NextAuth from 'next-auth';
+import { authOptions } from '@/app/lib/auth/options';
 
-const handler = NextAuth({
-  providers: [],
-  session: {
-    strategy: 'jwt',
-  },
-  callbacks: {
-    async session({ session, token }) {
-      return session
-    },
-  },
-})
+const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST } 
+export { handler as GET, handler as POST };

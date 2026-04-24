@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { supabase } from '@/app/lib/supabase';
 import TrainingCourseForm from '@/app/components/TrainingCourseForm';
 import DataTable from '@/app/components/admin/DataTable';
+import { AdminTablePageSkeleton } from '@/app/components/skeletons/PageSkeletons';
 import { logger } from '@/app/lib/logger';
 
 interface TrainingCourse {
@@ -22,6 +22,16 @@ interface TrainingCourse {
   service_type?: 'technical_training' | 'non_technical_training';
   status: boolean;
   created_at?: string;
+  brochure_url?: string;
+  brochure_file_name?: string;
+  next_event_start?: string | null;
+  next_event_title?: string | null;
+  linked_event_ids?: string[];
+}
+
+function formatCurrency(price: number | null) {
+  if (price === null) return 'Quote based';
+  return `RM ${price.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export default function NonTechnicalTrainingsAdmin() {
@@ -54,7 +64,8 @@ export default function NonTechnicalTrainingsAdmin() {
     setSaving(true);
     try {
       // Remove service_type field as it doesn't exist in non_technical_trainings table
-      const { service_type, ...dataToSave } = courseData;
+      const dataToSave = { ...courseData };
+      delete (dataToSave as Partial<TrainingCourse>).service_type;
 
       if (editingCourse) {
         // Update existing course
@@ -125,11 +136,7 @@ export default function NonTechnicalTrainingsAdmin() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <AdminTablePageSkeleton />;
   }
 
   return (
@@ -173,6 +180,7 @@ export default function NonTechnicalTrainingsAdmin() {
             onCancel={handleCancel}
             loading={saving}
             hideServiceType={true}
+            trainingTable="non_technical_trainings"
           />
           </motion.div>
         </div>
@@ -187,37 +195,59 @@ export default function NonTechnicalTrainingsAdmin() {
           columns={[
             {
               key: 'title',
-              label: 'Title',
+              label: 'Program',
               sortable: true,
+              width: '42%',
+              headerClassName: 'text-left',
+              cellClassName: 'whitespace-normal break-words',
               render: (course: TrainingCourse) => (
-                <div>
-                  <div className="font-medium text-gray-900">{course.title}</div>
-                  <div className="text-sm text-gray-500 line-clamp-1 mt-1">{course.description}</div>
+                <div className="space-y-1">
+                  <div className="font-semibold text-gray-900 leading-snug">{course.title}</div>
+                  <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">{course.description}</p>
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    {course.target_audience && (
+                      <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
+                        Audience defined
+                      </span>
+                    )}
+                    {course.certification && (
+                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+                        Certificate Available
+                      </span>
+                    )}
+                  </div>
                 </div>
               )
             },
             {
               key: 'duration',
-              label: 'Duration',
+              label: 'Schedule',
               sortable: true,
+              width: '15%',
+              headerClassName: 'text-left',
+              cellClassName: 'whitespace-normal',
               render: (course: TrainingCourse) => (
-                <span className="text-sm text-gray-700">{course.duration || 'Not specified'}</span>
+                <span className="text-sm text-gray-700 leading-relaxed">{course.duration || 'Not specified'}</span>
               )
             },
             {
               key: 'price',
               label: 'Price',
               sortable: true,
+              width: '12%',
+              headerClassName: 'text-left',
+              cellClassName: 'whitespace-nowrap',
               render: (course: TrainingCourse) => (
-                <span className="text-sm text-gray-700">
-                  {course.price ? `RM ${course.price}` : 'Not set'}
-                </span>
+                <span className="text-sm font-medium text-gray-800">{formatCurrency(course.price)}</span>
               )
             },
             {
               key: 'status',
               label: 'Status',
               sortable: true,
+              width: '10%',
+              headerClassName: 'text-left',
+              cellClassName: 'whitespace-nowrap',
               render: (course: TrainingCourse) => (
                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                   course.status 
@@ -229,13 +259,61 @@ export default function NonTechnicalTrainingsAdmin() {
               )
             },
             {
+              key: 'brochure_url',
+              label: 'Brochure',
+              sortable: false,
+              width: '10%',
+              headerClassName: 'text-left',
+              cellClassName: 'whitespace-nowrap',
+              render: (course: TrainingCourse) => (
+                course.brochure_url ? (
+                  <a
+                    href={course.brochure_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline text-xs"
+                  >
+                    PDF
+                  </a>
+                ) : (
+                  <span className="text-xs text-gray-400">None</span>
+                )
+              )
+            },
+            {
+              key: 'next_event_start',
+              label: 'Next Event',
+              sortable: true,
+              width: '10%',
+              headerClassName: 'text-left',
+              cellClassName: 'whitespace-normal',
+              render: (course: TrainingCourse) => (
+                course.next_event_start ? (
+                  <div className="text-xs text-gray-700">
+                    <div>{new Date(course.next_event_start).toLocaleDateString()}</div>
+                    {course.next_event_title ? (
+                      <div className="text-gray-500 line-clamp-1">{course.next_event_title}</div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <span className="text-xs text-gray-400">Not linked</span>
+                )
+              )
+            },
+            {
               key: 'created_at',
               label: 'Created',
               sortable: true,
+              width: '11%',
+              headerClassName: 'text-left',
+              cellClassName: 'whitespace-nowrap',
               render: (course: TrainingCourse) => (
-                <span className="text-sm text-gray-500">
-                  {course.created_at ? new Date(course.created_at).toLocaleDateString() : '-'}
-                </span>
+                <div className="text-sm text-gray-500">
+                  <div>{course.created_at ? new Date(course.created_at).toLocaleDateString() : '-'}</div>
+                  <div className="text-xs text-gray-400">
+                    {course.created_at ? new Date(course.created_at).toLocaleTimeString() : ''}
+                  </div>
+                </div>
               )
             }
           ]}

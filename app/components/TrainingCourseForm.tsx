@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/app/lib/supabase';
 
 interface TrainingCourse {
   id?: string;
@@ -17,6 +16,13 @@ interface TrainingCourse {
   hrdcorp_approval_no: string;
   service_type?: 'technical_training' | 'non_technical_training';
   status: boolean;
+  brochure_url?: string;
+  brochure_path?: string;
+  brochure_file_name?: string;
+  brochure_file_size?: number;
+  brochure_mime_type?: string;
+  brochure_updated_at?: string;
+  linked_event_ids?: string[];
 }
 
 interface TrainingCourseFormProps {
@@ -25,6 +31,7 @@ interface TrainingCourseFormProps {
   onCancel: () => void;
   loading?: boolean;
   hideServiceType?: boolean;
+  trainingTable?: 'technical_trainings' | 'non_technical_trainings';
 }
 
 export default function TrainingCourseForm({ 
@@ -32,7 +39,8 @@ export default function TrainingCourseForm({
   onSubmit, 
   onCancel, 
   loading = false,
-  hideServiceType = false
+  hideServiceType = false,
+  trainingTable = 'technical_trainings'
 }: TrainingCourseFormProps) {
   const [formData, setFormData] = useState<TrainingCourse>({
     title: '',
@@ -47,22 +55,43 @@ export default function TrainingCourseForm({
     hrdcorp_approval_no: '',
     ...(hideServiceType ? {} : { service_type: 'technical_training' }),
     status: true,
+    linked_event_ids: [],
     ...initialData
   });
 
   const [newObjective, setNewObjective] = useState('');
+  const [availableEvents, setAvailableEvents] = useState<Array<{ id: string; title: string; start_time: string }>>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [uploadingBrochure, setUploadingBrochure] = useState(false);
 
   useEffect(() => {
     if (initialData) {
       setFormData(prev => ({
         ...prev,
         ...initialData,
-        objectives: initialData.objectives || ['']
+        objectives: initialData.objectives || [''],
+        linked_event_ids: initialData.linked_event_ids || []
       }));
     }
   }, [initialData]);
 
-  const handleInputChange = (field: keyof TrainingCourse, value: any) => {
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const response = await fetch('/api/admin/calendar-events?status=true');
+        if (!response.ok) throw new Error('Failed to load calendar events');
+        const result = await response.json();
+        setAvailableEvents(result.data || []);
+      } catch {
+        setAvailableEvents([]);
+      } finally {
+        setEventsLoading(false);
+      }
+    };
+    loadEvents();
+  }, []);
+
+  const handleInputChange = (field: keyof TrainingCourse, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -102,10 +131,52 @@ export default function TrainingCourseForm({
     
     // Remove service_type if it's hidden (for non-technical trainings table)
     if (hideServiceType) {
-      const { service_type, ...dataWithoutServiceType } = cleanData;
+      const dataWithoutServiceType = { ...cleanData };
+      delete (dataWithoutServiceType as Partial<TrainingCourse>).service_type;
       onSubmit(dataWithoutServiceType as TrainingCourse);
     } else {
       onSubmit(cleanData);
+    }
+  };
+
+  const toggleLinkedEvent = (eventId: string) => {
+    setFormData((prev) => {
+      const current = prev.linked_event_ids || [];
+      const exists = current.includes(eventId);
+      return {
+        ...prev,
+        linked_event_ids: exists ? current.filter((id) => id !== eventId) : [...current, eventId],
+      };
+    });
+  };
+
+  const handleBrochureUpload = async (file: File | null) => {
+    if (!file) return;
+    setUploadingBrochure(true);
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      const response = await fetch('/api/admin/upload-training-brochure', {
+        method: 'POST',
+        body,
+      });
+      if (!response.ok) {
+        throw new Error('Brochure upload failed');
+      }
+      const payload = await response.json();
+      setFormData((prev) => ({
+        ...prev,
+        brochure_url: payload.url,
+        brochure_path: payload.path,
+        brochure_file_name: payload.file_name,
+        brochure_file_size: payload.file_size,
+        brochure_mime_type: payload.mime_type,
+        brochure_updated_at: new Date().toISOString(),
+      }));
+    } catch {
+      alert('Failed to upload brochure PDF');
+    } finally {
+      setUploadingBrochure(false);
     }
   };
 
@@ -288,6 +359,77 @@ export default function TrainingCourseForm({
       </div>
 
       {/* Status */}
+      <div className="bg-white p-6 rounded-lg shadow space-y-4">
+        <h3 className="text-lg font-semibold">Brochure PDF</h3>
+        <div className="flex flex-col gap-3">
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => handleBrochureUpload(e.target.files?.[0] || null)}
+            className="text-sm"
+          />
+          {uploadingBrochure ? <p className="text-sm text-blue-600">Uploading brochure...</p> : null}
+          {formData.brochure_url ? (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+              <div className="font-medium">{formData.brochure_file_name || 'Uploaded brochure'}</div>
+              <a href={formData.brochure_url} target="_blank" rel="noopener noreferrer" className="underline">
+                Preview brochure
+              </a>
+              <button
+                type="button"
+                className="ml-4 text-red-600 underline"
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    brochure_url: '',
+                    brochure_path: '',
+                    brochure_file_name: '',
+                    brochure_file_size: undefined,
+                    brochure_mime_type: '',
+                    brochure_updated_at: new Date().toISOString(),
+                  }))
+                }
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">No brochure uploaded yet.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow space-y-4">
+        <h3 className="text-lg font-semibold">Linked Calendar Events</h3>
+        {eventsLoading ? (
+          <p className="text-sm text-gray-500">Loading events...</p>
+        ) : availableEvents.length === 0 ? (
+          <p className="text-sm text-gray-500">No active calendar events available yet.</p>
+        ) : (
+          <div className="max-h-64 overflow-y-auto space-y-2 border border-gray-200 rounded-lg p-3">
+            {availableEvents.map((event) => (
+              <label key={event.id} className="flex items-start gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={(formData.linked_event_ids || []).includes(event.id)}
+                  onChange={() => toggleLinkedEvent(event.id)}
+                  className="mt-1"
+                />
+                <span>
+                  <span className="font-medium text-gray-900">{event.title}</span>
+                  <span className="block text-gray-500">
+                    {new Date(event.start_time).toLocaleString()}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+        )}
+        <p className="text-xs text-gray-500">
+          Selected events: {(formData.linked_event_ids || []).length}. These links are saved with the training record in {trainingTable}.
+        </p>
+      </div>
+
       <div className="bg-white p-6 rounded-lg shadow">
         <div className="flex items-center">
           <input

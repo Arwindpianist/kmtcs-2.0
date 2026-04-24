@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import { uploadPublicFile } from '@/app/lib/storage/object-storage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,37 +29,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createSupabaseServerClient();
-    
-    // Generate unique filename
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-    
-    // Upload file to the consultant_images bucket
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('consultant_images')
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (uploadError) {
-      console.error('Upload error:', uploadError);
-      return NextResponse.json(
-        { error: 'Failed to upload image: ' + uploadError.message },
-        { status: 500 }
-      );
-    }
-
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from('consultant_images')
-      .getPublicUrl(fileName);
+    const blob = await uploadPublicFile(file, 'consultant-images');
 
     return NextResponse.json({ 
-      url: urlData.publicUrl,
-      path: fileName,
-      bucket: 'consultant_images'
+      url: blob.url,
+      path: blob.pathname,
+      bucket: 'vercel_blob'
     });
   } catch (error) {
     console.error('API error:', error);

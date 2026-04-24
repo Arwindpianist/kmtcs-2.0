@@ -23,7 +23,7 @@ const getPrivacyIcon = (num: number) => {
 
 export default function PrivacyPolicy() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-20">
+    <div className="min-h-screen bg-background py-16">
       <BackgroundLines />
       <div className="container mx-auto py-8 px-6 max-w-4xl">
         <div className="text-center mb-12">
@@ -39,7 +39,7 @@ export default function PrivacyPolicy() {
           <p className="text-center text-muted-foreground text-lg">Effective Date: 1st January 2025</p>
         </motion.div>
         </div>
-        <Card className="relative z-50 shadow-xl border-2 bg-white/80 backdrop-blur-sm">
+        <Card className="relative z-50 shadow-sm border-border/70 bg-card">
           <CardContent className="p-8 lg:p-12">
 
             <motion.div

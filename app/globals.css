@@ -198,6 +198,14 @@ section {
 }
 
 @layer utilities {
+  .animate-marquee {
+    animation: marquee var(--duration) linear infinite;
+  }
+
+  .animate-marquee-vertical {
+    animation: marquee-vertical var(--duration) linear infinite;
+  }
+
   .bg-mellow-blue {
     background-color: var(--background-primary);
   }
@@ -216,6 +224,24 @@ section {
   
   .border-theme {
     border-color: var(--border-color);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
   }
 }
 

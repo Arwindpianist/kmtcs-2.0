@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { getSession, signOut } from 'next-auth/react';
 
 export interface AdminUser {
   id: string;
@@ -24,7 +24,7 @@ export class AdminAuthService {
     try {
       console.log('AdminAuthService.isAdmin(): Starting admin check');
       
-      const { data: { session } } = await supabase.auth.getSession();
+      const session = await getSession();
       
       if (!session?.user) {
         console.log('AdminAuthService.isAdmin(): No session or user');
@@ -55,7 +55,7 @@ export class AdminAuthService {
         console.log('AdminAuthService.isAdmin(): API call failed:', response.status);
         // Fallback: if API fails, check if user exists in auth and has admin-like email
         console.log('AdminAuthService.isAdmin(): Trying fallback check');
-        const userEmail = session.user.email;
+        const userEmail = session.user?.email;
         if (userEmail && (userEmail.includes('admin') || userEmail.includes('kmtcs'))) {
           console.log('AdminAuthService.isAdmin(): Fallback check passed for email:', userEmail);
           adminStatusCache[userId] = { isAdmin: true, timestamp: now };
@@ -77,7 +77,7 @@ export class AdminAuthService {
       console.error('AdminAuthService.isAdmin(): Error checking admin status:', error);
       // Fallback: if all else fails, check if user has admin-like email
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const session = await getSession();
         if (session?.user?.email) {
           const userEmail = session.user.email;
           if (userEmail.includes('admin') || userEmail.includes('kmtcs')) {
@@ -99,7 +99,7 @@ export class AdminAuthService {
     try {
       console.log('AdminAuthService.getCurrentAdmin(): Getting current admin data');
       
-      const { data: { session } } = await supabase.auth.getSession();
+      const session = await getSession();
       
       if (!session?.user) {
         console.log('AdminAuthService.getCurrentAdmin(): No session or user');
@@ -193,7 +193,7 @@ export class AdminAuthService {
   static async signOut(): Promise<void> {
     try {
       console.log('AdminAuthService.signOut(): Signing out user');
-      await supabase.auth.signOut();
+      await signOut({ redirect: false });
       // Clear all cache on sign out
       this.clearCache();
       console.log('AdminAuthService.signOut(): User signed out successfully');

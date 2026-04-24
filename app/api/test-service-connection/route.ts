@@ -1,26 +1,17 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import { runNeonQuery } from '@/app/lib/db/neon';
 
 export async function GET() {
   try {
-    const supabase = createSupabaseServerClient();
-    
-    // Test basic connection
     const connectionTest = {
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Missing',
-      serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Missing',
-      anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'Missing'
+      databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Missing',
     };
     
     // Test if we can connect to the database
     let dbConnection = false;
     try {
-      const { data, error } = await supabase
-        .from('technical_trainings')
-        .select('count')
-        .limit(1);
-      
-      dbConnection = !error;
+      await runNeonQuery('SELECT 1');
+      dbConnection = true;
     } catch (e) {
       dbConnection = false;
     }
@@ -28,82 +19,22 @@ export async function GET() {
     // Test specific table permissions with detailed error logging
     const tableTests: any = {};
     
-    // Test users table with detailed error
-    try {
-      const { data: users, error: usersError } = await supabase
-        .from('users')
-        .select('*')
-        .limit(1);
-      
-      tableTests.users = {
-        accessible: !usersError,
-        count: users?.length || 0,
-        error: usersError?.message,
-        code: usersError?.code,
-        details: usersError?.details,
-        hint: usersError?.hint
-      };
-    } catch (e) {
-      tableTests.users = {
-        accessible: false,
-        error: e instanceof Error ? e.message : 'Unknown error',
-        stack: e instanceof Error ? e.stack : undefined
-      };
-    }
-    
-    // Test contact_submissions table with detailed error
-    try {
-      const { data: contacts, error: contactsError } = await supabase
-        .from('contact_submissions')
-        .select('*')
-        .limit(1);
-      
-      tableTests.contact_submissions = {
-        accessible: !contactsError,
-        count: contacts?.length || 0,
-        error: contactsError?.message,
-        code: contactsError?.code,
-        details: contactsError?.details,
-        hint: contactsError?.hint
-      };
-    } catch (e) {
-      tableTests.contact_submissions = {
-        accessible: false,
-        error: e instanceof Error ? e.message : 'Unknown error',
-        stack: e instanceof Error ? e.stack : undefined
-      };
-    }
-    
-    // Test if we can query the information_schema to see table existence
-    let schemaInfo = null;
-    try {
-      const { data: tables, error: schemaError } = await supabase
-        .rpc('get_table_info');
-      
-      if (schemaError) {
-        // Try direct query
-        const { data: directTables, error: directError } = await supabase
-          .from('information_schema.tables')
-          .select('table_name')
-          .eq('table_schema', 'public')
-          .in('table_name', ['users', 'contact_submissions', 'technical_trainings', 'non_technical_trainings', 'consulting_services', 'consultants']);
-        
-        schemaInfo = {
-          accessible: !directError,
-          tables: directTables,
-          error: directError?.message
-        };
-      } else {
-        schemaInfo = {
+    const tables = ['users', 'contact_submissions', 'technical_trainings', 'non_technical_trainings', 'consulting_services', 'consultants'];
+    for (const table of tables) {
+      try {
+        const countResult = await runNeonQuery<{ count: string }>(`SELECT COUNT(*)::text AS count FROM ${table}`);
+        tableTests[table] = {
           accessible: true,
-          tables: tables
+          count: Number(countResult.rows[0]?.count || 0),
+          error: null,
+        };
+      } catch (e) {
+        tableTests[table] = {
+          accessible: false,
+          error: e instanceof Error ? e.message : 'Unknown error',
+          stack: e instanceof Error ? e.stack : undefined
         };
       }
-    } catch (e) {
-      schemaInfo = {
-        accessible: false,
-        error: e instanceof Error ? e.message : 'Unknown error'
-      };
     }
     
     return NextResponse.json({
@@ -112,7 +43,6 @@ export async function GET() {
       connection: connectionTest,
       dbConnection,
       tableTests,
-      schemaInfo,
       timestamp: new Date().toISOString()
     });
     

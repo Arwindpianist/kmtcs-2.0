@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import { getCatalogRecordById } from '@/app/lib/db/catalogRepository';
 import { notFound } from 'next/navigation';
 import ConsultingClient from './ConsultingClient';
 
@@ -12,18 +12,13 @@ interface ConsultingService {
   service_contents: string;
   target_audience: string;
   methodology: string;
-  deliverables: string;
+  deliverables: string[];
   status: boolean;
   created_at: string;
 }
 
 async function getService(id: string): Promise<ConsultingService | null> {
-  const supabase = createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from('consulting_services')
-    .select('*')
-    .eq('id', id)
-    .single();
+  const { data, error } = await getCatalogRecordById('consulting_services', id);
 
   if (error || !data) {
     return null;
@@ -31,7 +26,7 @@ async function getService(id: string): Promise<ConsultingService | null> {
 
   // Ensure arrays are properly initialized
   const service: ConsultingService = {
-    ...data,
+    ...(data as unknown as ConsultingService),
     objectives: Array.isArray(data.objectives) ? data.objectives : [],
     deliverables: Array.isArray(data.deliverables) ? data.deliverables : []
   };

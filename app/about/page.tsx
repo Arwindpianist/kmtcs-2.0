@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/ca
 // Section for the main "About Us" content
 function AboutSection() {
   return (
-    <section className="py-20 bg-background">
-      <div className="container mx-auto px-4">
+    <section className="bg-background py-14 sm:py-16 lg:py-20">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -26,7 +26,7 @@ function AboutSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+            <p className="text-base sm:text-lg text-muted-foreground mb-6 leading-relaxed">
               KM Training and Consulting Services (KMTCS) is a leading provider of engineering, management, and IT consulting and training services. We serve a diverse range of private and public enterprises, helping them achieve significant and lasting improvements in their operations performance.
             </p>
           </motion.div>
@@ -36,7 +36,7 @@ function AboutSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <p className="text-lg text-muted-foreground leading-relaxed">
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
               Our approach is rooted in scientific thinking and data-driven decision-making. We guide, coach, and train our clients to leverage modern tools and application software to optimize their processes and drive sustainable growth.
             </p>
           </motion.div>
@@ -57,16 +57,16 @@ function MissionAndValues() {
   ];
 
   return (
-    <section className="py-20 bg-muted/50">
-      <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
+    <section className="bg-muted/50 py-14 sm:py-16 lg:py-20">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="grid gap-10 lg:gap-16 md:grid-cols-2 items-start">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.7 }}
           >
-            <Card className="border-2 hover:shadow-lg transition-all">
+            <Card className="h-full border-2 transition-all hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="text-2xl flex items-center gap-3">
                   <FiTarget className="text-primary" size={28} />
@@ -87,27 +87,28 @@ function MissionAndValues() {
             transition={{ duration: 0.7 }}
           >
             <h3 className="text-2xl font-bold text-foreground mb-8">Our Core Values</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
               {values.map((value, index) => (
-                <motion.div
-                  key={value.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <Card className="border-2 hover:border-primary/20 hover:shadow-md transition-all">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="text-primary text-3xl mt-1 flex-shrink-0">{value.icon}</div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg text-foreground mb-2">{value.title}</h4>
-                          <p className="text-muted-foreground text-sm leading-relaxed break-words">{value.description}</p>
+                <div key={value.title} className="h-full">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <Card className="h-full border-2 transition-all hover:border-primary/20 hover:shadow-md">
+                      <CardContent className="p-5 sm:p-6 h-full">
+                        <div className="flex items-start gap-4">
+                          <div className="text-primary text-3xl mt-1 flex-shrink-0">{value.icon}</div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-lg text-foreground mb-2">{value.title}</h4>
+                            <p className="text-muted-foreground text-sm leading-relaxed break-words">{value.description}</p>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </div>
               ))}
             </div>
           </motion.div>
@@ -120,8 +121,8 @@ function MissionAndValues() {
 // Section for "Why Choose Us"
 function WhyChooseUs() {
   return (
-    <section className="py-20 bg-background">
-      <div className="container mx-auto px-4">
+    <section className="bg-background py-14 sm:py-16 lg:py-20">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center mb-16">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -130,35 +131,36 @@ function WhyChooseUs() {
           transition={{ duration: 0.7 }}
         >
           <h2 className="text-3xl font-bold text-foreground mb-6">Why Choose KMTCS?</h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
             With over 30 years of experience, we've formed a firm distinctively equipped to support our training and consulting projects. This holistic focus of the KMTCS produces excellent services for our customers and clients. Our associates and consultants have assisted various companies and enterprises to complete their projects and achieve/exceed targeted improvements.
           </p>
         </motion.div>
         </div>
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-3 items-stretch">
           {[
             { title: 'Innovate', desc: 'We innovate our training programs to suit your needs, incorporating the latest knowledge in the respective field.' },
             { title: 'Grow', desc: 'We help you develop a passion for learning. As you use new skills and knowledge, your purpose and career will grow.' },
             { title: 'Transform', desc: 'We transform your people to grow with the organization through well-crafted, innovative training programs.' }
           ].map((item, index) => (
-            <motion.div
-              key={item.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.2 }}
-            >
-              <Card className="text-center border-2 hover:border-primary/20 transition-all hover:shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-2xl font-semibold text-primary mb-3">{item.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground leading-relaxed break-words">
-                    {item.desc}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <div key={item.title} className="h-full">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.2 }}
+              >
+                <Card className="h-full border-2 text-center transition-all hover:border-primary/20 hover:shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-semibold text-primary mb-3">{item.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-full">
+                    <p className="text-muted-foreground leading-relaxed break-words">
+                      {item.desc}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
           ))}
         </div>
       </div>
@@ -170,7 +172,7 @@ export default function AboutPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50 to-blue-100 py-24 text-center">
+      <section className="bg-muted/30 border-b border-border/60 py-14 sm:py-16 lg:py-20 text-center">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

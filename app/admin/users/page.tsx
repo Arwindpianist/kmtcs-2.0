@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/app/lib/supabase';
 import DataTable from '@/app/components/admin/DataTable';
+import { AdminTablePageSkeleton } from '@/app/components/skeletons/PageSkeletons';
 import { logger } from '@/app/lib/logger';
 
 interface User {
@@ -18,6 +18,7 @@ export default function UsersManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -26,6 +27,7 @@ export default function UsersManagement() {
     role: 'editor' as 'admin' | 'editor',
     fullName: ''
   });
+  const [sendingResetForId, setSendingResetForId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -33,13 +35,12 @@ export default function UsersManagement() {
 
   async function fetchUsers() {
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setUsers(data || []);
+      const response = await fetch('/api/admin-users');
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Failed to fetch users');
+      }
+      setUsers(payload.data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -51,34 +52,31 @@ export default function UsersManagement() {
     e.preventDefault();
     try {
       if (editingUser) {
-        // Update logic
-        const { error } = await supabase
-          .from('users')
-          .update({
+        const response = await fetch('/api/admin-users', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: editingUser.id,
             role: formData.role,
-            full_name: formData.fullName || null,
-          })
-          .eq('id', editingUser.id);
-        if (error) throw error;
-      } else {
-        // Create logic
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
+            fullName: formData.fullName || null,
+            password: formData.password || undefined,
+          }),
         });
-        if (authError) throw authError;
-
-        if (authData.user) {
-          const { error: userError } = await supabase
-            .from('users')
-            .insert({
-              id: authData.user.id,
-              email: formData.email,
-              role: formData.role,
-              full_name: formData.fullName || null,
-            });
-          if (userError) throw userError;
-        }
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Failed to update user');
+      } else {
+        const response = await fetch('/api/admin-users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+            role: formData.role,
+            fullName: formData.fullName || null,
+          }),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Failed to create user');
       }
       await fetchUsers();
       handleCancel();
@@ -108,20 +106,39 @@ export default function UsersManagement() {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
 
     try {
-      const { error: adminError } = await supabase.auth.admin.deleteUser(id)
-      if (adminError) throw adminError;
+      const response = await fetch(`/api/admin-users?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Failed to delete user');
       await fetchUsers();
     } catch (err: any) {
       setError(`Failed to delete user: ${err.message}`);
     }
   }
 
+  async function handleSendResetLink(user: User) {
+    try {
+      setSendingResetForId(user.id);
+      setNotice(null);
+      setError(null);
+      const response = await fetch('/api/auth/request-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Failed to send reset link');
+      }
+      setNotice(`Reset link sent to ${user.email}`);
+    } catch (err: any) {
+      setError(`Failed to send reset link: ${err.message}`);
+    } finally {
+      setSendingResetForId(null);
+    }
+  }
+
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <AdminTablePageSkeleton />;
   }
 
   return (
@@ -150,6 +167,12 @@ export default function UsersManagement() {
           <span className="ml-2">{error}</span>
         </div>
       )}
+      {notice && (
+        <div className="mb-8 p-6 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg">
+          <strong className="font-bold">Notice:</strong>
+          <span className="ml-2">{notice}</span>
+        </div>
+      )}
 
       {showForm ? (
         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-8">
@@ -174,8 +197,9 @@ export default function UsersManagement() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                required
-                minLength={6}
+                required={!editingUser}
+                minLength={8}
+                placeholder={editingUser ? 'Leave blank to keep current password' : ''}
               />
             </div>
             <div>
@@ -311,6 +335,16 @@ export default function UsersManagement() {
                 className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50 transition-colors text-xs"
               >
                 Delete
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSendResetLink(user);
+                }}
+                disabled={sendingResetForId === user.id}
+                className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-600 hover:bg-blue-50 transition-colors text-xs disabled:opacity-50"
+              >
+                {sendingResetForId === user.id ? 'Sending...' : 'Send Reset Link'}
               </button>
             </div>
           )}

@@ -1,10 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createSupabaseServerClient } from '@/app/lib/supabase-server';
+import { runNeonQuery } from '@/app/lib/db/neon';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-11-15',
 });
+
+let paymentsTableReady = false;
+
+async function ensurePaymentsTable() {
+  if (paymentsTableReady) return;
+
+  await runNeonQuery('CREATE EXTENSION IF NOT EXISTS pgcrypto');
+  await runNeonQuery(`
+    CREATE TABLE IF NOT EXISTS payments (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      stripe_session_id TEXT NOT NULL UNIQUE,
+      amount_total INTEGER,
+      currency TEXT,
+      customer_email TEXT,
+      product_name TEXT,
+      payment_status TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  paymentsTableReady = true;
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -21,32 +43,36 @@ export async function GET(request: NextRequest) {
 
     // If payment was successful, save details to our database
     if (session.payment_status === 'paid') {
-      const supabase = createSupabaseServerClient();
+      const lineItem = session.line_items?.data[0];
+      const productName = (lineItem?.price?.product as Stripe.Product)?.name || 'Unknown Product';
 
-      // Check if we have already processed this payment
-      const { data: existingPayment } = await supabase
-        .from('payments')
-        .select('id')
-        .eq('stripe_session_id', session.id)
-        .single();
-
-      if (!existingPayment) {
-        const lineItem = session.line_items?.data[0];
-        const productName = (lineItem?.price?.product as Stripe.Product)?.name || 'Unknown Product';
-        
-        const { error } = await supabase.from('payments').insert({
-          stripe_session_id: session.id,
-          amount_total: session.amount_total,
-          currency: session.currency,
-          customer_email: session.customer_details?.email,
-          product_name: productName,
-          payment_status: session.payment_status,
-        });
-
-        if (error) {
-          console.error('Error saving payment to database:', error);
-          // We don't want to block the user, so we'll just log the error
-        }
+      try {
+        await ensurePaymentsTable();
+        await runNeonQuery(
+          `
+          INSERT INTO payments (
+            stripe_session_id,
+            amount_total,
+            currency,
+            customer_email,
+            product_name,
+            payment_status
+          )
+          VALUES ($1, $2, $3, $4, $5, $6)
+          ON CONFLICT (stripe_session_id) DO NOTHING
+          `,
+          [
+            session.id,
+            session.amount_total,
+            session.currency,
+            session.customer_details?.email ?? null,
+            productName,
+            session.payment_status,
+          ]
+        );
+      } catch (dbError) {
+        console.error('Error saving payment to Neon:', dbError);
+        // Continue response to avoid blocking paid users.
       }
     }
 

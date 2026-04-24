@@ -10,9 +10,8 @@ interface EmailData {
   serviceTitle?: string;
 }
 
-export async function sendFormNotification(data: EmailData) {
-  // Try different SMTP configurations
-  const smtpConfigs = [
+function getSmtpConfigs() {
+  return [
     {
       host: 'smtp.zoho.com',
       port: 465,
@@ -44,28 +43,36 @@ export async function sendFormNotification(data: EmailData) {
       }
     }
   ];
+}
 
+async function createVerifiedTransporter() {
+  const smtpConfigs = getSmtpConfigs();
   let transporter;
   let lastError;
 
-  // Try each configuration
   for (const config of smtpConfigs) {
     try {
       transporter = nodemailer.createTransport(config);
-      
-      // Verify the connection
       await transporter.verify();
-      console.log('SMTP connection verified successfully');
       break;
     } catch (error) {
-      console.log(`SMTP config failed:`, error);
       lastError = error;
-      continue;
     }
   }
 
   if (!transporter) {
-    console.error('All SMTP configurations failed:', lastError);
+    throw lastError || new Error('Failed to create SMTP transporter');
+  }
+
+  return transporter;
+}
+
+export async function sendFormNotification(data: EmailData) {
+  let transporter;
+  try {
+    transporter = await createVerifiedTransporter();
+  } catch (error) {
+    console.error('All SMTP configurations failed:', error);
     return;
   }
 
@@ -152,3 +159,48 @@ Submitted at: ${new Date().toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpu
     // Don't throw error to avoid breaking the form submission
   }
 } 
+
+export async function sendPasswordResetEmail({
+  toEmail,
+  resetUrl,
+  expiresInMinutes,
+}: {
+  toEmail: string;
+  resetUrl: string;
+  expiresInMinutes: number;
+}) {
+  let transporter;
+  try {
+    transporter = await createVerifiedTransporter();
+  } catch (error) {
+    console.error('SMTP unavailable for password reset email:', error);
+    return;
+  }
+
+  const fromEmail = process.env.ZOHO_EMAIL || 'info@kmtcs.com.my';
+
+  try {
+    await transporter.sendMail({
+      from: fromEmail,
+      to: toEmail,
+      subject: 'KMTCS Password Reset Link',
+      text: `You requested a password reset.\n\nUse this link to set a new password:\n${resetUrl}\n\nThis link expires in ${expiresInMinutes} minutes.\nIf you did not request this, you can ignore this email.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1e40af;">Reset your KMTCS password</h2>
+          <p>You requested a password reset for your account.</p>
+          <p>
+            <a href="${resetUrl}" style="display:inline-block;padding:10px 16px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">
+              Reset Password
+            </a>
+          </p>
+          <p style="word-break: break-all;">If the button does not work, copy and paste this link:<br/>${resetUrl}</p>
+          <p>This link expires in <strong>${expiresInMinutes} minutes</strong>.</p>
+          <p>If you did not request this, you can safely ignore this email.</p>
+        </div>
+      `,
+    });
+  } catch (error) {
+    console.error('Failed to send password reset email:', error);
+  }
+}

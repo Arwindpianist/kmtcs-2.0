@@ -43,3 +43,6 @@ public/old-site-trainings/
 
 # updated
 .cursorrules
+.cursor/plans/calendar_training_cutover_plan_825983d2.plan.md
+.agents/skills/neon-postgres/SKILL.md
+.cursor/plans/mvp_ux_productivity_plan_b1c553f8.plan.md
