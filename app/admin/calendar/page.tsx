@@ -1438,13 +1438,6 @@ export default function AdminCalendarPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-slate-900">Session Schedule Plan</h3>
-                <button
-                  type="button"
-                  onClick={addBatchSession}
-                  className="text-xs px-3 py-1.5 border border-indigo-300 rounded-lg text-indigo-700 hover:bg-indigo-50"
-                >
-                  Add Another Session
-                </button>
               </div>
 
               {batchSessions.map((session, index) => (
@@ -1518,6 +1511,15 @@ export default function AdminCalendarPage() {
                   </div>
                 </div>
               ))}
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={addBatchSession}
+                  className="text-xs px-3 py-1.5 border border-indigo-300 rounded-lg text-indigo-700 hover:bg-indigo-50"
+                >
+                  Add Another Session
+                </button>
+              </div>
             </div>
 
             <div className="flex justify-end gap-3">
