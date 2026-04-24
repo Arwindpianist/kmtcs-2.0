@@ -49,6 +49,7 @@ export default function CustomCalendar() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [brochurePreviewError, setBrochurePreviewError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Add state for day event modal
   const [dayModal, setDayModal] = useState<{date: Date, events: CalendarEvent[]} | null>(null);
@@ -64,11 +65,15 @@ export default function CustomCalendar() {
     fetchEvents();
   }, [currentDate]);
 
+  useEffect(() => {
+    setBrochurePreviewError(false);
+  }, [selectedEvent?.id]);
+
   const fetchEvents = async () => {
     try {
       setLoading(true);
       
-      const response = await fetch('/api/calendar-events');
+      const response = await fetch('/api/calendar-events', { cache: 'no-store' });
       
       if (!response.ok) {
         throw new Error('Failed to fetch events');
@@ -577,8 +582,9 @@ export default function CustomCalendar() {
                   </button>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                  <div className="space-y-2 md:space-y-4 lg:col-span-1 rounded-xl border border-slate-200 bg-slate-50 p-3 md:p-4 h-fit">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
+                  <div className="space-y-3 md:space-y-4 lg:col-span-4">
+                    <div className="space-y-2 md:space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-3 md:p-4 h-fit">
                   {/* Date Range */}
                   <div className="flex items-center text-gray-600 text-xs md:text-sm">
                     <FiCalendar className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
@@ -626,8 +632,68 @@ export default function CustomCalendar() {
                       <span>{selectedEvent.duration || selectedEvent.training_snapshot?.duration}</span>
                     </div>
                   )}
+                    </div>
+                    <div className="rounded-xl border border-slate-200 p-3 md:p-4 bg-white">
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center text-xs md:text-sm">
+                        <FiPaperclip className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                        Brochure
+                      </h4>
+                      {selectedEvent.attachments && selectedEvent.attachments.length > 0 ? (
+                        <div className="space-y-3">
+                          {!brochurePreviewError ? (
+                            <div className="rounded-lg border border-slate-200 overflow-hidden bg-slate-50">
+                              <iframe
+                                src={selectedEvent.attachments[0].url}
+                                title={selectedEvent.attachments[0].name}
+                                className="w-full h-[260px] md:h-[320px]"
+                                onError={() => setBrochurePreviewError(true)}
+                              />
+                            </div>
+                          ) : (
+                            <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50 px-4 py-6 text-center">
+                              <p className="text-sm font-medium text-amber-800">Unable to preview this brochure inline.</p>
+                              <p className="text-xs text-amber-700 mt-1">Use Open or Download to access the file directly.</p>
+                            </div>
+                          )}
+                          <div className="space-y-2">
+                            {selectedEvent.attachments.map((attachment, index) => (
+                              <div
+                                key={index}
+                                className="block p-2 bg-gray-50 rounded-lg text-xs md:text-sm border border-gray-200"
+                              >
+                                <div className="font-medium text-slate-900 line-clamp-1">{attachment.name}</div>
+                                <div className="text-gray-500 text-[10px] md:text-xs mb-2">
+                                  {(attachment.size / 1024).toFixed(1)} KB
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  <a
+                                    href={attachment.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center rounded-md bg-slate-900 px-2 py-1 text-[11px] text-white hover:bg-slate-800"
+                                  >
+                                    Open
+                                  </a>
+                                  <a
+                                    href={attachment.url}
+                                    download={attachment.name}
+                                    className="inline-flex items-center rounded-md border border-slate-500 px-2 py-1 text-[11px] text-slate-700 hover:bg-slate-100"
+                                  >
+                                    Download
+                                  </a>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-6 text-center text-xs text-slate-500">
+                          No brochure attached for this event.
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-3 md:space-y-4 lg:col-span-2">
+                  <div className="space-y-3 md:space-y-4 lg:col-span-8">
                   {selectedEvent.description && (
                     <div className="rounded-xl border border-slate-200 p-3 md:p-4 text-gray-700 text-xs md:text-sm bg-white">
                       <h4 className="font-semibold text-slate-900 mb-2">Overview</h4>
@@ -685,44 +751,6 @@ export default function CustomCalendar() {
                           <p className="text-gray-700">{selectedEvent.training_snapshot.hrdcorp_approval_no}</p>
                         </div>
                       ) : null}
-                    </div>
-                  )}
-                  {selectedEvent.attachments && selectedEvent.attachments.length > 0 && (
-                    <div className="rounded-xl border border-slate-200 p-3 md:p-4 bg-white">
-                      <h4 className="font-semibold text-gray-900 mb-1 md:mb-2 flex items-center text-xs md:text-sm">
-                        <FiPaperclip className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                        Brochures & Attachments
-                      </h4>
-                      <div className="space-y-1 md:space-y-2">
-                        {selectedEvent.attachments.map((attachment, index) => (
-                          <div
-                            key={index}
-                            className="block p-2 md:p-3 bg-gray-50 rounded-lg text-xs md:text-sm border border-gray-200"
-                          >
-                            <div className="font-medium text-slate-900">{attachment.name}</div>
-                            <div className="text-gray-500 text-[10px] md:text-xs mb-2">
-                              {(attachment.size / 1024).toFixed(1)} KB
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              <a
-                                href={attachment.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center rounded-md bg-slate-900 px-2 py-1 text-[11px] text-white hover:bg-slate-800"
-                              >
-                                View
-                              </a>
-                              <a
-                                href={attachment.url}
-                                download={attachment.name}
-                                className="inline-flex items-center rounded-md border border-slate-500 px-2 py-1 text-[11px] text-slate-700 hover:bg-slate-100"
-                              >
-                                Download
-                              </a>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   )}
                   </div>

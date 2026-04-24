@@ -16,6 +16,7 @@ import {
   UsersIcon,
   CalendarDaysIcon,
   CreditCardIcon,
+  DocumentTextIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon
@@ -40,6 +41,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                               pathname?.includes('/admin/non-technical-trainings') ||
                               pathname?.includes('/admin/calendar') ||
                               pathname?.includes('/admin/payment-links') ||
+                              pathname?.includes('/admin/brochure-reconciliation') ||
                               pathname?.includes('/admin/services') ||
                               pathname?.includes('/admin/consultants');
 
@@ -264,6 +266,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 >
                   <CreditCardIcon className="w-5 h-5 mr-3" />
                   Payment Links
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin/brochure-reconciliation"
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                >
+                  <DocumentTextIcon className="w-5 h-5 mr-3" />
+                  Brochure Reconciliation
                 </Link>
               </li>
               <li>

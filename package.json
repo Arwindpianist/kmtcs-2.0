@@ -12,7 +12,11 @@
     "start": "next start",
     "lint": "eslint .",
     "clean": "rm -rf .next",
-    "migrate:consultant-images": "node scripts/migrate-consultant-images-to-blob.mjs"
+    "migrate:consultant-images": "node scripts/migrate-consultant-images-to-blob.mjs",
+    "reconcile:training-brochures": "node scripts/reconcile-training-brochures.mjs",
+    "backfill:training-calendar-links": "node scripts/backfill-training-calendar-links.mjs",
+    "backfill:training-brochures-from-events": "node scripts/backfill-training-brochures-from-events.mjs",
+    "purge:all-brochures": "node scripts/purge-all-brochures.mjs"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",

@@ -27,7 +27,10 @@ interface TrainingRecord {
   certification: string;
   hrdcorp_approval_no: string;
   brochure_url?: string;
+  brochure_path?: string;
   brochure_file_name?: string;
+  brochure_file_size?: number;
+  brochure_mime_type?: string;
 }
 
 interface TrainingOption extends TrainingRecord {
@@ -74,6 +77,18 @@ interface CalendarEventRow {
 interface LocationSuggestion {
   place_id: number;
   display_name: string;
+}
+
+interface BatchSession {
+  id: string;
+  dateRange?: DateRange;
+  startHour: string;
+  startMinute: string;
+  startPeriod: 'AM' | 'PM';
+  endHour: string;
+  endMinute: string;
+  endPeriod: 'AM' | 'PM';
+  location: string;
 }
 
 const HOURS = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, '0'));
@@ -144,7 +159,38 @@ function buildCompositeDescription(snapshot: TrainingSnapshot) {
   return sections.join('\n\n');
 }
 
-function TimeWheel({
+function buildSnapshotFromTraining(training: TrainingOption): TrainingSnapshot {
+  return {
+    training_id: training.id,
+    training_table: training.training_table,
+    title: training.title,
+    description: training.description,
+    duration: training.duration,
+    objectives: training.objectives || [],
+    course_contents: training.course_contents,
+    target_audience: training.target_audience,
+    methodology: training.methodology,
+    certification: training.certification,
+    hrdcorp_approval_no: training.hrdcorp_approval_no,
+  };
+}
+
+function createDefaultBatchSession(): BatchSession {
+  const malaysiaToday = getMalaysiaTodayDate();
+  return {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    dateRange: { from: malaysiaToday, to: malaysiaToday },
+    startHour: '08',
+    startMinute: '30',
+    startPeriod: 'AM',
+    endHour: '05',
+    endMinute: '00',
+    endPeriod: 'PM',
+    location: 'Kuala Lumpur',
+  };
+}
+
+function TimePickerSelect({
   label,
   value,
   options,
@@ -160,27 +206,52 @@ function TimeWheel({
   return (
     <div className="space-y-2">
       <label className="block text-xs font-medium text-gray-600">{label}</label>
-      <div className={cn('relative rounded-2xl border border-gray-200 bg-white shadow-inner', disabled && 'opacity-50')}>
-        <div className="pointer-events-none absolute inset-x-2 top-1/2 h-8 -translate-y-1/2 rounded-lg border border-indigo-200 bg-indigo-50/60" />
-        <div className="h-40 overflow-y-auto snap-y snap-mandatory py-16">
-          {options.map((option) => (
-            <button
-              key={`${label}-${option}`}
-              type="button"
-              disabled={disabled}
-              onClick={() => onChange(option)}
-              className={cn(
-                'relative z-10 block h-8 w-full snap-center text-sm transition-colors',
-                option === value ? 'font-semibold text-indigo-700' : 'text-gray-500 hover:text-gray-800'
-              )}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      </div>
+      <select
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+        className={cn(
+          'w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900',
+          disabled && 'cursor-not-allowed opacity-60'
+        )}
+      >
+        {options.map((option) => (
+          <option key={`${label}-${option}`} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
     </div>
   );
+}
+
+function confirmWithToast(message: string) {
+  return new Promise<boolean>((resolve) => {
+    let settled = false;
+    toast(message, {
+      duration: 10000,
+      action: {
+        label: 'Delete',
+        onClick: () => {
+          settled = true;
+          resolve(true);
+        },
+      },
+      cancel: {
+        label: 'Cancel',
+        onClick: () => {
+          settled = true;
+          resolve(false);
+        },
+      },
+      onAutoClose: () => {
+        if (!settled) resolve(false);
+      },
+      onDismiss: () => {
+        if (!settled) resolve(false);
+      },
+    });
+  });
 }
 
 export default function AdminCalendarPage() {
@@ -191,6 +262,7 @@ export default function AdminCalendarPage() {
   const [uploadingBrochure, setUploadingBrochure] = useState(false);
   const [migratingLegacyBrochures, setMigratingLegacyBrochures] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [showBatchScheduler, setShowBatchScheduler] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEventRow | null>(null);
 
   const [trainingSearch, setTrainingSearch] = useState('');
@@ -216,12 +288,16 @@ export default function AdminCalendarPage() {
     duration: '',
     start_time: '',
     end_time: '',
-    location: '',
+    location: 'Kuala Lumpur',
     all_day: false,
     status: true,
     attachments: [],
     training_snapshot: { objectives: [] },
   });
+  const [batchTrainingSearch, setBatchTrainingSearch] = useState('');
+  const [batchSelectedTraining, setBatchSelectedTraining] = useState<TrainingOption | null>(null);
+  const [batchBrochureAttachment, setBatchBrochureAttachment] = useState<Attachment | null>(null);
+  const [batchSessions, setBatchSessions] = useState<BatchSession[]>([createDefaultBatchSession()]);
 
   const filteredTrainingOptions = useMemo(() => {
     const search = trainingSearch.trim().toLowerCase();
@@ -234,6 +310,17 @@ export default function AdminCalendarPage() {
       )
       .slice(0, 8);
   }, [trainings, trainingSearch]);
+  const filteredBatchTrainingOptions = useMemo(() => {
+    const search = batchTrainingSearch.trim().toLowerCase();
+    if (!search) return trainings.slice(0, 8);
+    return trainings
+      .filter(
+        (training) =>
+          training.title.toLowerCase().includes(search) ||
+          (training.description || '').toLowerCase().includes(search)
+      )
+      .slice(0, 8);
+  }, [batchTrainingSearch, trainings]);
 
   const loadTrainings = useCallback(async () => {
     const [technicalResponse, nonTechnicalResponse] = await Promise.all([
@@ -340,7 +427,7 @@ export default function AdminCalendarPage() {
       duration: '',
       start_time: '',
       end_time: '',
-      location: '',
+      location: 'Kuala Lumpur',
       all_day: false,
       status: true,
       attachments: [],
@@ -350,25 +437,13 @@ export default function AdminCalendarPage() {
     setEditingEvent(null);
     setSelectedTraining(null);
     setTrainingSearch('');
-    setLocationQuery('');
+    setLocationQuery('Kuala Lumpur');
     setLocationSuggestions([]);
     setShowLocationSuggestions(false);
   };
 
   const applyTrainingToForm = (training: TrainingOption) => {
-    const snapshot: TrainingSnapshot = {
-      training_id: training.id,
-      training_table: training.training_table,
-      title: training.title,
-      description: training.description,
-      duration: training.duration,
-      objectives: training.objectives || [],
-      course_contents: training.course_contents,
-      target_audience: training.target_audience,
-      methodology: training.methodology,
-      certification: training.certification,
-      hrdcorp_approval_no: training.hrdcorp_approval_no,
-    };
+    const snapshot: TrainingSnapshot = buildSnapshotFromTraining(training);
     setSelectedTraining(training);
     setTrainingSearch(`${training.title} (${training.training_label})`);
     setFormData((prev) => {
@@ -391,6 +466,151 @@ export default function AdminCalendarPage() {
         attachments: deduped,
       };
     });
+  };
+
+  const resetBatchScheduler = () => {
+    setBatchTrainingSearch('');
+    setBatchSelectedTraining(null);
+    setBatchBrochureAttachment(null);
+    setBatchSessions([createDefaultBatchSession()]);
+  };
+
+  const applyTrainingToBatch = (training: TrainingOption) => {
+    setBatchSelectedTraining(training);
+    setBatchTrainingSearch(`${training.title} (${training.training_label})`);
+    setBatchBrochureAttachment(
+      training.brochure_url && training.brochure_file_name
+        ? {
+            name: training.brochure_file_name,
+            url: training.brochure_url,
+            size: Number(training.brochure_file_size || 0),
+          }
+        : null
+    );
+  };
+
+  const addBatchSession = () => {
+    setBatchSessions((prev) => [...prev, createDefaultBatchSession()]);
+  };
+
+  const removeBatchSession = (sessionId: string) => {
+    setBatchSessions((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((session) => session.id !== sessionId);
+    });
+  };
+
+  const updateBatchSession = (sessionId: string, updates: Partial<BatchSession>) => {
+    setBatchSessions((prev) =>
+      prev.map((session) => (session.id === sessionId ? { ...session, ...updates } : session))
+    );
+  };
+
+  const handleSaveBatchSchedule = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      if (!batchSelectedTraining) {
+        throw new Error('Select a training before scheduling multiple sessions');
+      }
+
+      const invalidSession = batchSessions.find((session) => !session.dateRange?.from || !session.dateRange?.to);
+      if (invalidSession) {
+        throw new Error('Every scheduled session needs a valid date range');
+      }
+
+      const snapshot = buildSnapshotFromTraining(batchSelectedTraining);
+      const baseDescription = buildCompositeDescription(snapshot);
+      const baseAttachments = batchBrochureAttachment ? [batchBrochureAttachment] : [];
+      if (baseAttachments.length === 0) {
+        throw new Error(
+          'This training has no brochure yet. Upload one brochure first, then create batch sessions.'
+        );
+      }
+
+      for (const session of batchSessions) {
+        const startIso = combineDateAndTime(
+          session.dateRange!.from!,
+          session.startHour,
+          session.startMinute,
+          session.startPeriod
+        );
+        const endIso = combineDateAndTime(
+          session.dateRange!.to!,
+          session.endHour,
+          session.endMinute,
+          session.endPeriod
+        );
+
+        const createResponse = await fetch('/api/admin/calendar-events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: batchSelectedTraining.title,
+            description: baseDescription,
+            duration: batchSelectedTraining.duration || null,
+            start_time: startIso,
+            end_time: endIso,
+            location: session.location || 'Kuala Lumpur',
+            all_day: false,
+            status: true,
+            attachments: baseAttachments,
+            training_snapshot: snapshot,
+          }),
+        });
+        const createdPayload = await createResponse.json();
+        if (!createResponse.ok) {
+          throw new Error(createdPayload.error || 'Failed to create one of the scheduled sessions');
+        }
+
+        const eventId = String(createdPayload?.data?.id || '');
+        if (!eventId) {
+          throw new Error('Failed to retrieve created event id');
+        }
+
+        let mergedEventIds: string[] = [eventId];
+        try {
+          const existingLinksResponse = await fetch(
+            `/api/admin/training-calendar-links?training_table=${batchSelectedTraining.training_table}&training_ids=${batchSelectedTraining.id}`
+          );
+          if (existingLinksResponse.ok) {
+            const existingLinksPayload = await existingLinksResponse.json();
+            const existingLinks = existingLinksPayload?.data?.[batchSelectedTraining.id] || [];
+            mergedEventIds = Array.from(
+              new Set([
+                ...existingLinks.map((link: { calendar_event_id: string }) => link.calendar_event_id),
+                eventId,
+              ])
+            );
+          }
+        } catch (error) {
+          logger.error('Failed to fetch existing links while batch scheduling:', error);
+        }
+
+        const linkResponse = await fetch('/api/admin/training-calendar-links', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            training_table: batchSelectedTraining.training_table,
+            training_id: batchSelectedTraining.id,
+            event_ids: mergedEventIds,
+          }),
+        });
+        if (!linkResponse.ok) {
+          throw new Error('Session created but failed to link it to training');
+        }
+      }
+
+      await loadEvents();
+      setShowBatchScheduler(false);
+      resetBatchScheduler();
+      toast.success(`Scheduled ${batchSessions.length} session(s) for ${batchSelectedTraining.title}.`);
+    } catch (error) {
+      logger.error('Error scheduling batch events:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to schedule multiple sessions');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleLegacyBrochureMigration = async () => {
@@ -467,6 +687,50 @@ export default function AdminCalendarPage() {
     }
   };
 
+  const convertEditToBatchScheduler = () => {
+    if (!editingEvent) return;
+    const snapshot = formData.training_snapshot || {};
+    const trainingId = selectedTraining?.id || snapshot.training_id;
+    const trainingTable = selectedTraining?.training_table || snapshot.training_table;
+
+    if (!trainingId || !trainingTable) {
+      toast.error('This event is not linked to a training. Link a training first to batch schedule.');
+      return;
+    }
+
+    const matchedTraining =
+      trainings.find((item) => item.id === trainingId && item.training_table === trainingTable) || null;
+
+    if (!matchedTraining) {
+      toast.error('Linked training was not found. Reload trainings and try again.');
+      return;
+    }
+
+    const startParts = parseIsoToTimeParts(formData.start_time || editingEvent.start_time);
+    const endParts = parseIsoToTimeParts(formData.end_time || editingEvent.end_time);
+    const sessionFrom: Date = dateRange?.from || new Date(formData.start_time || editingEvent.start_time);
+    const sessionTo: Date = dateRange?.to || new Date(formData.end_time || editingEvent.end_time);
+
+    setBatchSelectedTraining(matchedTraining);
+    setBatchTrainingSearch(`${matchedTraining.title} (${matchedTraining.training_label})`);
+    setBatchSessions([
+      {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        dateRange: { from: sessionFrom, to: sessionTo },
+        startHour: startParts.hour,
+        startMinute: startParts.minute,
+        startPeriod: startParts.period,
+        endHour: endParts.hour,
+        endMinute: endParts.minute,
+        endPeriod: endParts.period,
+        location: formData.location || locationQuery || 'Kuala Lumpur',
+      },
+    ]);
+
+    setShowForm(false);
+    setShowBatchScheduler(true);
+  };
+
   const handleBrochureUpload = async (file: File | null) => {
     if (!file) return;
     setUploadingBrochure(true);
@@ -490,6 +754,81 @@ export default function AdminCalendarPage() {
     } catch (error) {
       logger.error('Error uploading calendar brochure:', error);
       toast.error('Brochure upload failed. Please try again.');
+    } finally {
+      setUploadingBrochure(false);
+    }
+  };
+
+  const handleBatchBrochureUpload = async (file: File | null) => {
+    if (!file) return;
+    if (!batchSelectedTraining) {
+      toast.error('Select a training first before uploading brochure.');
+      return;
+    }
+
+    setUploadingBrochure(true);
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      const response = await fetch('/api/admin/upload-training-brochure', { method: 'POST', body });
+      if (!response.ok) throw new Error('Failed to upload brochure');
+      const uploaded = await response.json();
+
+      const saveResponse = await fetch('/api/admin/training-brochure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          training_table: batchSelectedTraining.training_table,
+          training_id: batchSelectedTraining.id,
+          brochure_url: uploaded.url,
+          brochure_path: uploaded.path,
+          brochure_file_name: uploaded.file_name,
+          brochure_file_size: uploaded.file_size,
+          brochure_mime_type: uploaded.mime_type,
+        }),
+      });
+
+      if (!saveResponse.ok) {
+        const payload = await saveResponse.json();
+        throw new Error(payload.error || 'Failed to save brochure to training');
+      }
+
+      const nextAttachment = {
+        name: uploaded.file_name,
+        url: uploaded.url,
+        size: Number(uploaded.file_size || 0),
+      };
+      setBatchBrochureAttachment(nextAttachment);
+      setBatchSelectedTraining((prev) =>
+        prev
+          ? {
+              ...prev,
+              brochure_url: uploaded.url,
+              brochure_path: uploaded.path,
+              brochure_file_name: uploaded.file_name,
+              brochure_file_size: Number(uploaded.file_size || 0),
+              brochure_mime_type: uploaded.mime_type,
+            }
+          : prev
+      );
+      setTrainings((prev) =>
+        prev.map((item) =>
+          item.id === batchSelectedTraining.id && item.training_table === batchSelectedTraining.training_table
+            ? {
+                ...item,
+                brochure_url: uploaded.url,
+                brochure_path: uploaded.path,
+                brochure_file_name: uploaded.file_name,
+                brochure_file_size: Number(uploaded.file_size || 0),
+                brochure_mime_type: uploaded.mime_type,
+              }
+            : item
+        )
+      );
+      toast.success('Brochure uploaded and linked. Future sessions will reuse this brochure.');
+    } catch (error) {
+      logger.error('Error uploading batch brochure:', error);
+      toast.error(error instanceof Error ? error.message : 'Brochure upload failed.');
     } finally {
       setUploadingBrochure(false);
     }
@@ -554,13 +893,32 @@ export default function AdminCalendarPage() {
       const linkedTrainingTable = selectedTraining?.training_table || snapshot.training_table;
 
       if (eventId && linkedTrainingId && linkedTrainingTable) {
+        let mergedEventIds: string[] = [eventId];
+        try {
+          const existingLinksResponse = await fetch(
+            `/api/admin/training-calendar-links?training_table=${linkedTrainingTable}&training_ids=${linkedTrainingId}`
+          );
+          if (existingLinksResponse.ok) {
+            const existingLinksPayload = await existingLinksResponse.json();
+            const existingLinks = existingLinksPayload?.data?.[linkedTrainingId] || [];
+            mergedEventIds = Array.from(
+              new Set([
+                ...existingLinks.map((link: { calendar_event_id: string }) => link.calendar_event_id),
+                eventId,
+              ])
+            );
+          }
+        } catch (error) {
+          logger.error('Failed to fetch existing links while saving calendar event:', error);
+        }
+
         const linkResponse = await fetch('/api/admin/training-calendar-links', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             training_table: linkedTrainingTable,
             training_id: linkedTrainingId,
-            event_ids: [eventId],
+            event_ids: mergedEventIds,
           }),
         });
         if (!linkResponse.ok) throw new Error('Event saved but failed to link training');
@@ -579,7 +937,8 @@ export default function AdminCalendarPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this calendar event?')) return;
+    const confirmed = await confirmWithToast('Delete this calendar event?');
+    if (!confirmed) return;
     try {
       const response = await fetch(`/api/admin/calendar-events?id=${id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete event');
@@ -618,17 +977,28 @@ export default function AdminCalendarPage() {
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Calendar Management</h1>
               <p className="text-gray-600">
-                Search a training to auto-fill, use range date + wheel time picker, and publish brochure-ready events.
+                Search a training to auto-fill and schedule one or multiple sessions with shared brochure details.
               </p>
             </div>
             <button
               onClick={() => {
+                setShowBatchScheduler(false);
                 resetForm();
                 setShowForm(true);
               }}
               className="mt-4 lg:mt-0 bg-indigo-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm lg:text-base"
             >
               Add Calendar Event
+            </button>
+            <button
+              onClick={() => {
+                setShowForm(false);
+                resetBatchScheduler();
+                setShowBatchScheduler(true);
+              }}
+              className="mt-2 lg:mt-0 lg:ml-3 border border-indigo-600 text-indigo-700 px-4 lg:px-6 py-2 lg:py-3 rounded-lg hover:bg-indigo-50 transition-colors font-medium text-sm lg:text-base"
+            >
+              Batch Schedule Training
             </button>
           </div>
         </motion.div>
@@ -637,6 +1007,17 @@ export default function AdminCalendarPage() {
       {showForm ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-8 mb-6 lg:mb-8">
           <h2 className="text-xl lg:text-2xl font-semibold mb-4 lg:mb-6">{editingEvent ? 'Edit Event' : 'Add Event'}</h2>
+          {editingEvent ? (
+            <div className="mb-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={convertEditToBatchScheduler}
+                className="text-xs px-3 py-1.5 border border-indigo-300 rounded-lg text-indigo-700 hover:bg-indigo-50"
+              >
+                Add Another Session (Batch)
+              </button>
+            </div>
+          ) : null}
           <form onSubmit={handleSave} className="space-y-6">
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -745,22 +1126,22 @@ export default function AdminCalendarPage() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Apple-Like Time Picker</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Time Picker</label>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="rounded-2xl border border-gray-200 p-3 bg-gradient-to-b from-slate-50 to-white">
                     <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Start</p>
                     <div className="grid grid-cols-3 gap-2">
-                      <TimeWheel label="Hour" value={startHour} options={HOURS} onChange={setStartHour} disabled={formData.all_day} />
-                      <TimeWheel label="Minute" value={startMinute} options={MINUTES} onChange={setStartMinute} disabled={formData.all_day} />
-                      <TimeWheel label="Period" value={startPeriod} options={PERIODS} onChange={(value) => setStartPeriod(value as 'AM' | 'PM')} disabled={formData.all_day} />
+                      <TimePickerSelect label="Hour" value={startHour} options={HOURS} onChange={setStartHour} disabled={formData.all_day} />
+                      <TimePickerSelect label="Minute" value={startMinute} options={MINUTES} onChange={setStartMinute} disabled={formData.all_day} />
+                      <TimePickerSelect label="Period" value={startPeriod} options={PERIODS} onChange={(value) => setStartPeriod(value as 'AM' | 'PM')} disabled={formData.all_day} />
                     </div>
                   </div>
                   <div className="rounded-2xl border border-gray-200 p-3 bg-gradient-to-b from-slate-50 to-white">
                     <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">End</p>
                     <div className="grid grid-cols-3 gap-2">
-                      <TimeWheel label="Hour" value={endHour} options={HOURS} onChange={setEndHour} disabled={formData.all_day} />
-                      <TimeWheel label="Minute" value={endMinute} options={MINUTES} onChange={setEndMinute} disabled={formData.all_day} />
-                      <TimeWheel label="Period" value={endPeriod} options={PERIODS} onChange={(value) => setEndPeriod(value as 'AM' | 'PM')} disabled={formData.all_day} />
+                      <TimePickerSelect label="Hour" value={endHour} options={HOURS} onChange={setEndHour} disabled={formData.all_day} />
+                      <TimePickerSelect label="Minute" value={endMinute} options={MINUTES} onChange={setEndMinute} disabled={formData.all_day} />
+                      <TimePickerSelect label="Period" value={endPeriod} options={PERIODS} onChange={(value) => setEndPeriod(value as 'AM' | 'PM')} disabled={formData.all_day} />
                     </div>
                   </div>
                 </div>
@@ -972,6 +1353,190 @@ export default function AdminCalendarPage() {
                 className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Save Event'}
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : showBatchScheduler ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-8 mb-6 lg:mb-8">
+          <h2 className="text-xl lg:text-2xl font-semibold mb-4 lg:mb-6">Batch Schedule a Training</h2>
+          <div className="mb-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowBatchScheduler(false);
+                resetForm();
+                setShowForm(true);
+              }}
+              className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              Switch to Single Event Form
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowBatchScheduler(false)}
+              className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              View Existing Events (Edit/Delete)
+            </button>
+          </div>
+          <form onSubmit={handleSaveBatchSchedule} className="space-y-6">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+              <h3 className="font-semibold text-slate-900">Select Training (brochure + details reused for all sessions)</h3>
+              <input
+                value={batchTrainingSearch}
+                onChange={(e) => setBatchTrainingSearch(e.target.value)}
+                placeholder="Search training title or description..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              />
+              {batchTrainingSearch ? (
+                <div className="border border-gray-200 rounded-lg bg-white max-h-56 overflow-auto">
+                  {filteredBatchTrainingOptions.length === 0 ? (
+                    <p className="p-3 text-sm text-gray-500">No matching trainings found.</p>
+                  ) : (
+                    filteredBatchTrainingOptions.map((training) => (
+                      <button
+                        key={`batch-${training.training_table}-${training.id}`}
+                        type="button"
+                        className="w-full text-left px-3 py-2 hover:bg-indigo-50 border-b border-gray-100 last:border-b-0"
+                        onClick={() => applyTrainingToBatch(training)}
+                      >
+                        <p className="font-medium text-sm text-gray-900">{training.title}</p>
+                        <p className="text-xs text-gray-500">
+                          {training.training_label} {training.duration ? `- ${training.duration}` : ''}
+                        </p>
+                      </button>
+                    ))
+                  )}
+                </div>
+              ) : null}
+              {batchSelectedTraining ? (
+                <div className="space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+                  <p className="text-xs text-indigo-700">Selected: {batchSelectedTraining.title}</p>
+                  {batchBrochureAttachment ? (
+                    <div className="text-xs text-green-700">
+                      Using brochure: {batchBrochureAttachment.name}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-xs text-amber-700 font-medium">
+                        This training has no brochure. Upload one before batch scheduling.
+                      </p>
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) => handleBatchBrochureUpload(e.target.files?.[0] || null)}
+                        className="text-xs"
+                        disabled={uploadingBrochure}
+                      />
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-slate-900">Session Schedule Plan</h3>
+                <button
+                  type="button"
+                  onClick={addBatchSession}
+                  className="text-xs px-3 py-1.5 border border-indigo-300 rounded-lg text-indigo-700 hover:bg-indigo-50"
+                >
+                  Add Another Session
+                </button>
+              </div>
+
+              {batchSessions.map((session, index) => (
+                <div key={session.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-slate-900">Session {index + 1}</p>
+                    <button
+                      type="button"
+                      onClick={() => removeBatchSession(session.id)}
+                      className="text-xs text-red-600 hover:text-red-800 disabled:opacity-50"
+                      disabled={batchSessions.length <= 1}
+                    >
+                      Remove
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={cn(
+                            'w-full justify-start text-left font-normal',
+                            !session.dateRange?.from && 'text-gray-500'
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formatRangeLabel(session.dateRange)}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="range"
+                          selected={session.dateRange}
+                          onSelect={(value) => updateBatchSession(session.id, { dateRange: value })}
+                          numberOfMonths={2}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-2xl border border-gray-200 p-3 bg-white">
+                      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Start</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        <TimePickerSelect label="Hour" value={session.startHour} options={HOURS} onChange={(value) => updateBatchSession(session.id, { startHour: value })} />
+                        <TimePickerSelect label="Minute" value={session.startMinute} options={MINUTES} onChange={(value) => updateBatchSession(session.id, { startMinute: value })} />
+                        <TimePickerSelect label="Period" value={session.startPeriod} options={PERIODS} onChange={(value) => updateBatchSession(session.id, { startPeriod: value as 'AM' | 'PM' })} />
+                      </div>
+                    </div>
+                    <div className="rounded-2xl border border-gray-200 p-3 bg-white">
+                      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">End</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        <TimePickerSelect label="Hour" value={session.endHour} options={HOURS} onChange={(value) => updateBatchSession(session.id, { endHour: value })} />
+                        <TimePickerSelect label="Minute" value={session.endMinute} options={MINUTES} onChange={(value) => updateBatchSession(session.id, { endMinute: value })} />
+                        <TimePickerSelect label="Period" value={session.endPeriod} options={PERIODS} onChange={(value) => updateBatchSession(session.id, { endPeriod: value as 'AM' | 'PM' })} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                    <input
+                      value={session.location}
+                      onChange={(e) => updateBatchSession(session.id, { location: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowBatchScheduler(false);
+                  resetBatchScheduler();
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {saving ? 'Scheduling...' : `Create ${batchSessions.length} Sessions`}
               </button>
             </div>
           </form>
