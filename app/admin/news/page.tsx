@@ -465,7 +465,6 @@ export default function NewsManagement() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25 }}
-            className="overflow-hidden"
           >
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
               <div className="flex items-center justify-between mb-3">
@@ -546,7 +545,6 @@ export default function NewsManagement() {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
                       >
                         <div className="px-3 pb-3">
                           <ImageSourceFields
@@ -661,7 +659,6 @@ export default function NewsManagement() {
                                   animate={{ height: 'auto', opacity: 1 }}
                                   exit={{ height: 0, opacity: 0 }}
                                   transition={{ duration: 0.18 }}
-                                  className="overflow-hidden"
                                 >
                                   <div className="px-2 pb-2 space-y-2">
                                     {(block.type === 'heading' || block.type === 'paragraph') && (
