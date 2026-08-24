@@ -55,27 +55,28 @@ function NewsBlocks({ blocks }: { blocks: NewsContentBlock[] }) {
         }
 
         return (
-          <motion.figure
+          <motion.div
             key={`image-${index}`}
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.45 }}
-            className="space-y-3"
           >
-            <div className="overflow-hidden rounded-lg border border-border/70 bg-muted">
-              <img
-                src={block.url}
-                alt={block.caption || ''}
-                className="w-full h-auto object-cover"
-              />
-            </div>
-            {block.caption ? (
-              <figcaption className="text-sm text-muted-foreground text-center">
-                {block.caption}
-              </figcaption>
-            ) : null}
-          </motion.figure>
+            <figure className="space-y-3">
+              <div className="overflow-hidden rounded-lg border border-border/70 bg-muted">
+                <img
+                  src={block.url}
+                  alt={block.caption || ''}
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+              {block.caption ? (
+                <figcaption className="text-sm text-muted-foreground text-center">
+                  {block.caption}
+                </figcaption>
+              ) : null}
+            </figure>
+          </motion.div>
         );
       })}
     </div>
