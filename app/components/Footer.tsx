@@ -41,6 +41,9 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} KMTCS. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 sm:mt-0">
+            <Link href="/news" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              News
+            </Link>
             <Link href="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Privacy Policy
             </Link>

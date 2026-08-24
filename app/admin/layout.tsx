@@ -17,6 +17,7 @@ import {
   CalendarDaysIcon,
   CreditCardIcon,
   DocumentTextIcon,
+  NewspaperIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon
@@ -43,7 +44,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                               pathname?.includes('/admin/payment-links') ||
                               pathname?.includes('/admin/brochure-reconciliation') ||
                               pathname?.includes('/admin/services') ||
-                              pathname?.includes('/admin/consultants');
+                              pathname?.includes('/admin/consultants') ||
+                              pathname?.includes('/admin/news');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -293,6 +295,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 >
                   <UserGroupIcon className="w-5 h-5 mr-3" />
                   Consultants
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin/news"
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                >
+                  <NewspaperIcon className="w-5 h-5 mr-3" />
+                  News
                 </Link>
               </li>
               <li>
